@@ -48,12 +48,12 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(&f, app.renderer, "bat.png", "bat", 82, 29);
 
-  // Set up the ball
-  Ball b = { .cx = 100, .cy = 310, .speed = 10, .bearing = 60, .radius = 7 };
-  b.anim = af_loadanimation(&f, app.renderer, "ball.png", "ball", 15, 15);
-
-  Bat player = { .x = 100, .y = 520, .maxspeed = 6, .speed = 0, .targetspeed = 0 };
+  Bat player = { .x = 100, .y = 520, .w = 80, .h = 25, .maxspeed = 6, .speed = 0, .targetspeed = 0 };
   player.anim = af_getanimation(&f, "bat");
+
+  // Set up the ball
+  Ball b = { .cx = player.x + 40, .cy = 310, .speed = 5, .bearing = 60, .radius = 7, .state = bsSticky };
+  b.anim = af_loadanimation(&f, app.renderer, "ball.png", "ball", 15, 15);
 
   // Set up the level
   Arena arena = {.top = 50, .bottom = 550, .left = 40, .right = 560};
@@ -79,24 +79,27 @@ int main(int argc, char** argv)
           case SDLK_LEFT: player.targetspeed = player.speed > 0 ? player.targetspeed : 0; break;
           case SDLK_x:
           case SDLK_RIGHT: player.targetspeed = player.speed < 0 ? player.targetspeed : 0; break;
+          case SDLK_SPACE:
+            b.bearing = b.state == bsSticky ? 30 : b.bearing;
+            b.state = b.state == bsSticky ? bsNormal : b.state;
+          break;
         }
       }
 
       if (e.type == SDL_KEYDOWN)
       {
+        // Not part of the switch because we need "break" to break the loop...
         if(e.key.keysym.sym == SDLK_ESCAPE)
         {
           break;
         }
 
-        if(e.key.keysym.sym == SDLK_z || e.key.keysym.sym == SDLK_LEFT)
+        switch(e.key.keysym.sym)
         {
-          player.targetspeed = -1 * player.maxspeed;
-        }
-
-        if(e.key.keysym.sym == SDLK_x || e.key.keysym.sym == SDLK_RIGHT)
-        {
-          player.targetspeed = player.maxspeed;
+          case SDLK_z:
+          case SDLK_LEFT: player.targetspeed = -1 * player.maxspeed; break;
+          case SDLK_x:
+          case SDLK_RIGHT: player.targetspeed = player.maxspeed; break;
         }
       }
 		}

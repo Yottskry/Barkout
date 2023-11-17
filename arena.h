@@ -7,6 +7,10 @@
 
 #define MAXCOLS 13
 
+typedef enum {eLeft, eRight, eTop, eBottom, eTopLeft, eTopRight, eBottomLeft, eBottomRight, eNone} Edge;
+
+typedef enum {gsStarting, gsRunning, gsDying} Gamestate;
+
 typedef struct
 {
   int top;
@@ -17,7 +21,6 @@ typedef struct
   int colcount;
   int brickcount;
   Brick** bricks;
-
 } Arena;
 
 int arena_loadbricks(Arena* arena, AnimationFactory* factory, const char* fname);

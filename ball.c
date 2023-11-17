@@ -9,95 +9,114 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
   ball->x = ball->cx - ball->radius;
   ball->y = ball->cy - ball->radius;
 
-  // Convert degrees to radians
-  double rads = ball->bearing * (PI / 180);
-  Edge hitedge = eNone;
-  Brick* b = NULL;
 
-  int ballx = ball->x;
-  int bally = ball->y;
-
-  // Check all the points on the path along which the
-  // ball will move in this iteration.
-  for(int spd = 1; spd <= ball->speed; spd++)
-  {
-    int nextx = spd * sinl(rads);
-    int nexty = spd * cosl(rads);
-
-    if(ball->bearing < 180)
+  if (ball->state == bsNormal || ball->state == bsLoose)
     {
-      ball->y = bally - nexty;
-      ball->x = ballx + nextx;
-    }
-    else if (ball->bearing < 270)
+    // Convert degrees to radians
+    double rads = ball->bearing * (PI / 180);
+    Edge hitedge = eNone;
+    Brick* b = NULL;
+
+    int ballx = ball->x;
+    int bally = ball->y;
+
+    // Check all the points on the path along which the
+    // ball will move in this iteration.
+    for(int spd = 0; spd <= ball->speed; spd++)
     {
-      ball->y = bally - nexty;
-      ball->x = ballx + nextx;
-    }
-    else
-    {
-      ball->y = bally - nexty;
-      ball->x = ballx + nextx;
+      int nextx = spd * sinl(rads);
+      int nexty = spd * cosl(rads);
+
+      if(ball->bearing < 180)
+      {
+        ball->y = bally - nexty;
+        ball->x = ballx + nextx;
+      }
+      else if (ball->bearing < 270)
+      {
+        ball->y = bally - nexty;
+        ball->x = ballx + nextx;
+      }
+      else
+      {
+        ball->y = bally - nexty;
+        ball->x = ballx + nextx;
+      }
+
+      b = ball_collidesbricks(arena, ball, &hitedge);
+      // We've hit a brick. Ball will be positioned
+      // on the brick edge
+      if(b!=NULL)
+        break;
+
+      if(1 == ball_collidesbat(ball, player, &hitedge))
+        break;
+
+      if(ball->y < arena->top)
+      {
+        ball->y = arena->top;
+        hitedge = eBottom;
+      }
+
+      if(ball->y + 15 > arena->bottom)
+      {
+        ball->y = arena->bottom - 15;
+        hitedge = eTop;
+      }
+
+      if(ball->x + 15 > arena->right)
+      {
+        ball->x = arena->right - 15;
+        hitedge = eLeft;
+      }
+
+      if(ball->x < arena->left)
+      {
+
+        ball->x = arena->left;
+        hitedge = eRight;
+      }
     }
 
-    b = ball_collidesbricks(arena, ball, &hitedge);
-    // We've hit a brick. Ball will be positioned
-    // on the brick edge
-    if(b!=NULL)
+    switch(hitedge)
+    {
+      case eLeft:
+        ball->bearing = 360 - ball->bearing;
+        ball->x = b != NULL ? b->left - (2 * ball->radius) : ball->x;
       break;
-
-    if(ball->y < arena->top)
-    {
-      ball->y = arena->top;
-      hitedge = eBottom;
-    }
-
-    if(ball->y + 15 > arena->bottom)
-    {
-      ball->y = arena->bottom - 15;
-      hitedge = eTop;
-    }
-
-    if(ball->x + 15 > arena->right)
-    {
-      ball->x = arena->right - 15;
-      hitedge = eLeft;
-    }
-
-    if(ball->x < arena->left)
-    {
-
-      ball->x = arena->left;
-      hitedge = eRight;
+      case eRight:
+        ball->bearing = 360 - ball->bearing;
+        ball->x = b != NULL ? b->right : ball->x;
+      break;
+      case eTop:
+        if(ball->bearing < 180)
+          ball->bearing = 180 - ball->bearing;
+        else
+          ball->bearing = 360 - (ball->bearing - 180);
+        ball->y = b != NULL ? b->top - (2 * ball->radius) : ball->y;
+      break;
+      case eBottom:
+        if(ball->bearing < 90)
+          ball->bearing = 180 - ball->bearing;
+        else
+          ball->bearing = 180 + (360 - ball->bearing);
+        ball->y = b != NULL ? b->bottom : ball->y;
+      break;
+      case eTopLeft: break;
+      case eTopRight: break;
+      case eBottomLeft:
+        //if(ball->bearing < 90)
+        ball->bearing = ball->bearing + 180;
+      break;
+      case eBottomRight:
+        ball->bearing = ball->bearing - 180;
+      break;
     }
   }
-
-
-
-  switch(hitedge)
+  else if(ball->state == bsSticky || ball->state == bsStuck)
   {
-    case eLeft:
-      ball->bearing = 360 - ball->bearing;
-      ball->x = b != NULL ? b->left - (2 * ball->radius) : ball->x;
-    break;
-    case eRight:
-      ball->bearing = 360 - ball->bearing;
-      ball->x = b != NULL ? b->right : ball->x;
-    break;
-    case eTop:
-      if(ball->bearing < 180)
-        ball->bearing = 180 - ball->bearing;
-      else
-        ball->bearing = 360 - (ball->bearing - 180);
-      ball->y = b != NULL ? b->top - (2 * ball->radius) : ball->y;
-    break;
-    case eBottom:
-      if(ball->bearing < 90)
-        ball->bearing = 180 - ball->bearing;
-      else
-        ball->bearing = 180 + (360 - ball->bearing);
-      ball->y = b != NULL ? b->bottom : ball->y;
-    break;
+    ball->x += player->speed;
+    ball->y = player->y - (2 * ball->radius);
   }
 
   ball->cx = ball->x + ball->radius;
@@ -137,13 +156,14 @@ Brick* ball_collidesbricks(Arena* arena, Ball* ball, Edge* e)
         // Check bottom side of brick
         if(ball->bearing < 90)
         {
-          *e = (deltab < deltal) ? eBottom : eLeft;
+          // If one is closer than the other, pick that edge, if both are equal pick the corner
+          *e = (deltab < deltal) ? eBottom : (deltab > deltal) ? eLeft : eBottomLeft;
         }
         else
         {
           // Ball is travelling up and left
           // Check right edge
-          *e = (deltab < deltar) ? eBottom : eRight;
+          *e = (deltab < deltar) ? eBottom : (deltab > deltar) ? eRight : eBottomRight;
         }
       }
       else
@@ -169,4 +189,18 @@ Brick* ball_collidesbricks(Arena* arena, Ball* ball, Edge* e)
   }
 
   return NULL;
+}
+
+int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
+{
+  if((ball->cy - (player->y + player->h) < ball->radius) &&
+       (player->x - ball->cx < ball->radius) &&
+       (player->y - ball->cy < ball->radius) &&
+       (ball->cx - (player->x + player->w) < ball->radius))
+  {
+    *e = eTop;
+    ball->y = player->y - (2 * ball->radius);
+    return 1;
+  }
+  return 0;
 }
