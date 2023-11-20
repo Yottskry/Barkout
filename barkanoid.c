@@ -42,7 +42,8 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "red.png", "red", 44, 29);
   af_loadanimation(&f, app.renderer, "blue.png", "blue", 44, 29);
   af_loadanimation(&f, app.renderer, "green.png", "green", 44, 29);
-  //af_loadanimation(&f, app.renderer, "darkgrey.png", "darkgrey", 44, 29);
+  af_loadanimation(&f, app.renderer, "darkgrey.png", "darkgrey", 44, 29);
+  af_loadanimation(&f, app.renderer, "orange.png", "orange", 44, 29);
   af_loadanimation(&f, app.renderer, "grey.png", "grey", 44, 29);
   af_loadanimation(&f, app.renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);

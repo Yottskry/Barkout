@@ -1,53 +1,10 @@
 #include "ball.h"
 #include <math.h>
 
-int ball_changebearing(Ball* ball, Edge hitedge)
-{
-  switch(hitedge)
-  {
-    case eLeft:
-      ball->bearing = 360 - ball->bearing;
-      //ball->x = b != NULL ? b->left - (2 * ball->radius) : ball->x;
-    break;
-    case eRight:
-      ball->bearing = 360 - ball->bearing;
-      //ball->x = b != NULL ? b->right : ball->x;
-    break;
-    case eTop:
-      if(ball->bearing < 180)
-        ball->bearing = 180 - ball->bearing;
-      else
-        ball->bearing = 360 - (ball->bearing - 180);
-      //ball->y = b != NULL ? b->top - (2 * ball->radius) : ball->y;
-    break;
-    case eBottom:
-      if(ball->bearing < 90)
-        ball->bearing = 180 - ball->bearing;
-      else
-        ball->bearing = 180 + (360 - ball->bearing);
-      //ball->y = b != NULL ? b->bottom : ball->y;
-    break;
-    case eTopLeft: break;
-    case eTopRight: break;
-    case eBottomLeft:
-      //if(ball->bearing < 90)
-      ball->bearing = ball->bearing + 180;
-    break;
-    case eBottomRight:
-      ball->bearing = ball->bearing - 180;
-    break;
-  }
-  return 0;
-}
-
 int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 {
   // Using the speed as the hypotenuse of the triangle,
   // use trig to work out the next X and Y coordinates.
-
-  //ball->x = ball->cx - ball->radius;
-  //ball->y = ball->cy - ball->radius;
-
 
   if (ball->state == bsNormal || ball->state == bsLoose)
     {
@@ -59,6 +16,8 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
     int ballx = ball->cx;
     int bally = ball->cy;
 
+    // Hold the last known non-collision position
+    // so we can revert to it on detecting a collision
     int lastx = ball->cx;
     int lasty = ball->cy;
 
@@ -101,7 +60,8 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       if(b!=NULL)
       {
         b->sprite->state = asMoving;
-        // Need to move the ball to outside the correct edge of the brick
+        // Because we break here, lastx/y are not updated
+        // so retain the last non-collision position
         break;
       }
 
@@ -147,30 +107,25 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
     {
       case eLeft:
         ball->bearing = 360 - ball->bearing;
-        //ball->x = b != NULL ? b->left - (2 * ball->radius) - 1 : ball->x;
       break;
       case eRight:
         ball->bearing = 360 - ball->bearing;
-        //ball->x = b != NULL ? b->right + 1 : ball->x;
       break;
       case eTop:
         if(ball->bearing < 180)
           ball->bearing = 180 - ball->bearing;
         else
           ball->bearing = 360 - (ball->bearing - 180);
-        //ball->y = b != NULL ? b->top - (2 * ball->radius) - 1 : ball->y;
       break;
       case eBottom:
         if(ball->bearing < 90)
           ball->bearing = 180 - ball->bearing;
         else
           ball->bearing = 180 + (360 - ball->bearing);
-        //ball->y = b != NULL ? b->bottom + 1 : ball->y;
       break;
       case eTopLeft: break;
       case eTopRight: break;
       case eBottomLeft:
-        //if(ball->bearing < 90)
         ball->bearing = ball->bearing + 180;
       break;
       case eBottomRight:
@@ -180,6 +135,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
   }
   else if(ball->state == bsSticky || ball->state == bsStuck)
   {
+    // Move the ball's position with the bat if stuck to it
     ball->cx += player->speed;
     ball->cy = player->y - (ball->radius);
   }
@@ -199,20 +155,20 @@ Brick* ball_collidesbricks(Arena* arena, Ball* ball, Edge* e)
 
     Brick* brick = arena->bricks[brickno];
 
-    // Ball is travelling up and right
-    // Check left edge and bottom
     if((ball->cy - brick->bottom <= ball->radius) &&
        (brick->left - ball->cx <= ball->radius) &&
        (brick->top - ball->cy <= ball->radius) &&
        (ball->cx - brick->right <= ball->radius))
     {
+      // Determin distance to each each of the brick so we
+      // can work out which the ball should reflect off
       int deltar = abs(ball->cx - ball->radius - brick->right);
       int deltal = abs(ball->cx + ball->radius - brick->left);
       int deltat = abs(ball->cy + ball->radius - brick->top);
       int deltab = abs(ball->cy - ball->radius - brick->bottom);
 
 
-     brick->hitcount--;
+      brick->hitcount--;
 
 
       if((ball->bearing < 90) || (ball->bearing > 270))
@@ -266,7 +222,7 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
        (ball->cx - (player->x + player->w) < ball->radius))
   {
     *e = eTop;
-    ball->y = player->y - (2 * ball->radius);
+    ball->cy = player->y - ball->radius - 1;
     return 1;
   }
   return 0;

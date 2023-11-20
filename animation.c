@@ -38,7 +38,7 @@ int a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
   if(sprite->state == asMoving)
   {
     Uint32 ticks = SDL_GetTicks();
-    if(ticks - sprite->lastticks >= 70)
+    if(ticks - sprite->lastticks >= 50)
     {
       (sprite->currentframe)++;
       sprite->lastticks = ticks;
