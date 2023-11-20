@@ -140,8 +140,10 @@ int main(int argc, char** argv)
   }
 
   // Exiting the program, so free all allocated memory
-  af_freeanimation(&f, "ball");
+  //af_freeanimation(&f, "ball");
   arena_freebricks(&arena);
+
+  af_freeanimations(&f);
 
   SDL_DestroyRenderer(app.renderer);
 	SDL_DestroyWindow(app.window);

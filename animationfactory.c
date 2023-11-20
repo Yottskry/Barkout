@@ -94,7 +94,12 @@ int af_freeanimation(AnimationFactory* factory, char name[50])
 
 int af_freeanimations(AnimationFactory* factory)
 {
-//  for(int i = 0; i < factory->count; i++)
+  for(int i = 0; i < factory->count; i++)
+  {
+    a_freeanimation(factory->anims[i]);
+    free(factory->anims[i]);
+  }
+  free(factory->anims);
 //    af_freeanimation();
     //SDL_DestroyTexture(factory->anims[i]);
 //  free(factory->anims);
