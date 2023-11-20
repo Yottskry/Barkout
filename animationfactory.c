@@ -18,6 +18,9 @@ Animation* af_loadanimation(AnimationFactory* factory, SDL_Renderer* renderer, c
 
 	int nframes = (int)(sfc->w / w);
 
+	// Throw an error if there are no frames in the animation/sprite
+	assert(nframes > 0);
+
 	// Surfaces can only be used with slow software rendering, so convert
 	// to a texture for hardware (accelerated) rendering
 	SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, sfc);

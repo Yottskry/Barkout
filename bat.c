@@ -2,7 +2,7 @@
 
 int bat_drawbat(Bat* player, SDL_Renderer* renderer)
 {
-  a_drawanimation(player->anim, renderer, player->x, player->y);
+  a_drawstaticframe(player->anim, renderer, player->x, player->y);
   return 0;
 }
 

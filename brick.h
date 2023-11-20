@@ -6,6 +6,8 @@
 #define BRICKW 40
 #define BRICKH 25
 
+typedef enum { bsStatic, bsHit } Brickstate;
+
 typedef struct
 {
   int left;
@@ -13,7 +15,9 @@ typedef struct
   int right;
   int bottom;
   int hitcount;
-  Animation* anim;
+  int frame;
+  Uint32 lastticks;
+  Sprite* sprite;
 } Brick;
 
 #endif

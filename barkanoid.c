@@ -42,7 +42,7 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "red.png", "red", 44, 29);
   af_loadanimation(&f, app.renderer, "blue.png", "blue", 44, 29);
   af_loadanimation(&f, app.renderer, "green.png", "green", 44, 29);
-  af_loadanimation(&f, app.renderer, "darkgrey.png", "darkgrey", 44, 29);
+  //af_loadanimation(&f, app.renderer, "darkgrey.png", "darkgrey", 44, 29);
   af_loadanimation(&f, app.renderer, "grey.png", "grey", 44, 29);
   af_loadanimation(&f, app.renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);
@@ -100,6 +100,8 @@ int main(int argc, char** argv)
           case SDLK_LEFT: player.targetspeed = -1 * player.maxspeed; break;
           case SDLK_x:
           case SDLK_RIGHT: player.targetspeed = player.maxspeed; break;
+          case SDLK_UP: b.bearing += 5; break;
+          case SDLK_DOWN: b.bearing -= 5; break;
         }
       }
 		}
@@ -108,13 +110,13 @@ int main(int argc, char** argv)
 	  SDL_RenderClear(app.renderer);
 
 	  // Draw the background
-	  a_drawanimation(af_getanimation(&f, "bg1"), app.renderer, 0, 0);
+	  a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0);
 
 	  // Draw all bricks
 	  arena_drawbricks(&arena, app.renderer);
 
 	  // Draw the ball
-	  a_drawanimation(b.anim, app.renderer, b.cx - b.radius, b.cy - b.radius);
+	  a_drawstaticframe(b.anim, app.renderer, b.cx - b.radius, b.cy - b.radius);
 
 	  // Draw the bat
 	  bat_drawbat(&player, app.renderer);

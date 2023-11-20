@@ -18,7 +18,6 @@ int arena_loadbricks(Arena* arena, AnimationFactory* factory, const char* fname)
       if(rowdata[col] == '.')
         continue;
 
-      //arena->brickcount++;
       arena->bricks = realloc(arena->bricks, sizeof(Brick*) * ++arena->brickcount);
 
       arena->bricks[brickno] = malloc(sizeof(Brick));
@@ -26,7 +25,8 @@ int arena_loadbricks(Arena* arena, AnimationFactory* factory, const char* fname)
       arena->bricks[brickno]->right = arena->left + (col * BRICKW) + BRICKW;
       arena->bricks[brickno]->top = arena->top + (row * BRICKH);
       arena->bricks[brickno]->bottom = arena->top + (row * BRICKH) + BRICKH;
-      arena->bricks[brickno]->hitcount = 1;
+      arena->bricks[brickno]->hitcount = 2;
+      arena->bricks[brickno]->sprite = malloc(sizeof(Sprite));
 
       Animation* brickanim;
       char c = rowdata[col];
@@ -54,7 +54,11 @@ int arena_loadbricks(Arena* arena, AnimationFactory* factory, const char* fname)
           brickanim = af_getanimation(factory, "darkgrey");
         break;
       }
-      arena->bricks[brickno]->anim = brickanim;
+      arena->bricks[brickno]->sprite->anim = brickanim;
+      arena->bricks[brickno]->sprite->state = asStatic;
+      arena->bricks[brickno]->sprite->currentframe = 0;
+      arena->bricks[brickno]->sprite->loop = 0;
+      arena->bricks[brickno]->sprite->lastticks = 0;
       brickno++;
     }
     row++;
@@ -69,7 +73,9 @@ int arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
     if(arena->bricks[brickno]->hitcount > 0)
-      a_drawanimation(arena->bricks[brickno]->anim, renderer, arena->bricks[brickno]->left, arena->bricks[brickno]->top);
+    {
+      a_drawsprite(arena->bricks[brickno]->sprite, renderer, arena->bricks[brickno]->left, arena->bricks[brickno]->top);
+    }
   }
   return 0;
 }
