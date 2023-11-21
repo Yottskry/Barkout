@@ -78,6 +78,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       {
         ball->cy = arena->bottom - ball->radius;
         hitedge = eTop;
+        return 1;
       }
 
       if(ball->cx + ball->radius > arena->right)

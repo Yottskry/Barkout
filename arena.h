@@ -9,7 +9,7 @@
 
 typedef enum {eLeft, eRight, eTop, eBottom, eTopLeft, eTopRight, eBottomLeft, eBottomRight, eNone} Edge;
 
-typedef enum {gsStarting, gsRunning, gsDying} Gamestate;
+typedef enum {gsGetReady, gsRunning, gsDying} Gamestate;
 
 typedef struct
 {
@@ -17,6 +17,7 @@ typedef struct
   int bottom;
   int left;
   int right;
+  int width;
   int rowcount;
   int colcount;
   int brickcount;
