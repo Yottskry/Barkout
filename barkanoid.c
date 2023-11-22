@@ -1,6 +1,8 @@
 #include "animationfactory.h"
 #include "ball.h"
 #include "bat.h"
+#include "app.h"
+#include "text.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 
@@ -18,26 +20,6 @@
 
 */
 
-typedef struct
-{
-	SDL_Window* window;
-	SDL_Renderer* renderer;
-	TTF_Font* font;
-} App;
-
-int drawtext(App* app, const char* text, int x, int y)
-{
-  SDL_Color cWhite = {255,255,255};
-  SDL_Surface* txt = TTF_RenderText_Solid(app->font, text, cWhite);
-  SDL_Texture* tex = SDL_CreateTextureFromSurface(app->renderer, txt);
-  SDL_Rect src = {0, 0, txt->w, txt->h};
-  SDL_Rect dst = {x, y, txt->w, txt->h};
-  SDL_RenderCopy(app->renderer, tex, &src, &dst);
-  SDL_FreeSurface(txt);
-  SDL_DestroyTexture(tex);
-  return 0;
-}
-
 // Draw "Get Ready!" text and wait for three seconds
 int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
@@ -46,7 +28,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2);
   *gamestate = gsGetReady;
-  drawtext(app, "Get Ready!", 200, 300);
+  text_drawtext(app, "Get Ready!", 200, 300);
   return 0;
 }
 
@@ -102,7 +84,6 @@ int main(int argc, char** argv)
   arena_loadbricks(&arena, &f, "level1.lvl");
 
   Gamestate gamestate = gsGetReady;
-  reset(&app, &ball, &player, &arena, &gamestate);
 
   while(1)
   {

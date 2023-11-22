@@ -7,8 +7,14 @@
 
 #define PI 3.14159
 
-// Sticky for start of play, stuck for special power, loose for released from paddle in special power.
-typedef enum { bsNormal, bsSticky, bsStuck, bsLoose } Ballstate;
+typedef enum
+{
+  bsNormal, // Normal play
+  bsSticky, // Start of game sticky
+  bsStuck,  // Special power sticky
+  bsLoose,  // Loose when special power
+  bsDeadly  // Destroys bricks and does not bounce off them
+} Ballstate;
 
 typedef struct
 {
@@ -20,8 +26,6 @@ typedef struct
   int speed;
   // Direction of travel, degrees
   double bearing;
-  //int score;
-  //int level;
   Animation* anim;
   Ballstate state;
 } Ball;
