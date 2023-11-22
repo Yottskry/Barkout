@@ -83,7 +83,7 @@ int main(int argc, char** argv)
   Arena arena = {.top = 50, .bottom = 550, .left = 40, .right = 560, .width = 520 };
   arena_loadbricks(&arena, &f, "level1.lvl");
 
-  Gamestate gamestate = gsGetReady;
+  Gamestate gamestate = gsNewLevel;
 
   while(1)
   {
@@ -142,6 +142,9 @@ int main(int argc, char** argv)
 
 	  switch(gamestate)
     {
+      case gsNewLevel:
+        reset(&app, &ball, &player, &arena, &gamestate);
+      break;
       case gsRunning:
         // Move the ball, check for collisions with bat, arena, and bricks
         // In the event of losing the ball, reset the level

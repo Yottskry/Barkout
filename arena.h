@@ -9,7 +9,7 @@
 
 typedef enum {eLeft, eRight, eTop, eBottom, eTopLeft, eTopRight, eBottomLeft, eBottomRight, eNone} Edge;
 
-typedef enum {gsGetReady, gsRunning, gsDying} Gamestate;
+typedef enum {gsNewLevel, gsGetReady, gsRunning, gsDying} Gamestate;
 
 typedef struct
 {

@@ -124,8 +124,12 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         else
           ball->bearing = 180 + (360 - ball->bearing);
       break;
-      case eTopLeft: break;
-      case eTopRight: break;
+      case eTopLeft:
+        ball->bearing += 180;
+      break;
+      case eTopRight:
+        ball->bearing -= 180;
+      break;
       case eBottomLeft:
         ball->bearing = ball->bearing + 180;
       break;
@@ -224,6 +228,10 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
   {
     *e = eTop;
     ball->cy = player->y - ball->radius - 1;
+    if(ball->cx + 2 < player->x && ball->bearing < 180)
+      *e = eTopLeft;
+    else if((ball->cx - 2 > (player->x + player->w)) && (ball->bearing > 180))
+      *e = eTopRight;
     return 1;
   }
   return 0;
