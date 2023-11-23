@@ -2,7 +2,7 @@
 #define _ARENA_H_
 
 #include "brick.h"
-#include "animationfactory.h"
+#include "resourcefactory.h"
 #include <SDL.h>
 
 #define MAXCOLS 13
@@ -24,7 +24,7 @@ typedef struct
   Brick** bricks;
 } Arena;
 
-int arena_loadbricks(Arena* arena, AnimationFactory* factory, const char* fname);
+int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname);
 int arena_drawbricks(Arena* arena, SDL_Renderer* renderer);
 int arena_freebricks(Arena* arena);
 

@@ -1,6 +1,6 @@
 #include "arena.h"
 
-int arena_loadbricks(Arena* arena, AnimationFactory* factory, const char* fname)
+int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
 {
   FILE* f = fopen(fname, "r");
   char rowdata[14];

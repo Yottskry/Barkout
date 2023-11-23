@@ -1,4 +1,4 @@
-#include "animationfactory.h"
+#include "resourcefactory.h"
 #include "ball.h"
 #include "bat.h"
 #include "app.h"
@@ -28,7 +28,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2);
   *gamestate = gsGetReady;
-  text_drawtext(app, "Get Ready!", 200, 300);
+  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255});
   return 0;
 }
 
@@ -55,11 +55,13 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-  app.font = TTF_OpenFont("Modeseven-L3n5.ttf", 30);
+	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+
+  app.font = TTF_OpenFont("pixpopenei.ttf", 30);
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, 0);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
 
-  AnimationFactory f = { .anims = NULL };
+  ResourceFactory f = { .anims = NULL, .animationcount = 0, .samples = NULL, .samplecount = 0 };
 
   // Load some sprites
   af_loadanimation(&f, app.renderer, "red.png", "red", 44, 29);
@@ -72,11 +74,13 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(&f, app.renderer, "bat.png", "bat", 82, 29);
 
+  af_loadsample(&f, "barkanoid-getready.wav", "getready");
+
   Bat player = { .x = 100, .y = 520, .w = 80, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0 };
   player.anim = af_getanimation(&f, "bat");
 
   // Set up the ball
-  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 5, .bearing = 60, .radius = 7, .state = bsSticky };
+  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 8, .bearing = 60, .radius = 7, .state = bsSticky };
   ball.anim = af_loadanimation(&f, app.renderer, "ball.png", "ball", 15, 15);
 
   // Set up the level
@@ -137,6 +141,8 @@ int main(int argc, char** argv)
 	  // Draw the background
 	  a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0);
 
+	  text_drawtext(&app, "BARKANOID", 602, 20, (SDL_Color){255, 0, 0});
+
 	  // Draw all bricks
 	  arena_drawbricks(&arena, app.renderer);
 
@@ -158,6 +164,7 @@ int main(int argc, char** argv)
         bat_movebat(&player, &arena);
       break;
       case gsGetReady:
+        af_playsample(&f, "getready");
         getready(&ball, &player, &gamestate);
       break;
     }
@@ -183,11 +190,13 @@ int main(int argc, char** argv)
   //af_freeanimation(&f, "ball");
   arena_freebricks(&arena);
 
+  af_freesamples(&f);
   af_freeanimations(&f);
 
   SDL_DestroyRenderer(app.renderer);
 	SDL_DestroyWindow(app.window);
 
+	Mix_CloseAudio();
 	TTF_CloseFont(app.font);
 	TTF_Quit();
 	IMG_Quit();
