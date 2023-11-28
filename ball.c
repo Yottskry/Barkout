@@ -60,6 +60,13 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       if(b!=NULL)
       {
         b->sprite->state = asMoving;
+        if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
+        {
+          printf("Creating bonus\n");
+          arena_addbonus(arena, b->left, b->bottom, boDeadly);
+        }
+        else if(b->type == btNormal)
+          printf("Not creating bonus\n");
         // Because we break here, lastx/y are not updated
         // so retain the last non-collision position
         break;
@@ -68,29 +75,29 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       if(1 == ball_collidesbat(ball, player, &hitedge))
         break;
 
-      if(ball->cy - ball->radius < arena->top)
+      if(ball->cy - ball->radius < arena->bounds.top)
       {
-        ball->cy = arena->top + ball->radius;
+        ball->cy = arena->bounds.top + ball->radius;
         hitedge = eBottom;
       }
 
-      if(ball->cy + ball->radius > arena->bottom)
+      if(ball->cy + ball->radius > arena->bounds.bottom)
       {
-        ball->cy = arena->bottom - ball->radius;
+        ball->cy = arena->bounds.bottom - ball->radius;
         hitedge = eTop;
         return 1;
       }
 
-      if(ball->cx + ball->radius > arena->right)
+      if(ball->cx + ball->radius > arena->bounds.right)
       {
-        ball->cx = arena->right - ball->radius;
+        ball->cx = arena->bounds.right - ball->radius;
         hitedge = eLeft;
       }
 
-      if(ball->cx - ball->radius < arena->left)
+      if(ball->cx - ball->radius < arena->bounds.left)
       {
 
-        ball->cx = arena->left + ball->radius;
+        ball->cx = arena->bounds.left + ball->radius;
         hitedge = eRight;
       }
       // If we've hit a brick, we've broken out already
@@ -108,33 +115,41 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
     {
       case eLeft:
         ball->bearing = 360 - ball->bearing;
+        arena->bonuscounter++;
       break;
       case eRight:
         ball->bearing = 360 - ball->bearing;
+        arena->bonuscounter++;
       break;
       case eTop:
         if(ball->bearing < 180)
           ball->bearing = 180 - ball->bearing;
         else
           ball->bearing = 360 - (ball->bearing - 180);
+        arena->bonuscounter += 2;
       break;
       case eBottom:
         if(ball->bearing < 90)
           ball->bearing = 180 - ball->bearing;
         else
           ball->bearing = 180 + (360 - ball->bearing);
+        arena->bonuscounter += 2;
       break;
       case eTopLeft:
         ball->bearing += 180;
+        arena->bonuscounter += 3;
       break;
       case eTopRight:
         ball->bearing -= 180;
+        arena->bonuscounter += 3;
       break;
       case eBottomLeft:
         ball->bearing = ball->bearing + 180;
+        arena->bonuscounter += 3;
       break;
       case eBottomRight:
         ball->bearing = ball->bearing - 180;
+        arena->bonuscounter += 3;
       break;
     }
   }
@@ -212,6 +227,7 @@ Brick* ball_collidesbricks(Arena* arena, Ball* ball, Edge* e)
           *e = (deltat < deltar) ? eTop : eRight;
         }
       }
+
       return brick;
     }
   }

@@ -2,7 +2,7 @@
 #define _BAT_H_
 
 #include "animation.h"
-#include "arena.h"
+#include "bounds.h"
 #include <SDL.h>
 
 typedef struct
@@ -18,6 +18,6 @@ typedef struct
 } Bat;
 
 int bat_drawbat(Bat* player, SDL_Renderer* renderer);
-int bat_movebat(Bat* player, Arena* arena);
+int bat_movebat(Bat* player, const Bounds bounds);
 
 #endif // _BAT_H_

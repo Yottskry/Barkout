@@ -4,7 +4,6 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
 {
   FILE* f = fopen(fname, "r");
   char rowdata[14];
-  arena->rowcount = 0;
   arena->brickcount = 0;
   int brickno = 0;
   int row = 0;
@@ -21,12 +20,13 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
       arena->bricks = realloc(arena->bricks, sizeof(Brick*) * ++arena->brickcount);
 
       arena->bricks[brickno] = malloc(sizeof(Brick));
-      arena->bricks[brickno]->left = arena->left + (col * BRICKW);
-      arena->bricks[brickno]->right = arena->left + (col * BRICKW) + BRICKW;
-      arena->bricks[brickno]->top = arena->top + (row * BRICKH);
-      arena->bricks[brickno]->bottom = arena->top + (row * BRICKH) + BRICKH;
+      arena->bricks[brickno]->left = arena->bounds.left + (col * BRICKW);
+      arena->bricks[brickno]->right = arena->bounds.left + (col * BRICKW) + BRICKW;
+      arena->bricks[brickno]->top = arena->bounds.top + (row * BRICKH);
+      arena->bricks[brickno]->bottom = arena->bounds.top + (row * BRICKH) + BRICKH;
       arena->bricks[brickno]->hitcount = 1;
       arena->bricks[brickno]->sprite = malloc(sizeof(Sprite));
+      arena->bricks[brickno]->type = btNormal;
 
       Animation* brickanim;
       char c = rowdata[col];
@@ -41,7 +41,7 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
           brickanim = af_getanimation(factory, "green");
         break;
         case 'p':
-          brickanim = af_getanimation(factory, "red");
+          brickanim = af_getanimation(factory, "purple");
         break;
         case 'w':
           brickanim = af_getanimation(factory, "yellow");
@@ -51,10 +51,12 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
         break;
         case 'G':
           arena->bricks[brickno]->hitcount = 2;
+          arena->bricks[brickno]->type = btHard;
           brickanim = af_getanimation(factory, "darkgrey");
         break;
         case 'O':
           arena->bricks[brickno]->hitcount = -1;
+          arena->bricks[brickno]->type = btIndestructible;
           brickanim = af_getanimation(factory, "orange");
         break;
       }
@@ -93,5 +95,58 @@ int arena_freebricks(Arena* arena)
   }
 
   free(arena->bricks);
+  return 0;
+}
+
+Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
+{
+  Bonus* bonus = malloc(sizeof(Bonus));
+  bonus->sprite = malloc(sizeof(Sprite));
+  bonus->sprite->currentframe = 0;
+  bonus->sprite->lastticks = 0;
+  bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d");
+  bonus->sprite->loop = 1;
+  bonus->sprite->state = asMoving;
+  bonus->x = x;
+  bonus->y = y;
+
+  arena->bonuses = realloc(arena->bonuses, sizeof(Bonus*) * ++arena->bonuscount);
+  arena->bonuses[arena->bonuscount-1] = bonus;
+
+  return bonus;
+}
+
+int arena_movebonuses(Arena* arena, Bat* player)
+{
+  for(int i = 0; i < arena->bonuscount; i++)
+  {
+    Bonus* bonus = arena->bonuses[i];
+    bonus->y += 1;
+    if(bonus->y > arena->bounds.bottom)
+    {
+      arena_freebonus(arena, bonus);
+    }
+  }
+}
+
+int arena_freebonus(Arena* arena, Bonus* bonus)
+{
+  for(int i = 0; i < arena->bonuscount; i++)
+  {
+    // Find the item to be removed
+    if(arena->bonuses[i] == bonus)
+    {
+
+    }
+  }
+  return 0;
+}
+
+int arena_drawbonuses(Arena* arena, SDL_Renderer* renderer)
+{
+  for(int i = 0; i < arena->bonuscount; i++)
+  {
+    a_drawsprite(arena->bonuses[i]->sprite, renderer, arena->bonuses[i]->x, arena->bonuses[i]->y);
+  }
   return 0;
 }

@@ -133,7 +133,7 @@ int af_freesamples(ResourceFactory* factory)
   for(int i = 0; i < factory->samplecount; i++)
   {
     Mix_FreeChunk(factory->samples[i]->sample);
-    free(factory->samples[i])
+    free(factory->samples[i]);
   }
   free(factory->samples);
   return 0;

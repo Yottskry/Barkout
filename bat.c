@@ -6,22 +6,22 @@ int bat_drawbat(Bat* player, SDL_Renderer* renderer)
   return 0;
 }
 
-int bat_movebat(Bat* player, Arena* arena)
+int bat_movebat(Bat* player, const Bounds bounds)
 {
   player->speed = player->speed > player->targetspeed ? player->speed - 1 : player->speed;
   player->speed = player->speed < player->targetspeed ? player->speed + 1 : player->speed;
 
   player->x = player->x + player->speed;
 
-  if(player->x < arena->left)
+  if(player->x < bounds.left)
   {
-    player->x = arena->left;
+    player->x = bounds.left;
     player->speed = 0;
     player->targetspeed = 0;
   }
-  if(player->x + player->w > arena->right)
+  if(player->x + player->w > bounds.right)
   {
-    player->x = arena->right - player->w;
+    player->x = bounds.right - player->w;
     player->speed = 0;
     player->targetspeed = 0;
   }
