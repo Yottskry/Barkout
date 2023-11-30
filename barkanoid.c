@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
 
   app.font = TTF_OpenFont("10Pixel-Thin.ttf", 30);
-	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, /*SDL_WINDOW_FULLSCREEN |*/ SDL_WINDOW_OPENGL);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
@@ -81,19 +81,30 @@ int main(int argc, char** argv)
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");
 
-  Bat player = { .x = 100, .y = 520, .w = 80, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0 };
-  player.anim = af_getanimation(&f, "bat");
+  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0 };
+  player.sprite.anim = af_getanimation(&f, "bat");
+  player.sprite.currentframe = 0;
+  player.sprite.lastticks = 0;
+  player.sprite.loop = 1;
+  player.sprite.state = asMoving;
 
   // Set up the ball
-  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 8, .bearing = 60, .radius = 7, .state = bsSticky };
+  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 5, .bearing = 60, .radius = 7, .state = bsSticky };
   ball.anim = af_loadanimation(&f, app.renderer, "ball.png", "ball", 17, 17);
 
   // Set up the level
-  Arena arena = { .bounds = { .top = 50, .bottom = 550, .left = 40, .right = 560 }, .width = 520, .bonuscounter = 0, .bonuscount = 0, .factory = &f };
+  Arena arena = { .bounds = { .top = 50, .bottom = 550, .left = 40, .right = 560 },
+                  .width = 520,
+                  .bonuscounter = 0,
+                  .bonuscount = 0,
+                  .factory = &f,
+                  .bonuses = NULL
+                };
+
   arena_loadbricks(&arena, &f, "level1.lvl");
 
-  Sprite bonus = { .currentframe = 0, .lastticks = 0, .loop = 1, .state = asMoving };
-  bonus.anim = af_getanimation(&f, "bonus-d");
+  //Sprite bonus = { .currentframe = 0, .lastticks = 0, .loop = 1, .state = asMoving };
+  //bonus.anim = af_getanimation(&f, "bonus-d");
 
   Gamestate gamestate = gsNewLevel;
 
@@ -139,6 +150,7 @@ int main(int argc, char** argv)
           case SDLK_RIGHT: player.targetspeed = player.maxspeed; break;
           case SDLK_UP: ball.bearing += 5; break;
           case SDLK_DOWN: ball.bearing -= 5; break;
+          case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
         }
       }
 		}
@@ -149,12 +161,13 @@ int main(int argc, char** argv)
 	  // Draw the background
 	  a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0);
 
-	  text_drawtext(&app, "BARKANOID", 602, 20, (SDL_Color){255, 0, 0});
+	  text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){255, 0, 0});
+	  text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255});
+
+    // bonuses will appear above bricks due to the order here
+	  arena_drawbricks(&arena, app.renderer);
 
 	  arena_drawbonuses(&arena, app.renderer);
-
-	  // Draw all bricks
-	  arena_drawbricks(&arena, app.renderer);
 
 	  switch(gamestate)
     {
@@ -180,7 +193,7 @@ int main(int argc, char** argv)
       break;
     }
 
-    a_drawsprite(&bonus, app.renderer, 202, 450);
+    //a_drawsprite(&bonus, app.renderer, 202, 450);
 
 	  // Draw the ball
 	  a_drawstaticframe(ball.anim, app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
@@ -201,6 +214,7 @@ int main(int argc, char** argv)
 
   // Exiting the program, so free all allocated memory
   //af_freeanimation(&f, "ball");
+  arena_freebonuses(&arena);
   arena_freebricks(&arena);
 
   af_freesamples(&f);

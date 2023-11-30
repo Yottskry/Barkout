@@ -108,7 +108,7 @@ int af_freeanimations(ResourceFactory* factory)
 
 Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char name[50])
 {
-  factory->samples = realloc(factory->samples, sizeof(Sample*) * factory->samplecount + 1);
+  factory->samples = realloc(factory->samples, sizeof(Sample*) * (factory->samplecount + 1));
   factory->samples[factory->samplecount] = malloc(sizeof(Sample));
   factory->samples[factory->samplecount]->sample = Mix_LoadWAV(filename);
   strcpy(factory->samples[factory->samplecount]->name, name);

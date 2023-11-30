@@ -244,10 +244,36 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
   {
     *e = eTop;
     ball->cy = player->y - ball->radius - 1;
-    if(ball->cx + 2 < player->x && ball->bearing < 180)
-      *e = eTopLeft;
-    else if((ball->cx - 2 > (player->x + player->w)) && (ball->bearing > 180))
-      *e = eTopRight;
+    //if(ball->cx + 2 < player->x && ball->bearing < 180)
+    //  *e = eTopLeft;
+    //else if((ball->cx - 2 > (player->x + player->w)) && (ball->bearing > 180))
+    //  *e = eTopRight;
+    //else
+    if((abs(player->speed) > 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
+    {
+        // we need a right-angled triangle
+        double rads = (180 - ball->bearing) * (PI / 180);
+        double nextx = ball->speed * sinl(rads);
+        double nexty = ball->speed * cosl(rads);
+
+        double newx = (int)(nextx + player->speed);
+
+        //now we need a new "hypotenuse"
+        double nspd = sqrt((newx*newx) + (nexty*nexty));
+
+        rads = asinl((double)(newx/nspd));
+        double bearing = rads / (PI / 180);
+
+        if((ball->bearing + bearing > 110) && (ball->bearing + bearing < 250))
+          ball->bearing += bearing;
+
+        // Don't allow entirely horizontal travel
+        //if(ball->bearing <= 100)
+        //  ball->bearing = 120;
+        //else if(ball->bearing >= 260)
+        //  ball->bearing = 240;
+    }
+
     return 1;
   }
   return 0;

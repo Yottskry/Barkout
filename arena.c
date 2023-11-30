@@ -100,7 +100,12 @@ int arena_freebricks(Arena* arena)
 
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
 {
-  Bonus* bonus = malloc(sizeof(Bonus));
+  // There was a memory leak reported by valgrind here...
+  // but actually the leak is because I hadn't yet freed
+  // arena->bonuses (et al) before the program exits
+  arena->bonuses = realloc(arena->bonuses, sizeof(Bonus*) * ++arena->bonuscount);
+  arena->bonuses[arena->bonuscount - 1] = malloc(sizeof(Bonus));
+  Bonus* bonus = arena->bonuses[arena->bonuscount - 1];
   bonus->sprite = malloc(sizeof(Sprite));
   bonus->sprite->currentframe = 0;
   bonus->sprite->lastticks = 0;
@@ -109,8 +114,9 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   bonus->sprite->state = asMoving;
   bonus->x = x;
   bonus->y = y;
+  bonus->w = 43;
+  bonus->h = 25;
 
-  arena->bonuses = realloc(arena->bonuses, sizeof(Bonus*) * ++arena->bonuscount);
   arena->bonuses[arena->bonuscount-1] = bonus;
 
   return bonus;
@@ -127,6 +133,7 @@ int arena_movebonuses(Arena* arena, Bat* player)
       arena_freebonus(arena, bonus);
     }
   }
+  return 0;
 }
 
 int arena_freebonus(Arena* arena, Bonus* bonus)
@@ -136,9 +143,30 @@ int arena_freebonus(Arena* arena, Bonus* bonus)
     // Find the item to be removed
     if(arena->bonuses[i] == bonus)
     {
+      // sprite-anim is managed by the resourcefactory,
+      // so we don't free it here.
+      free(bonus->sprite);
+      free(bonus);
 
+      // Move all subsequent items up one
+      for(int j = i; j < arena->bonuscount - 1; j++)
+        arena->bonuses[j] = arena->bonuses[j+1];
     }
+
+    arena->bonuscount--;
+    arena->bonuses = realloc(arena->bonuses, sizeof(Bonus*) * arena->bonuscount);
   }
+  return 0;
+}
+
+int arena_freebonuses(Arena* arena)
+{
+  for(int i = arena->bonuscount - 1; i >= 0; i--)
+  {
+    free(arena->bonuses[i]->sprite);
+    free(arena->bonuses[i]);
+  }
+  free(arena->bonuses);
   return 0;
 }
 
@@ -149,4 +177,13 @@ int arena_drawbonuses(Arena* arena, SDL_Renderer* renderer)
     a_drawsprite(arena->bonuses[i]->sprite, renderer, arena->bonuses[i]->x, arena->bonuses[i]->y);
   }
   return 0;
+}
+
+Bonus* arena_batcollidesbonus(Arena* arena, Bat* player)
+{
+  for(int i = 0; i < arena->bonuscount; i++)
+  {
+    //if(arena->bonuses[i]->x + (arena->bonuses[i]->w / 2)
+  }
+  return NULL;
 }

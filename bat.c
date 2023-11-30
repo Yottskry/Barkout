@@ -2,7 +2,7 @@
 
 int bat_drawbat(Bat* player, SDL_Renderer* renderer)
 {
-  a_drawstaticframe(player->anim, renderer, player->x, player->y);
+  a_drawsprite(&(player->sprite), renderer, player->x, player->y);
   return 0;
 }
 
@@ -25,5 +25,11 @@ int bat_movebat(Bat* player, const Bounds bounds)
     player->speed = 0;
     player->targetspeed = 0;
   }
+  return 0;
+}
+
+int bat_setplayerlong(Bat* player)
+{
+  player->w = psLong;
   return 0;
 }
