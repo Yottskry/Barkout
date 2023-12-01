@@ -77,7 +77,9 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(&f, app.renderer, "bat.png", "bat", 82, 29);
+  af_loadanimation(&f, app.renderer, "bat_shrink.png", "bat-shrink", 82, 29);
   af_loadanimation(&f, app.renderer, "bonus.png", "bonus-d", 43, 25);
+  af_loadanimation(&f, app.renderer, "bat_small.png", "bat-s", 68, 29);
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");
 
@@ -90,7 +92,11 @@ int main(int argc, char** argv)
 
   // Set up the ball
   Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 5, .bearing = 60, .radius = 7, .state = bsSticky };
-  ball.anim = af_loadanimation(&f, app.renderer, "ball.png", "ball", 17, 17);
+  ball.sprite.anim = af_loadanimation(&f, app.renderer, "ball.png", "ball", 17, 17);
+  ball.sprite.currentframe = 0;
+  ball.sprite.lastticks = 0;
+  ball.sprite.loop = 1;
+  ball.sprite.state = asMoving;
 
   // Set up the level
   Arena arena = { .bounds = { .top = 50, .bottom = 550, .left = 40, .right = 560 },
@@ -186,6 +192,7 @@ int main(int argc, char** argv)
         // Move the bat, check we're within the arena
         bat_movebat(&player, arena.bounds);
         arena_movebonuses(&arena, &player);
+        arena_batcollidesbonus(&arena, &player);
       break;
       case gsGetReady:
         af_playsample(&f, "getready");
@@ -196,7 +203,7 @@ int main(int argc, char** argv)
     //a_drawsprite(&bonus, app.renderer, 202, 450);
 
 	  // Draw the ball
-	  a_drawstaticframe(ball.anim, app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
+	  a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
 
 	  // Draw the bat
 	  bat_drawbat(&player, app.renderer);

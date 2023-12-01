@@ -5,8 +5,6 @@
 #include "bounds.h"
 #include "bonus.h"
 #include "bat.h"
-#include "resourcefactory.h"
-#include <SDL.h>
 
 #define BRICKW 40
 #define BRICKH 25
@@ -51,5 +49,7 @@ int arena_freebonus(Arena* arena, Bonus* bonus);
 int arena_freebonuses(Arena* arena);
 int arena_drawbonuses(Arena* arena, SDL_Renderer* renderer);
 Bonus* arena_batcollidesbonus(Arena* arena, Bat* player);
+
+void bat_aftershrink(void* data);
 
 #endif

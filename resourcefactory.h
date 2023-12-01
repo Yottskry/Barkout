@@ -5,7 +5,28 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
-#include "animation.h"
+
+typedef enum { asStatic, asMoving } AnimState;
+
+typedef struct
+{
+	char name[50];
+	int size; // number of frames
+	int framewidth;
+	int frameheight;
+	SDL_Texture* sheet;
+} Animation;
+
+typedef struct
+{
+  int currentframe;
+  int loop;
+  Uint32 lastticks;
+  AnimState state;
+  Animation* anim;
+  void (*onanimfinished)(void*);
+  void* data;
+} Sprite;
 
 typedef struct
 {
@@ -28,9 +49,17 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
 
 Animation* af_getanimation(ResourceFactory* factory, char name[50]);
 
+int a_freeanimation(Animation* anim);
+
+int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y);
+
+void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y);
+
 int af_freeanimation(ResourceFactory* factory, char name[50]);
 
 int af_freeanimations(ResourceFactory* factory);
+
+void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*), void* data);
 
 /* Mixer / Sample related functions */
 

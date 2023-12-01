@@ -60,11 +60,16 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
           brickanim = af_getanimation(factory, "orange");
         break;
       }
+
+      //af_setanimation(arena->bricks[brickno]->sprite, brickanim, 0, NULL, NULL);
+
       arena->bricks[brickno]->sprite->anim = brickanim;
       arena->bricks[brickno]->sprite->state = asStatic;
       arena->bricks[brickno]->sprite->currentframe = 0;
       arena->bricks[brickno]->sprite->loop = 0;
       arena->bricks[brickno]->sprite->lastticks = 0;
+      arena->bricks[brickno]->sprite->onanimfinished = NULL;
+      arena->bricks[brickno]->sprite->data = NULL;
       brickno++;
     }
     row++;
@@ -183,7 +188,19 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player)
 {
   for(int i = 0; i < arena->bonuscount; i++)
   {
-    //if(arena->bonuses[i]->x + (arena->bonuses[i]->w / 2)
+    // FOr now, we always catch the bonus
+    if(arena->bonuses[i]->y > player->y)
+    {
+      arena_freebonus(arena, arena->bonuses[i]);
+      af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_aftershrink, (void*)player);
+    }
   }
   return NULL;
+}
+
+void bat_aftershrink(void* data)
+{
+  Bat* player = (Bat*)data;
+  //a_setanimation(&(player->sprite), af_getanimation(arena->factory, "bat-s"), 0, bat_aftershrink, (void*)player);
+  printf("Player width is...%d x \n", player->w);
 }

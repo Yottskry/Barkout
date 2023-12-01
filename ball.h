@@ -1,7 +1,6 @@
 #ifndef _BALL_H_
 #define _BALL_H_
 
-#include "animation.h"
 #include "arena.h"
 #include "bat.h"
 
@@ -26,7 +25,7 @@ typedef struct
   int speed;
   // Direction of travel, degrees
   double bearing;
-  Animation* anim;
+  Sprite sprite;
   Ballstate state;
 } Ball;
 

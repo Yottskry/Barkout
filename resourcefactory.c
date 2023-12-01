@@ -3,7 +3,6 @@
 #include <SDL.h>
 #include <assert.h>
 #include "resourcefactory.h"
-#include "animation.h"
 //#include "vector.h"
 
 Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, char* filename, char name[50], int w, int h)
@@ -65,6 +64,52 @@ Animation* af_getanimation(ResourceFactory* factory, char name[50])
   return NULL;
 }
 
+int a_freeanimation(Animation* anim)
+{
+  if(anim->sheet != NULL)
+  {
+    SDL_DestroyTexture(anim->sheet);
+  }
+  return 0;
+}
+
+int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y)
+{
+  SDL_Rect src = {0, 0, anim->framewidth, anim->frameheight};
+  SDL_Rect dst = {x, y, anim->framewidth, anim->frameheight};
+  SDL_RenderCopy(renderer, anim->sheet, &src, &dst);
+  return 0;
+}
+
+void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
+{
+  Animation* anim = sprite->anim;
+  SDL_Rect src = {anim->framewidth * sprite->currentframe, 0, anim->framewidth, anim->frameheight};
+  SDL_Rect dst = {x, y, anim->framewidth, anim->frameheight};
+  SDL_RenderCopy(renderer, anim->sheet, &src, &dst);
+
+  if(sprite->state == asMoving)
+  {
+    Uint32 ticks = SDL_GetTicks();
+    if(ticks - sprite->lastticks >= 50)
+    {
+      (sprite->currentframe)++;
+      sprite->lastticks = ticks;
+    }
+
+    if(sprite->currentframe == anim->size)
+    {
+      sprite->currentframe = 0;
+      if(sprite->loop != 1)
+      {
+        sprite->state = asStatic;
+        if(sprite->onanimfinished != NULL)
+          sprite->onanimfinished(sprite->data);
+      }
+    }
+  }
+}
+
 int af_freeanimation(ResourceFactory* factory, char name[50])
 {
   for(int i = 0; i < factory->animationcount; i++)
@@ -100,9 +145,22 @@ int af_freeanimations(ResourceFactory* factory)
     free(factory->anims[i]);
   }
   free(factory->anims);
-//    af_freeanimation();
-    //SDL_DestroyTexture(factory->anims[i]);
-//  free(factory->anims);
+  return 0;
+}
+
+void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*), void* data)
+{
+  Animation* anim = af_getanimation(factory, name);
+
+  assert(anim != NULL);
+
+  sprite->anim = anim;
+  sprite->currentframe = 0;
+  sprite->lastticks = 0;
+  sprite->loop = loop;
+  sprite->state = asMoving;
+  sprite->onanimfinished = f;
+  sprite->data = data;
   return 0;
 }
 
