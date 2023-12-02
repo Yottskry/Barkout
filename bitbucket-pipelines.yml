@@ -11,7 +11,7 @@ pipelines:
         name: "Download dependencies and build"
         script: 
           - apt-get update && apt-get install -y tzdata && apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
-          - gcc -lm -lSDL -lSDL_mixer -lSDL_image -lSDL_ttf resourcefactory.c ball.c bat.c text.c arena.c barkanoid.c -o barkanoid
+          - gcc -lm -lSDL -lSDL_mixer -lSDL_image -lSDL_ttf `sdl-config --cflags` resourcefactory.c ball.c bat.c text.c arena.c barkanoid.c -o barkanoid
           - export TARBALLNAME="barkanoid-$(date +%y-%m-%d)-trunk.tar.gz" && tar cvf $TARBALLNAME barkanoid_trunk && mv $TARBALLNAME ..
           - echo $TARBALLNAME
         artifacts:
