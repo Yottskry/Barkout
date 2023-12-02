@@ -64,7 +64,8 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
         {
           printf("Creating bonus\n");
-          arena_addbonus(arena, b->left, b->bottom, boDeadly);
+          Bonustype botype = rand() % 3;
+          arena_addbonus(arena, b->left, b->bottom, botype);
         }
         else if(b->type == btNormal)
           printf("Not creating bonus\n");

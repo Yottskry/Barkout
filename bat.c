@@ -28,8 +28,9 @@ int bat_movebat(Bat* player, const Bounds bounds)
   return 0;
 }
 
-int bat_setplayerlong(Bat* player)
+void bat_reset(Bat* player, ResourceFactory* factory)
 {
-  player->w = psLong;
-  return 0;
+  player->state = plNormal;
+  player->w = psNormal;
+  af_setanimation(factory, &(player->sprite),"bat", 1, NULL, NULL, NULL);
 }

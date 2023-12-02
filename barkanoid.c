@@ -24,6 +24,7 @@
 int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
   player->x = arena->width / 2;
+  bat_reset(player, arena->factory);
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2);
@@ -79,6 +80,8 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "bat.png", "bat", 82, 29);
   af_loadanimation(&f, app.renderer, "bat_shrink.png", "bat-shrink", 82, 29);
   af_loadanimation(&f, app.renderer, "bonus.png", "bonus-d", 43, 25);
+  af_loadanimation(&f, app.renderer, "bonus-s.png", "bonus-s", 43, 25);
+  af_loadanimation(&f, app.renderer, "bonus-e.png", "bonus-e", 43, 25);
   af_loadanimation(&f, app.renderer, "bat_small.png", "bat-s", 68, 29);
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");

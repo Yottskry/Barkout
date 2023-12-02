@@ -104,7 +104,7 @@ void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
       {
         sprite->state = asStatic;
         if(sprite->onanimfinished != NULL)
-          sprite->onanimfinished(sprite->data);
+          sprite->onanimfinished(sprite->sender, sprite->data);
       }
     }
   }
@@ -148,7 +148,7 @@ int af_freeanimations(ResourceFactory* factory)
   return 0;
 }
 
-void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*), void* data)
+void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*, void*), void* sender, void* data)
 {
   Animation* anim = af_getanimation(factory, name);
 
@@ -160,8 +160,8 @@ void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], in
   sprite->loop = loop;
   sprite->state = asMoving;
   sprite->onanimfinished = f;
+  sprite->sender = sender;
   sprite->data = data;
-  return 0;
 }
 
 Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char name[50])

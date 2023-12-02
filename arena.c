@@ -114,13 +114,20 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   bonus->sprite = malloc(sizeof(Sprite));
   bonus->sprite->currentframe = 0;
   bonus->sprite->lastticks = 0;
-  bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d");
+  switch(type)
+  {
+    case boShrink: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d"); break;
+    case boFast: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
+    case boSlow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-s"); break;
+  }
+
   bonus->sprite->loop = 1;
   bonus->sprite->state = asMoving;
   bonus->x = x;
   bonus->y = y;
   bonus->w = 43;
   bonus->h = 25;
+  bonus->type = boShrink;
 
   arena->bonuses[arena->bonuscount-1] = bonus;
 
@@ -191,16 +198,26 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player)
     // FOr now, we always catch the bonus
     if(arena->bonuses[i]->y > player->y)
     {
+      switch(arena->bonuses[i]->type)
+      {
+        case boShrink:
+          if(player->state != plShort)
+            af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_aftershrink, (void*)arena, (void*)player);
+          player->state = plShort;
+        break;
+      }
       arena_freebonus(arena, arena->bonuses[i]);
-      af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_aftershrink, (void*)player);
     }
   }
   return NULL;
 }
 
-void bat_aftershrink(void* data)
+void bat_aftershrink(void* sender, void* data)
 {
   Bat* player = (Bat*)data;
-  //a_setanimation(&(player->sprite), af_getanimation(arena->factory, "bat-s"), 0, bat_aftershrink, (void*)player);
+  Arena* arena = (Arena*)sender;
+  af_setanimation(arena->factory, &(player->sprite),"bat-s", 1, NULL, NULL, NULL);
+  player->sprite.state = asMoving;
+  player->w = psShort;
   printf("Player width is...%d x \n", player->w);
 }

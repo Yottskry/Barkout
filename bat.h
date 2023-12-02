@@ -7,6 +7,7 @@
 #include <SDL.h>
 
 typedef enum { psNormal = 80, psLong = 100, psShort = 60 } Playersize;
+typedef enum { plNormal, plShort, plLong, plSticky, plLaser } Playerstate;
 
 typedef struct
 {
@@ -17,11 +18,12 @@ typedef struct
   int maxspeed;
   int speed;
   int targetspeed;
+  Playerstate state;
   Sprite sprite;
 } Bat;
 
 int bat_drawbat(Bat* player, SDL_Renderer* renderer);
 int bat_movebat(Bat* player, const Bounds bounds);
-int bat_setplayerlong(Bat* player);
+void bat_reset(Bat* player, ResourceFactory* factory);
 
 #endif // _BAT_H_

@@ -24,7 +24,8 @@ typedef struct
   Uint32 lastticks;
   AnimState state;
   Animation* anim;
-  void (*onanimfinished)(void*);
+  void (*onanimfinished)(void*, void*);
+  void* sender;
   void* data;
 } Sprite;
 
@@ -59,7 +60,7 @@ int af_freeanimation(ResourceFactory* factory, char name[50]);
 
 int af_freeanimations(ResourceFactory* factory);
 
-void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*), void* data);
+void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*, void*), void* sender, void* data);
 
 /* Mixer / Sample related functions */
 
