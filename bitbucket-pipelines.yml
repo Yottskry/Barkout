@@ -12,7 +12,7 @@ pipelines:
         script: 
           - apt-get update && apt-get install -y tzdata && apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
           - gcc `sdl2-config --cflags` resourcefactory.c ball.c bat.c text.c arena.c barkanoid.c -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf -o barkanoid
-          - mkdir barkanoid_trunk && mv *.png *.lvl *.mp3 *.wav barkanoid barkanoid_trunk
+          - mkdir barkanoid_trunk && mv *.png *.lvl *.wav barkanoid barkanoid_trunk
           - export TARBALLNAME="barkanoid-$(date +%y-%m-%d)-trunk.tar.gz" && tar cvf $TARBALLNAME barkanoid_trunk && mv $TARBALLNAME ..
           - echo $TARBALLNAME
         artifacts:
