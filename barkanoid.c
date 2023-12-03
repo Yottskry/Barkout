@@ -1,6 +1,5 @@
 #include "resourcefactory.h"
-#include "ball.h"
-#include "bat.h"
+#include "arena.h"
 #include "app.h"
 #include "text.h"
 #include <SDL.h>
@@ -25,11 +24,12 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
   player->x = arena->width / 2;
   bat_reset(player, arena->factory);
+  af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2);
   *gamestate = gsGetReady;
-  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255});
+  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255});
   return 0;
 }
 
@@ -83,6 +83,7 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "bonus-s.png", "bonus-s", 43, 25);
   af_loadanimation(&f, app.renderer, "bonus-e.png", "bonus-e", 43, 25);
   af_loadanimation(&f, app.renderer, "bat_small.png", "bat-s", 68, 29);
+  af_loadanimation(&f, app.renderer, "ball-deadly.png", "ball-deadly", 17, 17);
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");
 
@@ -170,8 +171,8 @@ int main(int argc, char** argv)
 	  // Draw the background
 	  a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0);
 
-	  text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){255, 0, 0});
-	  text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255});
+	  text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){255, 0, 0, 255});
+	  text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255});
 
     // bonuses will appear above bricks due to the order here
 	  arena_drawbricks(&arena, app.renderer);
@@ -195,7 +196,7 @@ int main(int argc, char** argv)
         // Move the bat, check we're within the arena
         bat_movebat(&player, arena.bounds);
         arena_movebonuses(&arena, &player);
-        arena_batcollidesbonus(&arena, &player);
+        arena_batcollidesbonus(&arena, &player, &ball);
       break;
       case gsGetReady:
         af_playsample(&f, "getready");
