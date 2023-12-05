@@ -27,8 +27,9 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
-  ball->cy = player->y - (ball->radius * 2);
+  ball->cy = player->y - (ball->radius * 2) + 2;
   *gamestate = gsGetReady;
+  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255});
   text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255});
   return 0;
 }
@@ -58,7 +59,7 @@ int main(int argc, char** argv)
 
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
 
-  app.font = TTF_OpenFont("10Pixel-Thin.ttf", 30);
+  app.font = TTF_OpenFont("Nordine.ttf", 32);
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, /*SDL_WINDOW_FULLSCREEN |*/ SDL_WINDOW_OPENGL);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -77,6 +78,7 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "grey.png", "grey", 44, 29);
   af_loadanimation(&f, app.renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);
+  af_loadanimation(&f, app.renderer, "scores.png", "scores", 200, 600);
   af_loadanimation(&f, app.renderer, "bat.png", "bat", 82, 29);
   af_loadanimation(&f, app.renderer, "bat_shrink.png", "bat-shrink", 82, 29);
   af_loadanimation(&f, app.renderer, "bonus.png", "bonus-d", 43, 25);
@@ -87,7 +89,7 @@ int main(int argc, char** argv)
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");
 
-  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0 };
+  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .score = 0, .lives = 3 };
   player.sprite.anim = af_getanimation(&f, "bat");
   player.sprite.currentframe = 0;
   player.sprite.lastticks = 0;
@@ -170,8 +172,9 @@ int main(int argc, char** argv)
 
 	  // Draw the background
 	  a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0);
+	  a_drawstaticframe(af_getanimation(&f, "scores"), app.renderer, 600, 0);
 
-	  text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){255, 0, 0, 255});
+	  text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255});
 	  text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255});
 
     // bonuses will appear above bricks due to the order here
@@ -184,6 +187,7 @@ int main(int argc, char** argv)
       case gsNewLevel:
         reset(&app, &ball, &player, &arena, &gamestate);
       break;
+      case gsDying:
       case gsRunning:
         // Move the ball, check for collisions with bat, arena, and bricks
         // In the event of losing the ball, reset the level
@@ -202,6 +206,8 @@ int main(int argc, char** argv)
         af_playsample(&f, "getready");
         getready(&ball, &player, &gamestate);
       break;
+      // Handle pause but do nothing
+      case gsPaused: break;
     }
 
     //a_drawsprite(&bonus, app.renderer, 202, 450);
