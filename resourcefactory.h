@@ -6,7 +6,7 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 
-typedef enum { asStatic, asMoving } AnimState;
+typedef enum { asStatic, asPlayToEnd, asPlayAndReset, asLooping } AnimState;
 
 typedef struct
 {
@@ -52,7 +52,7 @@ Animation* af_getanimation(ResourceFactory* factory, char name[50]);
 
 int a_freeanimation(Animation* anim);
 
-int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y);
+int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y, int frameno);
 
 void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y);
 

@@ -2,6 +2,7 @@
 #include "arena.h"
 #include "app.h"
 #include "text.h"
+#include "intro.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 
@@ -59,8 +60,23 @@ int main(int argc, char** argv)
 
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
 
+	int startlevel = 1;
+	Uint32 flags = SDL_WINDOW_OPENGL;
+
+	for(int i = 0; i < argc; i++)
+	{
+    if(strcmp(argv[i], "-f") == 0)
+      flags |= SDL_WINDOW_FULLSCREEN;
+    if(strcmp(argv[i], "-l") == 0)
+    {
+      if(i+1 < argc)
+        sscanf(argv[i+1], "%d", &startlevel);
+    }
+	}
+
+
   app.font = TTF_OpenFont("Nordine.ttf", 32);
-	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, /*SDL_WINDOW_FULLSCREEN |*/ SDL_WINDOW_OPENGL);
+	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
@@ -86,15 +102,16 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "bonus-e.png", "bonus-e", 43, 25);
   af_loadanimation(&f, app.renderer, "bat_small.png", "bat-s", 68, 29);
   af_loadanimation(&f, app.renderer, "ball-deadly.png", "ball-deadly", 17, 17);
+  af_loadanimation(&f, app.renderer, "barkanoid-intro.png", "intro", 400, 75);
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");
 
-  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .score = 0, .lives = 3 };
+  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = 3 };
   player.sprite.anim = af_getanimation(&f, "bat");
   player.sprite.currentframe = 0;
   player.sprite.lastticks = 0;
   player.sprite.loop = 1;
-  player.sprite.state = asMoving;
+  player.sprite.state = asLooping;
 
   // Set up the ball
   Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 5, .bearing = 60, .radius = 7, .state = bsSticky };
@@ -102,7 +119,13 @@ int main(int argc, char** argv)
   ball.sprite.currentframe = 0;
   ball.sprite.lastticks = 0;
   ball.sprite.loop = 1;
-  ball.sprite.state = asMoving;
+  ball.sprite.state = asLooping;
+
+  Sprite intro = { .currentframe = 0, .lastticks = 0, .loop = 0, .state = asPlayToEnd };
+  intro.anim = af_getanimation(&f, "intro");
+  intro.data = NULL;
+  intro.sender = NULL;
+  intro.onanimfinished = NULL;
 
   // Set up the level
   Arena arena = { .bounds = { .top = 50, .bottom = 550, .left = 40, .right = 560 },
@@ -110,20 +133,104 @@ int main(int argc, char** argv)
                   .bonuscounter = 0,
                   .bonuscount = 0,
                   .factory = &f,
-                  .bonuses = NULL
+                  .bonuses = NULL,
+                  .score = 0
                 };
 
-  arena_loadbricks(&arena, &f, "level1.lvl");
+  char levelfile[50] = "";
 
-  //Sprite bonus = { .currentframe = 0, .lastticks = 0, .loop = 1, .state = asMoving };
-  //bonus.anim = af_getanimation(&f, "bonus-d");
+  sprintf(levelfile, "level%d.lvl", startlevel);
 
-  Gamestate gamestate = gsNewLevel;
+  arena_loadbricks(&arena, &f, levelfile);
+
+  Star stars[STARS];
+  intro_init(stars);
+  Gamestate gamestate = gsTitle;
+
+  FlashText pressstart = { .text = "Press 1P Start", .alpha = 0, .targetalpha = 255, .duration = 0 };
 
   while(1)
   {
     // Compare this to the end of the loop to set the frame rate
     Uint32 startticks = SDL_GetTicks();
+
+    // Clear the screen
+	  SDL_RenderClear(app.renderer);
+
+
+	  if(gamestate != gsTitle)
+	  {
+      // Draw the background
+      a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0, 0);
+      a_drawstaticframe(af_getanimation(&f, "scores"), app.renderer, 600, 0, 0);
+
+      text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255});
+      text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255});
+
+      char scores[10] = "";
+
+      sprintf(scores, "%08d", arena.score);
+
+      text_drawtext(&app, scores, 612, 82, (SDL_Color){0, 0, 0, 255});
+      text_drawtext(&app, scores, 610, 80, (SDL_Color){255, 255, 255, 255});
+
+      // bonuses will appear above bricks due to the order here
+      arena_drawbricks(&arena, app.renderer);
+      arena_drawbonuses(&arena, app.renderer);
+    }
+
+	  switch(gamestate)
+    {
+      case gsTitle:
+        intro_drawstars(app.renderer, stars);
+        a_drawsprite(&intro, app.renderer, 200, 220);
+        text_drawflashtext(&app, &pressstart, 260, 300);
+        intro_movestars(stars);
+      break;
+      case gsNewLevel:
+        reset(&app, &ball, &player, &arena, &gamestate);
+      break;
+      case gsDying:
+      case gsRunning:
+        // Move the ball, check for collisions with bat, arena, and bricks
+        // In the event of losing the ball, reset the level
+        if(1 == ball_moveball(&ball, &arena, &player))
+        {
+          //SDL_RenderPresent(app.renderer);
+          reset(&app, &ball, &player, &arena, &gamestate);
+        }
+
+        // Move the bat, check we're within the arena
+        bat_movebat(&player, arena.bounds);
+        arena_movebonuses(&arena, &player);
+        arena_batcollidesbonus(&arena, &player, &ball);
+      break;
+      case gsGetReady:
+        af_playsample(&f, "getready");
+        getready(&ball, &player, &gamestate);
+      break;
+      // Handle pause but do nothing
+      case gsPaused: break;
+    }
+
+    //a_drawsprite(&bonus, app.renderer, 202, 450);
+	  if(gamestate != gsTitle)
+	  {
+      // Draw the ball
+      a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
+
+      // Draw the bat
+      bat_drawbat(&player, app.renderer);
+    }
+    // Display everything on the screen
+    SDL_RenderPresent(app.renderer);
+
+    Uint32 endticks = SDL_GetTicks();
+		// Fix refresh rate as 60fps
+    // This means we need to spend 16.6667 miliseconds per frame,
+    // so if less time than that has expired, delay for the remainder.
+    if(endticks - startticks < 16.6667)
+      SDL_Delay(floor(16.6667 - (endticks - startticks)));
 
     SDL_Event e;
 		if (SDL_PollEvent(&e)) {
@@ -163,70 +270,14 @@ int main(int argc, char** argv)
           case SDLK_UP: ball.bearing += 5; break;
           case SDLK_DOWN: ball.bearing -= 5; break;
           case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
+          case SDLK_SPACE:
+          case SDLK_RETURN:
+            if(gamestate == gsTitle)
+              gamestate = gsNewLevel;
+          break;
         }
       }
 		}
-
-    // Clear the screen
-	  SDL_RenderClear(app.renderer);
-
-	  // Draw the background
-	  a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0);
-	  a_drawstaticframe(af_getanimation(&f, "scores"), app.renderer, 600, 0);
-
-	  text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255});
-	  text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255});
-
-    // bonuses will appear above bricks due to the order here
-	  arena_drawbricks(&arena, app.renderer);
-
-	  arena_drawbonuses(&arena, app.renderer);
-
-	  switch(gamestate)
-    {
-      case gsNewLevel:
-        reset(&app, &ball, &player, &arena, &gamestate);
-      break;
-      case gsDying:
-      case gsRunning:
-        // Move the ball, check for collisions with bat, arena, and bricks
-        // In the event of losing the ball, reset the level
-        if(1 == ball_moveball(&ball, &arena, &player))
-        {
-          //SDL_RenderPresent(app.renderer);
-          reset(&app, &ball, &player, &arena, &gamestate);
-        }
-
-        // Move the bat, check we're within the arena
-        bat_movebat(&player, arena.bounds);
-        arena_movebonuses(&arena, &player);
-        arena_batcollidesbonus(&arena, &player, &ball);
-      break;
-      case gsGetReady:
-        af_playsample(&f, "getready");
-        getready(&ball, &player, &gamestate);
-      break;
-      // Handle pause but do nothing
-      case gsPaused: break;
-    }
-
-    //a_drawsprite(&bonus, app.renderer, 202, 450);
-
-	  // Draw the ball
-	  a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
-
-	  // Draw the bat
-	  bat_drawbat(&player, app.renderer);
-
-    // Display everything on the screen
-    SDL_RenderPresent(app.renderer);
-
-    Uint32 endticks = SDL_GetTicks();
-		// Fix refresh rate as 60fps
-    // This means we need to spend 16.6667 miliseconds per frame,
-    // so if less time than that has expired, delay for the remainder.
-    if(endticks - startticks < 16.6667)
-      SDL_Delay(floor(16.6667 - (endticks - startticks)));
   }
 
   // Exiting the program, so free all allocated memory

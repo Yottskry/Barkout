@@ -73,9 +73,9 @@ int a_freeanimation(Animation* anim)
   return 0;
 }
 
-int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y)
+int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y, int frameno)
 {
-  SDL_Rect src = {0, 0, anim->framewidth, anim->frameheight};
+  SDL_Rect src = {anim->framewidth * frameno, 0, anim->framewidth, anim->frameheight};
   SDL_Rect dst = {x, y, anim->framewidth, anim->frameheight};
   SDL_RenderCopy(renderer, anim->sheet, &src, &dst);
   return 0;
@@ -88,7 +88,7 @@ void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
   SDL_Rect dst = {x, y, anim->framewidth, anim->frameheight};
   SDL_RenderCopy(renderer, anim->sheet, &src, &dst);
 
-  if(sprite->state == asMoving)
+  if(sprite->state != asStatic)
   {
     Uint32 ticks = SDL_GetTicks();
     if(ticks - sprite->lastticks >= 50)
@@ -99,13 +99,18 @@ void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
 
     if(sprite->currentframe == anim->size)
     {
-      sprite->currentframe = 0;
-      if(sprite->loop != 1)
+      if(sprite->state != asPlayToEnd)
+        sprite->currentframe = 0;
+      else
+        sprite->currentframe = anim->size - 1;
+
+      if(sprite->state != asLooping)
       {
         sprite->state = asStatic;
         if(sprite->onanimfinished != NULL)
           sprite->onanimfinished(sprite->sender, sprite->data);
       }
+
     }
   }
 }
@@ -158,7 +163,7 @@ void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], in
   sprite->currentframe = 0;
   sprite->lastticks = 0;
   sprite->loop = loop;
-  sprite->state = asMoving;
+  sprite->state = loop == 0 ? asPlayAndReset : asLooping;
   sprite->onanimfinished = f;
   sprite->sender = sender;
   sprite->data = data;

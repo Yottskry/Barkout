@@ -13,7 +13,7 @@
 typedef enum { bsStatic, bsHit } Brickstate;
 typedef enum { btNormal, btHard, btIndestructible } Bricktype;
 typedef enum { eLeft, eRight, eTop, eBottom, eTopLeft, eTopRight, eBottomLeft, eBottomRight, eNone } Edge;
-typedef enum { gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused } Gamestate;
+typedef enum { gsTitle, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused } Gamestate;
 
 typedef struct
 {
@@ -31,10 +31,11 @@ typedef struct
 typedef struct
 {
   Bounds bounds;
-  int width;
-  int brickcount;
+  unsigned int width;
+  unsigned int brickcount;
   long bonuscounter;
-  int bonuscount;
+  unsigned int bonuscount;
+  unsigned int score;
   ResourceFactory* factory;
   Brick** bricks;
   Bonus** bonuses;

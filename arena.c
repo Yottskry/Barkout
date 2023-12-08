@@ -122,7 +122,7 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   }
 
   bonus->sprite->loop = 1;
-  bonus->sprite->state = asMoving;
+  bonus->sprite->state = asLooping;
   bonus->x = x;
   bonus->y = y;
   bonus->w = 43;
@@ -233,7 +233,7 @@ void bat_aftershrink(void* sender, void* data)
   Bat* player = (Bat*)data;
   Arena* arena = (Arena*)sender;
   af_setanimation(arena->factory, &(player->sprite),"bat-s", 1, NULL, NULL, NULL);
-  player->sprite.state = asMoving;
+  player->sprite.state = asLooping;
   player->w = psShort;
   printf("Player width is...%d x \n", player->w);
 }
@@ -296,7 +296,9 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       // on the brick edge
       if(b!=NULL)
       {
-        b->sprite->state = asMoving;
+        arena->score += 100;
+
+        b->sprite->state = asPlayAndReset;
         if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
         {
           printf("Creating bonus\n");

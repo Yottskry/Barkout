@@ -18,7 +18,6 @@ typedef struct
   int maxspeed;
   int speed;
   int targetspeed;
-  unsigned int score;
   unsigned int lives;
   Playerstate state;
   Sprite sprite;
