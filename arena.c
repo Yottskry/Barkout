@@ -81,7 +81,7 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
 
 int arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
 {
-  for(int brickno = 0; brickno < arena->brickcount; brickno++)
+  for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
   {
     if(arena->bricks[brickno]->hitcount != 0)
     {
@@ -93,7 +93,7 @@ int arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
 
 int arena_freebricks(Arena* arena)
 {
-  for(int brickno = 0; brickno < arena->brickcount; brickno++)
+  for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
   {
     free(arena->bricks[brickno]->sprite);
     free(arena->bricks[brickno]);

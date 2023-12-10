@@ -4,7 +4,7 @@
 void intro_init(Star stars[STARS])
 {
   for(int i = 0; i < STARS; i++){
-    int wcomp = (rand() % 55) + 200;
+    int wcomp = (rand() % 25) + 220;
     stars[i].x = rand() % 800;
     stars[i].y = rand() % 600;
     stars[i].speed = (rand() % 5) + 1;

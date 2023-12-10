@@ -2,6 +2,9 @@
 #define _TEXT_H_
 
 #include "app.h"
+#include <stdbool.h>
+
+typedef enum { TEXT_CENTRED = 1 } TextFlags;
 
 typedef struct
 {
@@ -11,8 +14,17 @@ typedef struct
   Uint8 targetalpha;
 } FlashText;
 
-void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color);
+typedef struct
+{
+  char* texts[4];
+  int count;
+  int current;
+} FlashStory;
 
-void text_drawflashtext(App* app, FlashText* text, int x, int y);
+void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, int flags);
+
+bool text_drawflashtext(App* app, FlashText* text, int x, int y);
+
+void text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y);
 
 #endif

@@ -5,6 +5,7 @@
 #include "intro.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <stdbool.h>
 
 /* Have 13 bricks per level width. Let's say 600x600 playing area with 200x600 score area
 -----------------
@@ -20,6 +21,13 @@
 
 */
 
+void gameover(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
+{
+  *gamestate = gsTitle;
+  text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0);
+  text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0);
+}
+
 // Draw "Get Ready!" text and wait for three seconds
 int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
@@ -30,8 +38,8 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2) + 2;
   *gamestate = gsGetReady;
-  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255});
-  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255});
+  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0);
+  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0);
   return 0;
 }
 
@@ -96,6 +104,7 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(&f, app.renderer, "scores.png", "scores", 200, 600);
   af_loadanimation(&f, app.renderer, "bat.png", "bat", 82, 29);
+  af_loadanimation(&f, app.renderer, "ball.png", "ball", 17, 17);
   af_loadanimation(&f, app.renderer, "bat_shrink.png", "bat-shrink", 82, 29);
   af_loadanimation(&f, app.renderer, "bonus.png", "bonus-d", 43, 25);
   af_loadanimation(&f, app.renderer, "bonus-s.png", "bonus-s", 43, 25);
@@ -103,6 +112,7 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "bat_small.png", "bat-s", 68, 29);
   af_loadanimation(&f, app.renderer, "ball-deadly.png", "ball-deadly", 17, 17);
   af_loadanimation(&f, app.renderer, "barkanoid-intro.png", "intro", 400, 75);
+  af_loadanimation(&f, app.renderer, "life.png", "life", 38, 16);
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");
 
@@ -114,8 +124,8 @@ int main(int argc, char** argv)
   player.sprite.state = asLooping;
 
   // Set up the ball
-  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 5, .bearing = 60, .radius = 7, .state = bsSticky };
-  ball.sprite.anim = af_loadanimation(&f, app.renderer, "ball.png", "ball", 17, 17);
+  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 6, .bearing = 60, .radius = 7, .state = bsSticky };
+  ball.sprite.anim = af_getanimation(&f, "ball");
   ball.sprite.currentframe = 0;
   ball.sprite.lastticks = 0;
   ball.sprite.loop = 1;
@@ -134,7 +144,8 @@ int main(int argc, char** argv)
                   .bonuscount = 0,
                   .factory = &f,
                   .bonuses = NULL,
-                  .score = 0
+                  .score = 0,
+                  .lives = 3
                 };
 
   char levelfile[50] = "";
@@ -149,6 +160,41 @@ int main(int argc, char** argv)
 
   FlashText pressstart = { .text = "Press 1P Start", .alpha = 0, .targetalpha = 255, .duration = 0 };
 
+  FlashStory story1 = {
+    .current = 0,
+    .count = 4,
+    .texts = {
+      "After the mothership was destroyed,",
+
+      "Willow \"Twiglet\" Rubington III survived,",
+
+      "trapped on the unforgiving surface",
+
+      " ",
+
+    }
+  };
+
+  FlashStory story2 = {
+    .current = 0,
+    .count = 4,
+    .texts = {
+
+      "only ace pilot",
+
+      "only to be warped in space,",
+
+      "of a hitherto unknown planet...",
+
+      "Take off every Twig!"
+    }
+  };
+
+  FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
+  FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
+  FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration =0, .text = "Fat Horse Games presents" };
+  bool titlefinished = false;
+
   while(1)
   {
     // Compare this to the end of the loop to set the frame rate
@@ -158,21 +204,24 @@ int main(int argc, char** argv)
 	  SDL_RenderClear(app.renderer);
 
 
-	  if(gamestate != gsTitle)
+	  if((gamestate != gsTitle) && (gamestate != gsStory))
 	  {
       // Draw the background
       a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0, 0);
       a_drawstaticframe(af_getanimation(&f, "scores"), app.renderer, 600, 0, 0);
 
-      text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255});
-      text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255});
+      for(int i = 0; i < arena.lives; i++)
+        a_drawstaticframe(af_getanimation(&f, "life"), app.renderer, 20+(40*i), 560, 0);
+
+      text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255}, 0);
+      text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255}, 0);
 
       char scores[10] = "";
 
       sprintf(scores, "%08d", arena.score);
 
-      text_drawtext(&app, scores, 612, 82, (SDL_Color){0, 0, 0, 255});
-      text_drawtext(&app, scores, 610, 80, (SDL_Color){255, 255, 255, 255});
+      text_drawtext(&app, scores, 612, 82, (SDL_Color){0, 0, 0, 255}, 0);
+      text_drawtext(&app, scores, 610, 80, (SDL_Color){255, 255, 255, 255}, 0);
 
       // bonuses will appear above bricks due to the order here
       arena_drawbricks(&arena, app.renderer);
@@ -182,9 +231,22 @@ int main(int argc, char** argv)
 	  switch(gamestate)
     {
       case gsTitle:
+        if(!titlefinished){
+          // Returns true when text has completed fade in and out
+          titlefinished = text_drawflashtext(&app, &fathorse, 200, 160);
+        }
+        intro_drawstars(app.renderer, stars);
+        if(titlefinished){
+          a_drawsprite(&intro, app.renderer, 200, 220);
+          text_drawflashtext(&app, &pressstart, 260, 300);
+        }
+        intro_movestars(stars);
+      break;
+      case gsStory:
         intro_drawstars(app.renderer, stars);
         a_drawsprite(&intro, app.renderer, 200, 220);
-        text_drawflashtext(&app, &pressstart, 260, 300);
+        text_drawflashstory(&app, &story1, &txt1, 300);
+        text_drawflashstory(&app, &story2, &txt2, 340);
         intro_movestars(stars);
       break;
       case gsNewLevel:
@@ -196,8 +258,11 @@ int main(int argc, char** argv)
         // In the event of losing the ball, reset the level
         if(1 == ball_moveball(&ball, &arena, &player))
         {
-          //SDL_RenderPresent(app.renderer);
-          reset(&app, &ball, &player, &arena, &gamestate);
+          arena.lives--;
+          if(arena.lives >= 0)
+            reset(&app, &ball, &player, &arena, &gamestate);
+          else
+            gameover(&app, &ball, &player, &arena, &gamestate);
         }
 
         // Move the bat, check we're within the arena
@@ -214,7 +279,7 @@ int main(int argc, char** argv)
     }
 
     //a_drawsprite(&bonus, app.renderer, 202, 450);
-	  if(gamestate != gsTitle)
+	  if((gamestate != gsTitle) && (gamestate != gsStory))
 	  {
       // Draw the ball
       a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
@@ -273,6 +338,8 @@ int main(int argc, char** argv)
           case SDLK_SPACE:
           case SDLK_RETURN:
             if(gamestate == gsTitle)
+              gamestate = gsStory;
+            else if(gamestate == gsStory)
               gamestate = gsNewLevel;
           break;
         }

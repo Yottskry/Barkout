@@ -2,23 +2,29 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
-void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color)
+void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, int flags)
 {
   SDL_Color cWhite = {255,255,255,255};
   SDL_Surface* txt = TTF_RenderText_Solid(app->font, text, cWhite);
   SDL_Texture* tex = SDL_CreateTextureFromSurface(app->renderer, txt);
+
+  int xpos = x;
+
+  if((flags & TEXT_CENTRED) == TEXT_CENTRED)
+    xpos = (int)((SCREENW - txt->w) / 2);
+
   SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
   SDL_SetTextureAlphaMod(tex, color.a);
   SDL_Rect src = {0, 0, txt->w, txt->h};
-  SDL_Rect dst = {x, y, txt->w, txt->h};
+  SDL_Rect dst = {xpos, y, txt->w, txt->h};
   SDL_RenderCopy(app->renderer, tex, &src, &dst);
   SDL_FreeSurface(txt);
   SDL_DestroyTexture(tex);
 }
 
-void text_drawflashtext(App* app, FlashText* text, int x, int y)
+bool text_drawflashtext(App* app, FlashText* text, int x, int y)
 {
-  text_drawtext(app, text->text, x, y, (SDL_Color){255, 255, 255, text->alpha});
+  text_drawtext(app, text->text, x, y, (SDL_Color){255, 255, 255, text->alpha}, TEXT_CENTRED);
   if(text->alpha > text->targetalpha)
   {
     // We don't want to overstep the target
@@ -38,5 +44,20 @@ void text_drawflashtext(App* app, FlashText* text, int x, int y)
   if(text->alpha == text->targetalpha)
   {
     text->targetalpha = text->targetalpha == 255 ? 0 : 255;
+  }
+  return (text->alpha == 0);
+}
+
+void text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y)
+{
+  if(story->current == story->count)
+    return;
+
+  text->text = story->texts[story->current];
+  if(text_drawflashtext(app, text, 0, y))
+  {
+    story->current++;
+    text->alpha = 0;
+    text->targetalpha = 255;
   }
 }

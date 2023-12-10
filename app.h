@@ -4,6 +4,9 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#define SCREENW 800
+#define SCREENH 600
+
 typedef struct
 {
 	SDL_Window* window;
