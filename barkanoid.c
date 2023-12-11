@@ -53,7 +53,7 @@ int getready(Ball* ball, Bat* player, Gamestate* gamestate, Gamestate nextstate)
 int main(int argc, char** argv)
 {
 	App app;
-	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 	{
 		return 1;
 	}
@@ -67,6 +67,12 @@ int main(int argc, char** argv)
 	}
 
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+
+	if(Mix_Init(MIX_INIT_MP3) == -1)
+	{
+    printf("MIX_Init: %s\n", Mix_GetError());
+    return 0;
+	}
 
 	int startlevel = 1;
 	Uint32 flags = SDL_WINDOW_OPENGL;
@@ -82,10 +88,10 @@ int main(int argc, char** argv)
     }
 	}
 
-
   app.font = TTF_OpenFont("Nordine.ttf", 32);
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
+	app.music = Mix_LoadMUS("barkanoidii.mp3");
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
   SDL_RenderSetLogicalSize(app.renderer, 800, 600);
@@ -231,6 +237,9 @@ int main(int argc, char** argv)
 	  switch(gamestate)
     {
       case gsTitle:
+        if(Mix_PlayingMusic() == 0)
+          Mix_PlayMusic(app.music, 0);
+
         if(!titlefinished){
           // Returns true when text has completed fade in and out
           titlefinished = text_drawflashtext(&app, &fathorse, 200, 160);
@@ -250,6 +259,8 @@ int main(int argc, char** argv)
         intro_movestars(stars);
       break;
       case gsNewLevel:
+        if(Mix_PlayingMusic() != 0)
+          Mix_HaltMusic();
         reset(&app, &ball, &player, &arena, &gamestate);
       break;
       case gsDying:
@@ -362,6 +373,7 @@ int main(int argc, char** argv)
   SDL_DestroyRenderer(app.renderer);
 	SDL_DestroyWindow(app.window);
 
+	Mix_FreeMusic(app.music);
 	Mix_CloseAudio();
 	TTF_CloseFont(app.font);
 	TTF_Quit();
