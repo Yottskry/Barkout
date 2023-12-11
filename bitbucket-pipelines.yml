@@ -35,6 +35,8 @@ pipelines:
             - tar xvf SDL2_ttf-devel-2.20.2-mingw.tar.gz
             - cp -r SDL2-devel-2.28.5-mingw/x86_64-w64-mingw32 .
             - cp -r SDL2_image-devel-2.8.0-mingw/x86_64-w64-mingw32 .
-            - cp -r SDL2_mixer-devel-2.6.3-mingw/x86_64-w64-
-            - apt-get update && apt-get install -y tzdata build-essential mingw-w64
-            - x86_64-w64-mingw32-gcc-win32
+            - cp -r SDL2_mixer-devel-2.6.3-mingw/x86_64-w64-mingw32 .
+            - cp -r SDL2_ttf-devel-2.20.2-mingw/x86_64-w64-mingw32 .
+            - ls
+            #- apt-get update && apt-get install -y tzdata build-essential mingw-w64
+            #- x86_64-w64-mingw32-gcc-win32
