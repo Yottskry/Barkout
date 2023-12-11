@@ -44,4 +44,4 @@ pipelines:
             - mkdir barkanoid_trunk && mv *.png *.lvl *.wav bark.exe barkanoid_trunk
             - export TARBALLNAME="barkanoid-win32-$(date +%y-%m-%d)-trunk.tar.gz" && tar cvf %TARBALLNAME barkanoid_trunk
            artifacts:
-            - barkanoid-*
+            - barkanoid-*-trunk.tar.gz
