@@ -6,19 +6,18 @@
 image: ubuntu:devel
 
 pipelines:
-  branches:
-      trunk:
+  custom:
+    trunk:
       - step:
           name: "Download dependencies and build"
           script: 
             - apt-get update && apt-get install -y tzdata && apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
             - gcc `sdl2-config --cflags` resourcefactory.c bat.c text.c intro.c arena.c barkanoid.c -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf -o barkanoid
-            - mkdir barkanoid_trunk && mv *.png *.lvl *.wav barkanoid barkanoid_trunk
+            - mkdir barkanoid_trunk && mv *.ttf *.png *.lvl *.wav barkanoid barkanoid_trunk
             - export TARBALLNAME="barkanoid-$(date +%y-%m-%d)-trunk.tar.gz" && tar cvf $TARBALLNAME barkanoid_trunk 
             - echo $TARBALLNAME
           artifacts:
             - barkanoid-*-trunk.tar.gz
-  custom:
     windows:
       - step:
           name: "Install cross compiler and build"
@@ -37,11 +36,12 @@ pipelines:
             - cp -r SDL2_image-2.8.0/x86_64-w64-mingw32 .
             - cp -r SDL2_mixer-2.6.3/x86_64-w64-mingw32 .
             - cp -r SDL2_ttf-2.20.2/x86_64-w64-mingw32 .
-            - ls
             - ./x86_64-w64-mingw32/bin/sdl2-config --cflags --libs
             - apt-get update && apt-get install -y tzdata build-essential mingw-w64
             - x86_64-w64-mingw32-gcc-win32 `x86_64-w64-mingw32/bin/sdl2-config --cflags --libs` -o bark.exe -g -O2 resourcefactory.c bat.c text.c intro.c arena.c barkanoid.c -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
-            - mkdir barkanoid_trunk && mv *.png *.lvl *.wav bark.exe barkanoid_trunk
-            - export TARBALLNAME="barkanoid-win32-$(date +%y-%m-%d)-trunk.tar.gz" && tar cvf %TARBALLNAME barkanoid_trunk
+            - mkdir barkanoid_trunk && mv *.ttf *.png *.lvl *.wav bark.exe barkanoid_trunk
+            - export TARBALLNAME="barkanoid-win32-$(date +%y-%m-%d)-trunk.tar.gz" && tar cvvf $TARBALLNAME barkanoid_trunk
+            - echo $TARBALLNAME
+            - ls
           artifacts:
-            - barkanoid-*-trunk.tar.gz
+            - barkanoid-win32-*-trunk.tar.gz
