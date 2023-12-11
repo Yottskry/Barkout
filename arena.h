@@ -6,6 +6,8 @@
 #include "bonus.h"
 #include "bat.h"
 #include "ball.h"
+#include <stdio.h>
+#include <math.h>
 
 #define BRICKW 40
 #define BRICKH 25

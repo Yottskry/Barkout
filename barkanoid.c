@@ -23,7 +23,7 @@
 
 void gameover(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
-  *gamestate = gsTitle;
+  *gamestate = gsDying;
   text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0);
   text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0);
 }
@@ -43,10 +43,10 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   return 0;
 }
 
-int getready(Ball* ball, Bat* player, Gamestate* gamestate)
+int getready(Ball* ball, Bat* player, Gamestate* gamestate, Gamestate nextstate)
 {
   SDL_Delay(3000);
-  *gamestate = gsRunning;
+  *gamestate = nextstate;
   return 0;
 }
 
@@ -253,6 +253,8 @@ int main(int argc, char** argv)
         reset(&app, &ball, &player, &arena, &gamestate);
       break;
       case gsDying:
+        getready(&ball, &player, &gamestate, gsTitle);
+      break;
       case gsRunning:
         // Move the ball, check for collisions with bat, arena, and bricks
         // In the event of losing the ball, reset the level
@@ -262,7 +264,9 @@ int main(int argc, char** argv)
           if(arena.lives >= 0)
             reset(&app, &ball, &player, &arena, &gamestate);
           else
+          {
             gameover(&app, &ball, &player, &arena, &gamestate);
+          }
         }
 
         // Move the bat, check we're within the arena
@@ -272,14 +276,14 @@ int main(int argc, char** argv)
       break;
       case gsGetReady:
         af_playsample(&f, "getready");
-        getready(&ball, &player, &gamestate);
+        getready(&ball, &player, &gamestate, gsRunning);
       break;
       // Handle pause but do nothing
       case gsPaused: break;
     }
 
     //a_drawsprite(&bonus, app.renderer, 202, 450);
-	  if((gamestate != gsTitle) && (gamestate != gsStory))
+	  if((gamestate != gsTitle) && (gamestate != gsStory) && (gamestate != gsDying))
 	  {
       // Draw the ball
       a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
