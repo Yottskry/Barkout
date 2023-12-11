@@ -121,6 +121,8 @@ int main(int argc, char** argv)
   af_loadanimation(&f, app.renderer, "life.png", "life", 38, 16);
 
   af_loadsample(&f, "barkanoid-getready.wav", "getready");
+  af_loadsample(&f, "barkanoid-brick.wav", "brick");
+  af_loadsample(&f, "barkanoid-bat.wav", "bat");
 
   Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = 3 };
   player.sprite.anim = af_getanimation(&f, "bat");

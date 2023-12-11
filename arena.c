@@ -313,11 +313,16 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         if((b->type == btNormal) && (ball->state == bsDeadly))
           hitedge = eNone;
 
+        af_playsample(arena->factory, "brick");
+
         break;
       }
 
       if(1 == ball_collidesbat(ball, player, &hitedge))
+      {
+        af_playsample(arena->factory, "bat");
         break;
+      }
 
       if(ball->cy - ball->radius < arena->bounds.top)
       {

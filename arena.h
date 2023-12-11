@@ -6,6 +6,7 @@
 #include "bonus.h"
 #include "bat.h"
 #include "ball.h"
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <math.h>
 
