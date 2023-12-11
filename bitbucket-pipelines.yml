@@ -6,8 +6,8 @@
 image: ubuntu:devel
 
 pipelines:
-  branches:
-      trunk:
+  custom:
+    trunk:
       - step:
           name: "Download dependencies and build"
           script: 
@@ -18,7 +18,6 @@ pipelines:
             - echo $TARBALLNAME
           artifacts:
             - barkanoid-*-trunk.tar.gz
-  custom:
     windows:
       - step:
           name: "Install cross compiler and build"
@@ -43,5 +42,6 @@ pipelines:
             - x86_64-w64-mingw32-gcc-win32 `x86_64-w64-mingw32/bin/sdl2-config --cflags --libs` -o bark.exe -g -O2 resourcefactory.c bat.c text.c intro.c arena.c barkanoid.c -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
             - mkdir barkanoid_trunk && mv *.png *.lvl *.wav bark.exe barkanoid_trunk
             - export TARBALLNAME="barkanoid-win32-$(date +%y-%m-%d)-trunk.tar.gz" && tar cvvf %TARBALLNAME barkanoid_trunk
+            - echo $TARBALLNAME
           artifacts:
             - barkanoid-win32-*-trunk.tar.gz
