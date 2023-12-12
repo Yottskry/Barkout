@@ -48,16 +48,19 @@ bool text_drawflashtext(App* app, FlashText* text, int x, int y)
   return (text->alpha == 0);
 }
 
-void text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y)
+bool text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y)
 {
   if(story->current == story->count)
-    return;
+    return true;
 
   text->text = story->texts[story->current];
+
   if(text_drawflashtext(app, text, 0, y))
   {
     story->current++;
     text->alpha = 0;
     text->targetalpha = 255;
   }
+
+  return false;
 }

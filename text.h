@@ -25,6 +25,6 @@ void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, in
 
 bool text_drawflashtext(App* app, FlashText* text, int x, int y);
 
-void text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y);
+bool text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y);
 
 #endif

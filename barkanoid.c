@@ -173,13 +173,9 @@ int main(int argc, char** argv)
     .count = 4,
     .texts = {
       "After the mothership was destroyed,",
-
-      "Willow \"Twiglet\" Rubington III survived,",
-
-      "trapped on the unforgiving surface",
-
+      "only to be warped in space,",
       " ",
-
+      " "
     }
   };
 
@@ -187,19 +183,28 @@ int main(int argc, char** argv)
     .current = 0,
     .count = 4,
     .texts = {
-
       "only ace pilot",
-
-      "only to be warped in space,",
-
-      "of a hitherto unknown planet...",
-
+      "trapped on the unforgiving surface",
+      " ",
       "Take off every Twig!"
     }
   };
 
+  FlashStory story3 = {
+    .current = 0,
+    .count = 4,
+    .texts = {
+      "Willow \"Twiglet\" Rubington III survived,",
+      "of a hitherto unknown planet...",
+      " ",
+      " "
+    }
+  };
+
+
   FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
   FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
+  FlashText txt3 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
   FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration =0, .text = "Fat Horse Games presents" };
   bool titlefinished = false;
 
@@ -258,6 +263,8 @@ int main(int argc, char** argv)
         a_drawsprite(&intro, app.renderer, 200, 220);
         text_drawflashstory(&app, &story1, &txt1, 300);
         text_drawflashstory(&app, &story2, &txt2, 340);
+        if(text_drawflashstory(&app, &story3, &txt3, 380))
+          gamestate = gsNewLevel;
         intro_movestars(stars);
       break;
       case gsNewLevel:
