@@ -21,7 +21,39 @@
 
 */
 
-void gameover(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
+void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
+{
+  // Load some sprites
+  af_loadanimation(f, renderer, "red.png", "red", 44, 29);
+  af_loadanimation(f, renderer, "blue.png", "blue", 44, 29);
+  af_loadanimation(f, renderer, "green.png", "green", 44, 29);
+  af_loadanimation(f, renderer, "darkgrey.png", "darkgrey", 44, 29);
+  af_loadanimation(f, renderer, "orange.png", "orange", 44, 29);
+  af_loadanimation(f, renderer, "purple.png", "purple", 44, 29);
+  af_loadanimation(f, renderer, "grey.png", "grey", 44, 29);
+  af_loadanimation(f, renderer, "yellow.png", "yellow", 44, 29);
+  af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
+  af_loadanimation(f, renderer, "scores.png", "scores", 200, 600);
+  af_loadanimation(f, renderer, "bat.png", "bat", 82, 29);
+  af_loadanimation(f, renderer, "ball.png", "ball", 17, 17);
+  af_loadanimation(f, renderer, "bat_shrink.png", "bat-shrink", 82, 29);
+  af_loadanimation(f, renderer, "bonus.png", "bonus-d", 43, 25);
+  af_loadanimation(f, renderer, "bonus-s.png", "bonus-s", 43, 25);
+  af_loadanimation(f, renderer, "bonus-e.png", "bonus-e", 43, 25);
+  af_loadanimation(f, renderer, "bonus-c.png", "bonus-c", 43, 25);
+  af_loadanimation(f, renderer, "bonus-p.png", "bonus-p", 43, 25);
+  af_loadanimation(f, renderer, "bat_small.png", "bat-s", 51, 27);
+  af_loadanimation(f, renderer, "ball-deadly.png", "ball-deadly", 17, 17);
+  af_loadanimation(f, renderer, "barkanoid-intro.png", "intro", 400, 75);
+  af_loadanimation(f, renderer, "life.png", "life", 38, 16);
+  // And some sound
+  af_loadsample(f, "barkanoid-getready.wav", "getready");
+  af_loadsample(f, "barkanoid-brick.wav", "brick");
+  af_loadsample(f, "barkanoid-bat.wav", "bat");
+  af_loadsample(f, "barkanoid-dead.wav", "dead");
+}
+
+void gameover(App* app, Gamestate* gamestate)
 {
   *gamestate = gsDying;
   text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0);
@@ -43,7 +75,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   return 0;
 }
 
-int getready(Ball* ball, Bat* player, Gamestate* gamestate, Gamestate nextstate)
+int getready(Gamestate* gamestate, Gamestate nextstate)
 {
   SDL_Delay(3000);
   *gamestate = nextstate;
@@ -88,6 +120,8 @@ int main(int argc, char** argv)
     }
 	}
 
+	SDL_SetCursor(SDL_DISABLE);
+
   app.font = TTF_OpenFont("Nordine.ttf", 32);
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
@@ -98,31 +132,8 @@ int main(int argc, char** argv)
 
   ResourceFactory f = { .anims = NULL, .animationcount = 0, .samples = NULL, .samplecount = 0 };
 
-  // Load some sprites
-  af_loadanimation(&f, app.renderer, "red.png", "red", 44, 29);
-  af_loadanimation(&f, app.renderer, "blue.png", "blue", 44, 29);
-  af_loadanimation(&f, app.renderer, "green.png", "green", 44, 29);
-  af_loadanimation(&f, app.renderer, "darkgrey.png", "darkgrey", 44, 29);
-  af_loadanimation(&f, app.renderer, "orange.png", "orange", 44, 29);
-  af_loadanimation(&f, app.renderer, "purple.png", "purple", 44, 29);
-  af_loadanimation(&f, app.renderer, "grey.png", "grey", 44, 29);
-  af_loadanimation(&f, app.renderer, "yellow.png", "yellow", 44, 29);
-  af_loadanimation(&f, app.renderer, "bg1.png", "bg1", 600, 600);
-  af_loadanimation(&f, app.renderer, "scores.png", "scores", 200, 600);
-  af_loadanimation(&f, app.renderer, "bat.png", "bat", 82, 29);
-  af_loadanimation(&f, app.renderer, "ball.png", "ball", 17, 17);
-  af_loadanimation(&f, app.renderer, "bat_shrink.png", "bat-shrink", 82, 29);
-  af_loadanimation(&f, app.renderer, "bonus.png", "bonus-d", 43, 25);
-  af_loadanimation(&f, app.renderer, "bonus-s.png", "bonus-s", 43, 25);
-  af_loadanimation(&f, app.renderer, "bonus-e.png", "bonus-e", 43, 25);
-  af_loadanimation(&f, app.renderer, "bat_small.png", "bat-s", 68, 29);
-  af_loadanimation(&f, app.renderer, "ball-deadly.png", "ball-deadly", 17, 17);
-  af_loadanimation(&f, app.renderer, "barkanoid-intro.png", "intro", 400, 75);
-  af_loadanimation(&f, app.renderer, "life.png", "life", 38, 16);
-
-  af_loadsample(&f, "barkanoid-getready.wav", "getready");
-  af_loadsample(&f, "barkanoid-brick.wav", "brick");
-  af_loadsample(&f, "barkanoid-bat.wav", "bat");
+  // Load animations and samples
+  loadresources(&f, app.renderer);
 
   Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = 3 };
   player.sprite.anim = af_getanimation(&f, "bat");
@@ -273,19 +284,21 @@ int main(int argc, char** argv)
         reset(&app, &ball, &player, &arena, &gamestate);
       break;
       case gsDying:
-        getready(&ball, &player, &gamestate, gsTitle);
+        getready(&gamestate, gsTitle);
       break;
       case gsRunning:
         // Move the ball, check for collisions with bat, arena, and bricks
         // In the event of losing the ball, reset the level
         if(1 == ball_moveball(&ball, &arena, &player))
         {
+          af_playsample(&f, "dead");
+          while(Mix_Playing(-1));
           arena.lives--;
           if(arena.lives >= 0)
             reset(&app, &ball, &player, &arena, &gamestate);
           else
           {
-            gameover(&app, &ball, &player, &arena, &gamestate);
+            gameover(&app, &gamestate);
           }
         }
 
@@ -296,7 +309,7 @@ int main(int argc, char** argv)
       break;
       case gsGetReady:
         af_playsample(&f, "getready");
-        getready(&ball, &player, &gamestate, gsRunning);
+        getready(&gamestate, gsRunning);
       break;
       // Handle pause but do nothing
       case gsPaused: break;
@@ -306,7 +319,8 @@ int main(int argc, char** argv)
 	  if((gamestate != gsTitle) && (gamestate != gsStory) && (gamestate != gsDying))
 	  {
       // Draw the ball
-      a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
+      if((ball.cy - ball.radius) < (arena.bounds.bottom - 15))
+        a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
 
       // Draw the bat
       bat_drawbat(&player, app.renderer);
