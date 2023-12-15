@@ -79,7 +79,7 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
   return 0;
 }
 
-int arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
+void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
 {
   for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
   {
@@ -88,10 +88,22 @@ int arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
       a_drawsprite(arena->bricks[brickno]->sprite, renderer, arena->bricks[brickno]->left, arena->bricks[brickno]->top);
     }
   }
-  return 0;
 }
 
-int arena_freebricks(Arena* arena)
+void arena_resetbricks(Arena* arena)
+{
+  for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
+  {
+    switch(arena->bricks[brickno]->type)
+    {
+      case btNormal: arena->bricks[brickno]->hitcount = 1; break;
+      case btHard: arena->bricks[brickno]->hitcount = 2; break;
+      case btIndestructible: arena->bricks[brickno]->hitcount = -1; break;
+    }
+  }
+}
+
+void arena_freebricks(Arena* arena)
 {
   for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
   {
@@ -100,7 +112,6 @@ int arena_freebricks(Arena* arena)
   }
 
   free(arena->bricks);
-  return 0;
 }
 
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
@@ -136,7 +147,7 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
 
 int arena_movebonuses(Arena* arena, Bat* player)
 {
-  for(int i = 0; i < arena->bonuscount; i++)
+  for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     Bonus* bonus = arena->bonuses[i];
     bonus->y += 1;
@@ -150,7 +161,7 @@ int arena_movebonuses(Arena* arena, Bat* player)
 
 int arena_freebonus(Arena* arena, Bonus* bonus)
 {
-  for(int i = 0; i < arena->bonuscount; i++)
+  for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     // Find the item to be removed
     if(arena->bonuses[i] == bonus)
@@ -173,7 +184,7 @@ int arena_freebonus(Arena* arena, Bonus* bonus)
 
 int arena_freebonuses(Arena* arena)
 {
-  for(int i = arena->bonuscount - 1; i >= 0; i--)
+  for(unsigned int i = arena->bonuscount - 1; i >= 0; i--)
   {
     free(arena->bonuses[i]->sprite);
     free(arena->bonuses[i]);
@@ -184,7 +195,7 @@ int arena_freebonuses(Arena* arena)
 
 int arena_drawbonuses(Arena* arena, SDL_Renderer* renderer)
 {
-  for(int i = 0; i < arena->bonuscount; i++)
+  for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     a_drawsprite(arena->bonuses[i]->sprite, renderer, arena->bonuses[i]->x, arena->bonuses[i]->y);
   }
@@ -193,7 +204,7 @@ int arena_drawbonuses(Arena* arena, SDL_Renderer* renderer)
 
 Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
 {
-  for(int i = 0; i < arena->bonuscount; i++)
+  for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     int bx = arena->bonuses[i]->x + arena->bonuses[i]->w;
     int by = arena->bonuses[i]->y + arena->bonuses[i]->h;
@@ -301,19 +312,24 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         b->sprite->state = asPlayAndReset;
         if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
         {
-          printf("Creating bonus\n");
           Bonustype botype = rand() % 3;
           arena_addbonus(arena, b->left, b->bottom, botype);
+          af_playsample(arena->factory, "brick");
         }
         else if(b->type == btNormal)
-          printf("Not creating bonus\n");
-        // Because we break here, lastx/y are not updated
-        // so retain the last non-collision position
+        {
+          af_playsample(arena->factory, "brick");
+        }
+        else
+        {
+          af_playsample(arena->factory, "brick-high");
+        }
 
         if((b->type == btNormal) && (ball->state == bsDeadly))
           hitedge = eNone;
 
-        af_playsample(arena->factory, "brick");
+        // Because we break here, lastx/y are not updated
+        // so retain the last non-collision position
 
         break;
       }

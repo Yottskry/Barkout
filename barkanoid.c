@@ -7,6 +7,8 @@
 #include <SDL_ttf.h>
 #include <stdbool.h>
 
+#define STARTLIVES 3
+
 /* Have 13 bricks per level width. Let's say 600x600 playing area with 200x600 score area
 -----------------
 |           |   |
@@ -49,6 +51,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
   af_loadsample(f, "barkanoid-brick.wav", "brick");
+  af_loadsample(f, "barkanoid-brick-high.wav", "brick-high");
   af_loadsample(f, "barkanoid-bat.wav", "bat");
   af_loadsample(f, "barkanoid-dead.wav", "dead");
 }
@@ -164,7 +167,7 @@ int main(int argc, char** argv)
                   .factory = &f,
                   .bonuses = NULL,
                   .score = 0,
-                  .lives = 3
+                  .lives = STARTLIVES
                 };
 
   char levelfile[50] = "";
@@ -299,6 +302,7 @@ int main(int argc, char** argv)
           else
           {
             gameover(&app, &gamestate);
+            arena_resetbricks(&arena);
           }
         }
 
@@ -378,7 +382,10 @@ int main(int argc, char** argv)
             if(gamestate == gsTitle)
               gamestate = gsStory;
             else if(gamestate == gsStory)
+            {
               gamestate = gsNewLevel;
+              arena.lives = STARTLIVES;
+            }
           break;
         }
       }

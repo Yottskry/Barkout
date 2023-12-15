@@ -47,8 +47,9 @@ typedef struct
 
 // Level related functions
 int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname);
-int arena_drawbricks(Arena* arena, SDL_Renderer* renderer);
-int arena_freebricks(Arena* arena);
+void arena_drawbricks(Arena* arena, SDL_Renderer* renderer);
+void arena_resetbricks(Arena* arena);
+void arena_freebricks(Arena* arena);
 
 // Bonus related functions
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type);
