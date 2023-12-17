@@ -12,7 +12,7 @@ OBFILES = $(patsubst *.c, *.o, $(wildcard *.c))
 all:	bark.exe
 	if [ -d Windows ]; then rm -rf Windows; fi
 	mkdir Windows
-	mv bark.exe *.png *.wav *.mp3 *.lvl Windows
+	cp bark.exe *.png *.wav *.mp3 *.lvl Windows
 
 bark.exe:	$(wildcard *.c)
 	$(CC) $(CFLAGS) $(SDL-CFLAGS) $(SDL-LIBS) -o $(OUTFILE) $(wildcard *.c) $(LIBS)
