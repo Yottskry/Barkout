@@ -7,6 +7,11 @@
 #include <SDL_ttf.h>
 #include <stdbool.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <winreg.h>
+#endif
+
 #define STARTLIVES 3
 
 /* Have 13 bricks per level width. Let's say 600x600 playing area with 200x600 score area
@@ -22,6 +27,45 @@
 40px * 13 bricks = 520px + 40 each side for walls = 600
 
 */
+
+int loadhighscore()
+{
+  int score = 0;
+  #ifdef _WIN32
+  HKEY newKey;
+  long retval;
+  retval = RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, KEY_READ, &newKey);
+  if(retval == ERROR_SUCCESS)
+  {
+    long unsigned int lpSize = sizeof(int);
+    retval = RegQueryValueExA(newKey, "highscore", 0, NULL, (BYTE*)(&score), &lpSize);
+    if(retval != ERROR_SUCCESS)
+    {
+      score = 0;
+    }
+
+  }
+  else
+  {
+    RegCloseKey(newKey);
+  }
+  #endif
+  return score;
+}
+
+void savehighscore(int* score)
+{
+  #ifdef _WIN32
+  HKEY newKey;
+  long retval;
+  retval = RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, "", 0, KEY_WRITE, 0, &newKey, NULL);
+  if(retval == ERROR_SUCCESS)
+  {
+    RegSetValueExA(newKey, "highscore", 0, REG_DWORD, (BYTE*)score, sizeof(int));
+    RegCloseKey(newKey);
+  }
+  #endif
+}
 
 void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
 {
@@ -68,6 +112,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
   player->x = arena->width / 2;
   bat_reset(player, arena->factory);
+  arena_freebonuses(arena);
   af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
@@ -80,7 +125,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 
 int getready(Gamestate* gamestate, Gamestate nextstate)
 {
-  SDL_Delay(3000);
+  //SDL_Delay(3000);
   *gamestate = nextstate;
   return 0;
 }
@@ -167,14 +212,13 @@ int main(int argc, char** argv)
                   .factory = &f,
                   .bonuses = NULL,
                   .score = 0,
-                  .lives = STARTLIVES
+                  .lives = STARTLIVES,
+                  .level = startlevel
                 };
 
-  char levelfile[50] = "";
+  arena_loadbricks(&arena, &f);
 
-  sprintf(levelfile, "level%d.lvl", startlevel);
-
-  arena_loadbricks(&arena, &f, levelfile);
+  int hi = loadhighscore();
 
   Star stars[STARS];
   intro_init(stars);
@@ -197,10 +241,10 @@ int main(int argc, char** argv)
     .current = 0,
     .count = 4,
     .texts = {
-      "only ace pilot",
+      "only one craft and ace pilot",
       "trapped on the unforgiving surface",
-      " ",
-      "Take off every Twig!"
+      "Take off every Twig!",
+      " "
     }
   };
 
@@ -227,6 +271,8 @@ int main(int argc, char** argv)
     // Compare this to the end of the loop to set the frame rate
     Uint32 startticks = SDL_GetTicks();
 
+    Uint32 delay = 0;
+
     // Clear the screen
 	  SDL_RenderClear(app.renderer);
 
@@ -237,91 +283,133 @@ int main(int argc, char** argv)
       a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0, 0);
       a_drawstaticframe(af_getanimation(&f, "scores"), app.renderer, 600, 0, 0);
 
-      for(int i = 0; i < arena.lives; i++)
-        a_drawstaticframe(af_getanimation(&f, "life"), app.renderer, 20+(40*i), 560, 0);
-
       text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255}, 0);
       text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255}, 0);
+
+      char highs[10] = "";
+
+      sprintf(highs, "%08d", hi);
+
+      text_drawtext(&app, highs, 612, 82, (SDL_Color){0, 0, 0, 255}, 0);
+      text_drawtext(&app, highs, 610, 80, (SDL_Color){255, 255, 255, 255}, 0);
 
       char scores[10] = "";
 
       sprintf(scores, "%08d", arena.score);
 
-      text_drawtext(&app, scores, 612, 82, (SDL_Color){0, 0, 0, 255}, 0);
-      text_drawtext(&app, scores, 610, 80, (SDL_Color){255, 255, 255, 255}, 0);
+      text_drawtext(&app, scores, 612, 142, (SDL_Color){0, 0, 0, 255}, 0);
+      text_drawtext(&app, scores, 610, 140, (SDL_Color){255, 255, 255, 255}, 0);
 
       // bonuses will appear above bricks due to the order here
       arena_drawbricks(&arena, app.renderer);
-      arena_drawbonuses(&arena, app.renderer);
     }
 
-	  switch(gamestate)
+    if(gamestate == gsTitle)
     {
-      case gsTitle:
-        if(Mix_PlayingMusic() == 0)
+      if(Mix_PlayingMusic() == 0)
           Mix_PlayMusic(app.music, 0);
 
-        if(!titlefinished){
-          // Returns true when text has completed fade in and out
-          titlefinished = text_drawflashtext(&app, &fathorse, 200, 160);
-        }
-        intro_drawstars(app.renderer, stars);
-        if(titlefinished){
-          a_drawsprite(&intro, app.renderer, 200, 220);
-          text_drawflashtext(&app, &pressstart, 260, 300);
-        }
-        intro_movestars(stars);
-      break;
-      case gsStory:
-        intro_drawstars(app.renderer, stars);
+      if(!titlefinished){
+        // Returns true when text has completed fade in and out
+        titlefinished = text_drawflashtext(&app, &fathorse, 200, 160, 2);
+      }
+      intro_drawstars(app.renderer, stars);
+      if(titlefinished){
         a_drawsprite(&intro, app.renderer, 200, 220);
-        text_drawflashstory(&app, &story1, &txt1, 300);
-        text_drawflashstory(&app, &story2, &txt2, 340);
-        if(text_drawflashstory(&app, &story3, &txt3, 380))
-          gamestate = gsNewLevel;
-        intro_movestars(stars);
-      break;
-      case gsNewLevel:
-        if(Mix_PlayingMusic() != 0)
-          Mix_HaltMusic();
-        reset(&app, &ball, &player, &arena, &gamestate);
-      break;
-      case gsDying:
-        getready(&gamestate, gsTitle);
-      break;
-      case gsRunning:
-        // Move the ball, check for collisions with bat, arena, and bricks
-        // In the event of losing the ball, reset the level
-        if(1 == ball_moveball(&ball, &arena, &player))
-        {
-          af_playsample(&f, "dead");
-          while(Mix_Playing(-1));
-          arena.lives--;
-          if(arena.lives >= 0)
-            reset(&app, &ball, &player, &arena, &gamestate);
-          else
-          {
-            gameover(&app, &gamestate);
-            arena_resetbricks(&arena);
-          }
-        }
+        text_drawflashtext(&app, &pressstart, 260, 300, 2);
+      }
+      intro_movestars(stars);
+    }
 
-        // Move the bat, check we're within the arena
-        bat_movebat(&player, arena.bounds);
-        arena_movebonuses(&arena, &player);
-        arena_batcollidesbonus(&arena, &player, &ball);
-      break;
-      case gsGetReady:
-        af_playsample(&f, "getready");
-        getready(&gamestate, gsRunning);
-      break;
-      // Handle pause but do nothing
-      case gsPaused: break;
+    if(gamestate == gsStory)
+    {
+      titlefinished = true;
+      arena.level = 1;
+      intro_drawstars(app.renderer, stars);
+      a_drawsprite(&intro, app.renderer, 200, 220);
+      text_drawflashstory(&app, &story1, &txt1, 300);
+      text_drawflashstory(&app, &story2, &txt2, 340);
+      if(text_drawflashstory(&app, &story3, &txt3, 380))
+        gamestate = gsNewLevel;
+      intro_movestars(stars);
+    }
+    // Again, we want another frame to draw the level
+    // before we say "Get Ready!" so we need an else
+    // to avoid moving directly from gsStory to gsNewLevel
+    // in one loop iteration.
+    else if(gamestate == gsNewLevel)
+    {
+      if(Mix_PlayingMusic() != 0)
+        Mix_HaltMusic();
+      reset(&app, &ball, &player, &arena, &gamestate);
+    }
+
+    if(gamestate == gsRunning)
+    {
+      // Move the ball, check for collisions with bat, arena, and bricks
+      // In the event of losing the ball, reset the level
+      if(1 == ball_moveball(&ball, &arena, &player))
+      {
+        // What we really want to do here is decrease the lives
+        // remove any bonuses, and THEN show the "Get Ready!" text
+        // Which means the delay needs to come after the next
+        // renderpresent
+        af_playsample(&f, "dead");
+        while(Mix_Playing(-1));
+        arena.lives--;
+        if(arena.lives >= 0)
+        {
+          // Lives already reset, but ideally we want to delay
+          // the delay() call until after the next render
+          reset(&app, &ball, &player, &arena, &gamestate);
+          delay = 3000;
+        }
+        else
+        {
+          gameover(&app, &gamestate);
+          savehighscore(((int*)&arena.score));
+          arena_resetbricks(&arena);
+        }
+      }
+
+      arena_drawbonuses(&arena, app.renderer);
+
+      if(arena.remaining == 0)
+      {
+        // Load new level
+        arena_freebricks(&arena);
+        arena.level++;
+        arena_loadbricks(&arena, &f);
+        gamestate = gsNewLevel;
+        continue;
+      }
+
+      // Move the bat, check we're within the arena
+      bat_movebat(&player, arena.bounds);
+      arena_movebonuses(&arena);
+      arena_batcollidesbonus(&arena, &player, &ball);
+    } // This one is an else because we need one loop between
+      // change of gamestate for the Get Ready text to render.
+    if(gamestate == gsGetReady)
+    {
+      af_playsample(&f, "getready");
+      delay = 3000;
+      //getready(&gamestate, gsRunning);
+      gamestate = gsRunning;
+    }
+
+    if(gamestate == gsDying)
+    {
+      //getready(&gamestate, gsTitle);
+      gamestate = gsTitle;
+      delay = 3000;
     }
 
     //a_drawsprite(&bonus, app.renderer, 202, 450);
 	  if((gamestate != gsTitle) && (gamestate != gsStory) && (gamestate != gsDying))
 	  {
+
+      arena_drawlives(&arena, &app);
       // Draw the ball
       if((ball.cy - ball.radius) < (arena.bounds.bottom - 15))
         a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
@@ -338,6 +426,9 @@ int main(int argc, char** argv)
     // so if less time than that has expired, delay for the remainder.
     if(endticks - startticks < 16.6667)
       SDL_Delay(floor(16.6667 - (endticks - startticks)));
+
+    if(delay > 0)
+      SDL_Delay(delay);
 
     SDL_Event e;
 		if (SDL_PollEvent(&e)) {

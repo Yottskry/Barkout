@@ -1,12 +1,19 @@
 #include "arena.h"
 
-int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
+int arena_loadbricks(Arena* arena, ResourceFactory* factory)
 {
+  char fname[255] = "";
+
+  sprintf(fname, "level%d.lvl", arena->level);
+
+  printf("Loading level %s\n", fname);
+
   FILE* f = fopen(fname, "r");
   char rowdata[14];
   arena->brickcount = 0;
   int brickno = 0;
   int row = 0;
+  arena->remaining = 0;
 
   // Read each line. This is the row position.
   while(fscanf(f, "%s", rowdata) > 0)
@@ -33,26 +40,33 @@ int arena_loadbricks(Arena* arena, ResourceFactory* factory, const char* fname)
       switch(c){
         case 'r':
           brickanim = af_getanimation(factory, "red");
+          arena->remaining++;
         break;
         case 'b':
           brickanim = af_getanimation(factory, "blue");
+          arena->remaining++;
         break;
         case 'g':
           brickanim = af_getanimation(factory, "green");
+          arena->remaining++;
         break;
         case 'p':
           brickanim = af_getanimation(factory, "purple");
+          arena->remaining++;
         break;
         case 'w':
           brickanim = af_getanimation(factory, "yellow");
+          arena->remaining++;
         break;
         case 'y':
           brickanim = af_getanimation(factory, "grey");
+          arena->remaining++;
         break;
         case 'G':
           arena->bricks[brickno]->hitcount = 2;
           arena->bricks[brickno]->type = btHard;
           brickanim = af_getanimation(factory, "darkgrey");
+          arena->remaining++;
         break;
         case 'O':
           arena->bricks[brickno]->hitcount = -1;
@@ -130,6 +144,10 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
     case boDeadly: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d"); break;
     case boSlow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
     case boShrink: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-s"); break;
+    case boGrow:
+    case boMultiply:
+    case boFast:
+    case boSkip: break;
   }
 
   bonus->sprite->loop = 1;
@@ -145,7 +163,7 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   return bonus;
 }
 
-int arena_movebonuses(Arena* arena, Bat* player)
+int arena_movebonuses(Arena* arena)
 {
   for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
@@ -172,7 +190,7 @@ int arena_freebonus(Arena* arena, Bonus* bonus)
       free(bonus);
 
       // Move all subsequent items up one
-      for(int j = i; j < arena->bonuscount - 1; j++)
+      for(unsigned int j = i; j < arena->bonuscount - 1; j++)
         arena->bonuses[j] = arena->bonuses[j+1];
     }
 
@@ -184,12 +202,14 @@ int arena_freebonus(Arena* arena, Bonus* bonus)
 
 int arena_freebonuses(Arena* arena)
 {
-  for(unsigned int i = arena->bonuscount - 1; i >= 0; i--)
+  for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     free(arena->bonuses[i]->sprite);
     free(arena->bonuses[i]);
   }
   free(arena->bonuses);
+  arena->bonuscount = 0;
+  arena->bonuses = NULL;
   return 0;
 }
 
@@ -232,6 +252,11 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           // Bat should revert to normal state
           af_setanimation(arena->factory, &(player->sprite), "bat", 1, NULL, NULL, NULL);
         break;
+        case boSlow:
+        case boMultiply:
+        case boFast:
+        case boGrow:
+        case boSkip: break;
       }
       arena_freebonus(arena, arena->bonuses[i]);
     }
@@ -308,6 +333,9 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       if(b!=NULL)
       {
         arena->score += 100;
+
+        if((b->type != btIndestructible) && (b->hitcount == 0))
+          arena->remaining--;
 
         b->sprite->state = asPlayAndReset;
         if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
@@ -418,6 +446,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         ball->bearing = ball->bearing - 180;
         arena->bonuscounter += 3;
       break;
+      case eNone: break;
     }
 
   }
@@ -517,7 +546,7 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
     //else if((ball->cx - 2 > (player->x + player->w)) && (ball->bearing > 180))
     //  *e = eTopRight;
     //else
-    if((abs(player->speed) > 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
+    if((abs(player->speed) >= 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
     {
         // we need a right-angled triangle
         double rads = (180 - ball->bearing) * (PI / 180);
@@ -545,4 +574,10 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
     return 1;
   }
   return 0;
+}
+
+void arena_drawlives(Arena* arena, App* app)
+{
+  for(int i = 0; i < arena->lives; i++)
+    a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 20+(40*i), 560, 0);
 }
