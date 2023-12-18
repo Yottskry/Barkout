@@ -144,10 +144,10 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
     case boDeadly: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d"); break;
     case boSlow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
     case boShrink: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-s"); break;
+    case boCatch: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-c"); break;
+    case boPlayer: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-p"); break;
     case boGrow:
-    case boMultiply:
-    case boFast:
-    case boSkip: break;
+    case boFast: break;
   }
 
   bonus->sprite->loop = 1;
@@ -231,32 +231,33 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
     int br = (int)(arena->bonuses[i]->w / 2);
 
 
-    // FOr now, we always catch the bonus
     if((by > player->y) &&
         (bx+br > player->x) &&
         (bx-br < player->x + player->w))
     {
+      // Lose any existing Deadly or Catch power.
+      ball->state = bsNormal;
+      af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
+      player->state = plNormal;
+      af_setanimation(arena->factory, &(player->sprite), "bat", 1, NULL, NULL, NULL);
+
       switch(arena->bonuses[i]->type)
       {
         case boShrink:
           if(player->state != plShort)
             af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_aftershrink, (void*)arena, (void*)player);
-          // Ball should revert to normal state and animation
           ball->state = bsNormal;
-          af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
           player->state = plShort;
         break;
         case boDeadly:
           ball->state = bsDeadly;
           af_setanimation(arena->factory, &(ball->sprite), "ball-deadly", 1, NULL, NULL, NULL);
-          // Bat should revert to normal state
-          af_setanimation(arena->factory, &(player->sprite), "bat", 1, NULL, NULL, NULL);
         break;
+        case boCatch: ball->state = bsLoose; break;
+        case boPlayer: arena->lives++; break;
         case boSlow:
-        case boMultiply:
         case boFast:
-        case boGrow:
-        case boSkip: break;
+        case boGrow: break;
       }
       arena_freebonus(arena, arena->bonuses[i]);
     }
@@ -340,7 +341,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         b->sprite->state = asPlayAndReset;
         if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
         {
-          Bonustype botype = rand() % 3;
+          Bonustype botype = rand() % 5;
           arena_addbonus(arena, b->left, b->bottom, botype);
           af_playsample(arena->factory, "brick");
         }
@@ -365,6 +366,9 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       if(1 == ball_collidesbat(ball, player, &hitedge))
       {
         af_playsample(arena->factory, "bat");
+        if(ball->state == bsLoose)
+          ball->state = bsStuck;
+
         break;
       }
 

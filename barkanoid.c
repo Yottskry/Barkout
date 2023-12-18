@@ -446,7 +446,7 @@ int main(int argc, char** argv)
           case SDLK_RIGHT: player.targetspeed = player.speed < 0 ? player.targetspeed : 0; break;
           case SDLK_SPACE:
             ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
-            ball.state = ball.state == bsSticky ? bsNormal : ball.state;
+            ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
           break;
         }
       }
