@@ -221,7 +221,7 @@ int main(int argc, char** argv)
                   .counter = 0
                 };
 
-  arena_loadbricks(&arena, &f);
+  //arena_loadbricks(&arena, &f);
 
   int hi = loadhighscore();
 
@@ -345,6 +345,10 @@ int main(int argc, char** argv)
     {
       if(Mix_PlayingMusic() != 0)
         Mix_HaltMusic();
+      arena_loadbricks(&arena, &f);
+      arena_drawbricks(&arena, app.renderer);
+      // Reset immediately changes the state to gsGetReady
+      // So this block only executes once
       reset(&app, &ball, &player, &arena, &gamestate);
     }
 
@@ -383,9 +387,9 @@ int main(int argc, char** argv)
         // Load new level
         arena_freebricks(&arena);
         arena.level++;
-        arena_loadbricks(&arena, &f);
         gamestate = gsNewLevel;
-        continue;
+        // See the note above SDL_RenderPresent (below)
+        //continue;
       }
 
       // Move the bat, check we're within the arena
@@ -394,6 +398,7 @@ int main(int argc, char** argv)
       arena_batcollidesbonus(&arena, &player, &ball);
     } // This one is an else because we need one loop between
       // change of gamestate for the Get Ready text to render.
+
     if(gamestate == gsGetReady)
     {
       af_playsample(&f, "getready");
@@ -422,7 +427,10 @@ int main(int argc, char** argv)
       // Draw the bat
       bat_drawbat(&player, app.renderer);
     }
+
     // Display everything on the screen
+    // There appears to be a bug in SDL whereby calling SDL_RenderClear or perhaps
+    // the SDL drawing functions without calling SDL_RenderPresent causes some memory leaks.
     SDL_RenderPresent(app.renderer);
 
     Uint32 endticks = SDL_GetTicks();

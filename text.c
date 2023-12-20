@@ -5,8 +5,13 @@
 void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, int flags)
 {
   SDL_Color cWhite = {255,255,255,255};
-  SDL_Surface* txt = TTF_RenderText_Solid(app->font, text, cWhite);
+  SDL_Surface* txt = TTF_RenderUTF8_Solid(app->font, text, cWhite);
+
+  assert(txt != NULL);
+
   SDL_Texture* tex = SDL_CreateTextureFromSurface(app->renderer, txt);
+
+  assert(tex != NULL);
 
   int xpos = x;
 

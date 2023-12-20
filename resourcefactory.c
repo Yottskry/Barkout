@@ -69,6 +69,7 @@ int a_freeanimation(Animation* anim)
   if(anim->sheet != NULL)
   {
     SDL_DestroyTexture(anim->sheet);
+    anim->sheet = NULL;
   }
   return 0;
 }
@@ -115,33 +116,6 @@ void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
   }
 }
 
-int af_freeanimation(ResourceFactory* factory, char name[50])
-{
-  for(int i = 0; i < factory->animationcount; i++)
-  {
-    if(strcmp(name, factory->anims[i]->name) == 0)
-    {
-      a_freeanimation(factory->anims[i]);
-      free(factory->anims[i]);
-      int j = i;
-
-      // Work forwards from the end, moving all
-      // animations down one place << and then reallocate the memory
-      while(j < factory->animationcount - 1)
-      {
-        factory->anims[j] = factory->anims[j+1];
-        j++;
-      }
-
-      factory->animationcount--;
-
-      factory->anims = realloc(factory->anims, sizeof(Animation*) * factory->animationcount);
-    }
-  }
-
-  return 0;
-}
-
 int af_freeanimations(ResourceFactory* factory)
 {
   for(int i = 0; i < factory->animationcount; i++)
@@ -150,6 +124,7 @@ int af_freeanimations(ResourceFactory* factory)
     free(factory->anims[i]);
   }
   free(factory->anims);
+  factory->anims = NULL;
   return 0;
 }
 
@@ -199,5 +174,6 @@ int af_freesamples(ResourceFactory* factory)
     free(factory->samples[i]);
   }
   free(factory->samples);
+  factory->samples = NULL;
   return 0;
 }

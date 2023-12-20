@@ -126,10 +126,15 @@ void arena_freebricks(Arena* arena)
   }
 
   free(arena->bricks);
+  arena->bricks = NULL;
+  arena->brickcount = 0;
+
+  printf("Freeing level\n");
 }
 
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
 {
+  printf("Adding bonus\n");
   // There was a memory leak reported by valgrind here...
   // but actually the leak is because I hadn't yet freed
   // arena->bonuses (et al) before the program exits
@@ -180,6 +185,7 @@ int arena_movebonuses(Arena* arena)
 
 int arena_freebonus(Arena* arena, Bonus* bonus)
 {
+  printf("Freeing single bonus\n");
   for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     // Find the item to be removed
@@ -189,6 +195,7 @@ int arena_freebonus(Arena* arena, Bonus* bonus)
       // so we don't free it here.
       free(bonus->sprite);
       free(bonus);
+      arena->bonuses[i] = NULL;
 
       // Move all subsequent items up one
       for(unsigned int j = i; j < arena->bonuscount - 1; j++)
@@ -205,8 +212,10 @@ int arena_freebonuses(Arena* arena)
 {
   for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
+    printf("Freeing bonus\n");
     free(arena->bonuses[i]->sprite);
     free(arena->bonuses[i]);
+    arena->bonuses[i] = NULL;
   }
   free(arena->bonuses);
   arena->bonuscount = 0;
