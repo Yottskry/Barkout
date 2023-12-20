@@ -142,12 +142,13 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   switch(type)
   {
     case boDeadly: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d"); break;
-    case boSlow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
     case boShrink: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-s"); break;
     case boCatch: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-c"); break;
     case boPlayer: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-p"); break;
-    case boGrow:
+    case boGrow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
     case boFast: break;
+    case boSlow: break;
+    case boWarp: break;
   }
 
   bonus->sprite->loop = 1;
@@ -237,14 +238,15 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
     {
       // Lose any existing Deadly or Catch power.
       ball->state = bsNormal;
-      af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
       player->state = plNormal;
+      af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
       af_setanimation(arena->factory, &(player->sprite), "bat", 1, NULL, NULL, NULL);
 
       switch(arena->bonuses[i]->type)
       {
         case boShrink:
-          if(player->state != plShort)
+          // If the bat size is currently long, don't play the grow animation
+          if(player->w != psShort)
             af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_aftershrink, (void*)arena, (void*)player);
           ball->state = bsNormal;
           player->state = plShort;
@@ -254,11 +256,26 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           af_setanimation(arena->factory, &(ball->sprite), "ball-deadly", 1, NULL, NULL, NULL);
         break;
         case boCatch: ball->state = bsLoose; break;
-        case boPlayer: arena->lives++; break;
+        case boPlayer:
+          arena->lives++;
+          af_playsample(arena->factory, "1up");
+        break;
+        case boGrow:
+          // If the bat size is currently short, don't play the grow animation
+          if(player->w != psLong)
+            af_setanimation(arena->factory, &(player->sprite),"bat-grow", 0, bat_aftergrow, (void*)arena, (void*)player);
+          ball->state = bsNormal;
+          player->state = plLong;
+        break;
+        case boWarp:
         case boSlow:
-        case boFast:
-        case boGrow: break;
+        case boFast: break;
+
       }
+
+      if(player->state != plShort && player->state != plLong)
+        player->w = psNormal;
+
       arena_freebonus(arena, arena->bonuses[i]);
     }
   }
@@ -273,6 +290,15 @@ void bat_aftershrink(void* sender, void* data)
   player->sprite.state = asLooping;
   player->w = psShort;
   printf("Player width is...%d x \n", player->w);
+}
+
+void bat_aftergrow(void* sender, void* data)
+{
+  Bat* player = (Bat*)data;
+  Arena* arena = (Arena*)sender;
+  af_setanimation(arena->factory, &(player->sprite),"bat-l", 1, NULL, NULL, NULL);
+  player->sprite.state = asLooping;
+  player->w = psLong;
 }
 
 int ball_moveball(Ball* ball, Arena* arena, Bat* player)
@@ -368,6 +394,13 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         af_playsample(arena->factory, "bat");
         if(ball->state == bsLoose)
           ball->state = bsStuck;
+
+        Uint32 curticks = SDL_GetTicks();
+        if(curticks - arena->counter >= 60000)
+        {
+          ball->speed++;
+          arena->counter = curticks;
+        }
 
         break;
       }

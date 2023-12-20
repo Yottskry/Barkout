@@ -6,7 +6,7 @@
 #include "bonus.h"
 #include <SDL.h>
 
-typedef enum { psNormal = 80, psLong = 100, psShort = 60 } Playersize;
+typedef enum { psNormal = 80, psLong = 120, psShort = 60 } Playersize;
 typedef enum { plNormal, plShort, plLong, plSticky, plLaser } Playerstate;
 
 typedef struct

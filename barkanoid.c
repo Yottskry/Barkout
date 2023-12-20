@@ -83,12 +83,14 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "bat.png", "bat", 82, 29);
   af_loadanimation(f, renderer, "ball.png", "ball", 17, 17);
   af_loadanimation(f, renderer, "bat_shrink.png", "bat-shrink", 82, 29);
+  af_loadanimation(f, renderer, "bat_grow.png", "bat-grow", 122, 29);
   af_loadanimation(f, renderer, "bonus.png", "bonus-d", 43, 25);
   af_loadanimation(f, renderer, "bonus-s.png", "bonus-s", 43, 25);
   af_loadanimation(f, renderer, "bonus-e.png", "bonus-e", 43, 25);
   af_loadanimation(f, renderer, "bonus-c.png", "bonus-c", 43, 25);
   af_loadanimation(f, renderer, "bonus-p.png", "bonus-p", 43, 25);
   af_loadanimation(f, renderer, "bat_small.png", "bat-s", 51, 27);
+  af_loadanimation(f, renderer, "bat_long.png", "bat-l", 122, 27);
   af_loadanimation(f, renderer, "ball-deadly.png", "ball-deadly", 17, 17);
   af_loadanimation(f, renderer, "barkanoid-intro.png", "intro", 400, 75);
   af_loadanimation(f, renderer, "life.png", "life", 38, 16);
@@ -98,6 +100,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-brick-high.wav", "brick-high");
   af_loadsample(f, "barkanoid-bat.wav", "bat");
   af_loadsample(f, "barkanoid-dead.wav", "dead");
+  af_loadsample(f, "barkanoid-1up.wav", "1up");
 }
 
 void gameover(App* app, Gamestate* gamestate)
@@ -117,6 +120,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2) + 2;
+  ball->speed = 6;
   *gamestate = gsGetReady;
   text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0);
   text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0);
@@ -213,7 +217,8 @@ int main(int argc, char** argv)
                   .bonuses = NULL,
                   .score = 0,
                   .lives = STARTLIVES,
-                  .level = startlevel
+                  .level = startlevel,
+                  .counter = 0
                 };
 
   arena_loadbricks(&arena, &f);
@@ -270,7 +275,6 @@ int main(int argc, char** argv)
   {
     // Compare this to the end of the loop to set the frame rate
     Uint32 startticks = SDL_GetTicks();
-
     Uint32 delay = 0;
 
     // Clear the screen
@@ -396,6 +400,7 @@ int main(int argc, char** argv)
       delay = 3000;
       //getready(&gamestate, gsRunning);
       gamestate = gsRunning;
+      arena.counter = startticks;
     }
 
     if(gamestate == gsDying)
