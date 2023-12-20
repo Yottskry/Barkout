@@ -14,7 +14,7 @@ This is Barkanoid, a vaguely dog-themed Breakout / Arkanoid clone with a few twi
 What's the objective?
 ---------------------
 
-Are you serious? It's a Breakout clone. You use the bat to hit the bricks. When all the bricks are destroyed (of those that can be destroyed) you move on to the next level. There are power-ups (and power-downs) to collect along the way, and at some point there might be enemies and warp bubbles and all sorts.
+Are you serious? It's a Breakout clone. You use the bat to bounce the ball to hit the bricks, trying not to lose the ball off the bottom of the screen. When all the bricks are destroyed (of those that can be destroyed) you move on to the next level. There are power-ups (and power-downs) to collect along the way, and at some point there might be enemies and warp bubbles and all sorts.
 
 
 Who did the graphics?
