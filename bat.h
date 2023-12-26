@@ -6,14 +6,14 @@
 #include "bonus.h"
 #include <SDL.h>
 
-typedef enum { psNormal = 80, psLong = 120, psShort = 60 } Playersize;
+typedef enum { psNormal = 79, psLong = 120, psShort = 60 } Playersize;
 typedef enum { plNormal, plShort, plLong, plSticky, plLaser } Playerstate;
 
 typedef struct
 {
   int x;
   int y;
-  int w;
+  Playersize w;
   int h;
   int maxspeed;
   int speed;

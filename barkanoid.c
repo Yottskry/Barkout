@@ -79,16 +79,20 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "grey.png", "grey", 44, 29);
   af_loadanimation(f, renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
+  af_loadanimation(f, renderer, "bg2.png", "bg2", 600, 600);
   af_loadanimation(f, renderer, "scores.png", "scores", 200, 600);
   af_loadanimation(f, renderer, "bat.png", "bat", 82, 29);
   af_loadanimation(f, renderer, "ball.png", "ball", 17, 17);
   af_loadanimation(f, renderer, "bat_shrink.png", "bat-shrink", 82, 29);
+  af_loadanimation(f, renderer, "bat_laser.png", "bat-laser", 82, 29);
+  af_loadanimation(f, renderer, "bat_laserify.png", "bat-laserify", 82, 29);
   af_loadanimation(f, renderer, "bat_grow.png", "bat-grow", 122, 29);
   af_loadanimation(f, renderer, "bonus.png", "bonus-d", 43, 25);
   af_loadanimation(f, renderer, "bonus-s.png", "bonus-s", 43, 25);
   af_loadanimation(f, renderer, "bonus-e.png", "bonus-e", 43, 25);
   af_loadanimation(f, renderer, "bonus-c.png", "bonus-c", 43, 25);
   af_loadanimation(f, renderer, "bonus-p.png", "bonus-p", 43, 25);
+  af_loadanimation(f, renderer, "bonus-l.png", "bonus-l", 43, 25);
   af_loadanimation(f, renderer, "bat_small.png", "bat-s", 51, 27);
   af_loadanimation(f, renderer, "bat_long.png", "bat-l", 122, 27);
   af_loadanimation(f, renderer, "ball-deadly.png", "ball-deadly", 17, 17);
@@ -101,12 +105,13 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-bat.wav", "bat");
   af_loadsample(f, "barkanoid-dead.wav", "dead");
   af_loadsample(f, "barkanoid-1up.wav", "1up");
+  af_loadsample(f, "barkanoid-brick-laser.wav", "brick-laser");
 }
 
 void gameover(App* app, Gamestate* gamestate)
 {
   *gamestate = gsDying;
-  text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0);
+  text_drawbgtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, (SDL_Color){89, 125, 173, 255}, 0);
   text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0);
 }
 
@@ -116,13 +121,15 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   player->x = arena->width / 2;
   bat_reset(player, arena->factory);
   arena_freebonuses(arena);
+  arena_freebullets(arena);
+  arena->counter = SDL_GetTicks();
   af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2) + 2;
   ball->speed = 6;
   *gamestate = gsGetReady;
-  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0);
+  text_drawbgtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, (SDL_Color){89, 125, 173, 255}, 0);
   text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0);
   return 0;
 }
@@ -132,6 +139,33 @@ int getready(Gamestate* gamestate, Gamestate nextstate)
   //SDL_Delay(3000);
   *gamestate = nextstate;
   return 0;
+}
+
+void drawbackground(App* app, Arena* arena, ResourceFactory* factory)
+{
+  // Draw the background
+  a_drawstaticframe(arena->bg, app->renderer, 0, 0, 0);
+  a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0);
+}
+
+void drawarenatext(App* app, Arena* arena, int hi)
+{
+  text_drawtext(app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255}, 0);
+  text_drawtext(app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255}, 0);
+
+  char highs[10] = "";
+
+  sprintf(highs, "%08d", hi);
+
+  text_drawtext(app, highs, 612, 82, (SDL_Color){0, 0, 0, 255}, 0);
+  text_drawtext(app, highs, 610, 80, (SDL_Color){255, 255, 255, 255}, 0);
+
+  char scores[10] = "";
+
+  sprintf(scores, "%08d", arena->score);
+
+  text_drawtext(app, scores, 612, 142, (SDL_Color){0, 0, 0, 255}, 0);
+  text_drawtext(app, scores, 610, 140, (SDL_Color){255, 255, 255, 255}, 0);
 }
 
 int main(int argc, char** argv)
@@ -218,10 +252,15 @@ int main(int argc, char** argv)
                   .score = 0,
                   .lives = STARTLIVES,
                   .level = startlevel,
-                  .counter = 0
+                  .counter = 0,
+                  .bulletcount = 0,
+                  .bullets = NULL,
+                  .bg = NULL
                 };
 
   //arena_loadbricks(&arena, &f);
+
+  arena_loadlevels(&arena, &f);
 
   int hi = loadhighscore();
 
@@ -277,36 +316,71 @@ int main(int argc, char** argv)
     Uint32 startticks = SDL_GetTicks();
     Uint32 delay = 0;
 
-    // Clear the screen
+    // If we check the keys here, then in many cases the state
+    // will only change here, so we'll draw the correct frame each time
+    SDL_Event e;
+		if (SDL_PollEvent(&e)) {
+			if (e.type == SDL_QUIT) {
+				break;
+			}
+
+			if (e.type == SDL_KEYUP)
+      {
+        switch(e.key.keysym.sym)
+        {
+          case SDLK_z:
+          case SDLK_LEFT: player.targetspeed = player.speed > 0 ? player.targetspeed : 0; break;
+          case SDLK_x:
+          case SDLK_RIGHT: player.targetspeed = player.speed < 0 ? player.targetspeed : 0; break;
+          case SDLK_SPACE:
+            ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
+            ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
+          break;
+        }
+      }
+
+      if (e.type == SDL_KEYDOWN)
+      {
+        // Not part of the switch because we need "break" to break the loop...
+        if(e.key.keysym.sym == SDLK_ESCAPE)
+        {
+          if((gamestate != gsTitle) && (gamestate != gsStory))
+            gamestate = gsTitle;
+          else
+            break;
+        }
+
+        switch(e.key.keysym.sym)
+        {
+          case SDLK_z:
+          case SDLK_LEFT: player.targetspeed = -1 * player.maxspeed; break;
+          case SDLK_x:
+          case SDLK_RIGHT: player.targetspeed = player.maxspeed; break;
+          case SDLK_UP: ball.bearing += 5; break;
+          case SDLK_DOWN: ball.bearing -= 5; break;
+          case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
+          case SDLK_SPACE:
+            if((gamestate == gsRunning) && (player.state == plLaser))
+              arena_addbullet(&arena, &player);
+
+          case SDLK_RETURN:
+            if(gamestate == gsTitle)
+              gamestate = gsStory;
+            else if(gamestate == gsStory)
+            {
+              gamestate = gsNewLevel;
+              arena.lives = STARTLIVES;
+              arena.level = 1;
+              arena.score = 0;
+              arena_loadbricks(&arena, arena.level);
+            }
+          break;
+        }
+      }
+		}
+
+		// Clear the screen
 	  SDL_RenderClear(app.renderer);
-
-
-	  if((gamestate != gsTitle) && (gamestate != gsStory))
-	  {
-      // Draw the background
-      a_drawstaticframe(af_getanimation(&f, "bg1"), app.renderer, 0, 0, 0);
-      a_drawstaticframe(af_getanimation(&f, "scores"), app.renderer, 600, 0, 0);
-
-      text_drawtext(&app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255}, 0);
-      text_drawtext(&app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255}, 0);
-
-      char highs[10] = "";
-
-      sprintf(highs, "%08d", hi);
-
-      text_drawtext(&app, highs, 612, 82, (SDL_Color){0, 0, 0, 255}, 0);
-      text_drawtext(&app, highs, 610, 80, (SDL_Color){255, 255, 255, 255}, 0);
-
-      char scores[10] = "";
-
-      sprintf(scores, "%08d", arena.score);
-
-      text_drawtext(&app, scores, 612, 142, (SDL_Color){0, 0, 0, 255}, 0);
-      text_drawtext(&app, scores, 610, 140, (SDL_Color){255, 255, 255, 255}, 0);
-
-      // bonuses will appear above bricks due to the order here
-      arena_drawbricks(&arena, app.renderer);
-    }
 
     if(gamestate == gsTitle)
     {
@@ -336,6 +410,9 @@ int main(int argc, char** argv)
       if(text_drawflashstory(&app, &story3, &txt3, 380))
         gamestate = gsNewLevel;
       intro_movestars(stars);
+      // problem is that on our next loop, if we've changed
+      // to gsNewLevel we draw one single frame of the previous
+      // level layout
     }
     // Again, we want another frame to draw the level
     // before we say "Get Ready!" so we need an else
@@ -345,7 +422,10 @@ int main(int argc, char** argv)
     {
       if(Mix_PlayingMusic() != 0)
         Mix_HaltMusic();
-      arena_loadbricks(&arena, &f);
+      arena_loadbricks(&arena, arena.level);
+      drawbackground(&app, &arena, &f);
+      drawarenatext(&app, &arena, hi);
+      arena_drawbricks(&arena, app.renderer);
       arena_drawbricks(&arena, app.renderer);
       // Reset immediately changes the state to gsGetReady
       // So this block only executes once
@@ -354,6 +434,9 @@ int main(int argc, char** argv)
 
     if(gamestate == gsRunning)
     {
+      drawbackground(&app, &arena, &f);
+      drawarenatext(&app, &arena, hi);
+      arena_drawbricks(&arena, app.renderer);
       // Move the ball, check for collisions with bat, arena, and bricks
       // In the event of losing the ball, reset the level
       if(1 == ball_moveball(&ball, &arena, &player))
@@ -385,7 +468,7 @@ int main(int argc, char** argv)
       if(arena.remaining == 0)
       {
         // Load new level
-        arena_freebricks(&arena);
+        //arena_freebricks(&arena);
         arena.level++;
         gamestate = gsNewLevel;
         // See the note above SDL_RenderPresent (below)
@@ -395,12 +478,17 @@ int main(int argc, char** argv)
       // Move the bat, check we're within the arena
       bat_movebat(&player, arena.bounds);
       arena_movebonuses(&arena);
+      arena_movebullets(&arena);
+      arena_checkbulletcollisions(&arena);
       arena_batcollidesbonus(&arena, &player, &ball);
     } // This one is an else because we need one loop between
       // change of gamestate for the Get Ready text to render.
 
     if(gamestate == gsGetReady)
     {
+      //drawbackground(&app, &arena, &f);
+      //drawarenatext(&app, &arena, hi);
+      //arena_drawbricks(&arena, app.renderer);
       af_playsample(&f, "getready");
       delay = 3000;
       //getready(&gamestate, gsRunning);
@@ -426,6 +514,8 @@ int main(int argc, char** argv)
 
       // Draw the bat
       bat_drawbat(&player, app.renderer);
+
+      arena_drawbullets(&arena, app.renderer);
     }
 
     // Display everything on the screen
@@ -442,64 +532,13 @@ int main(int argc, char** argv)
 
     if(delay > 0)
       SDL_Delay(delay);
-
-    SDL_Event e;
-		if (SDL_PollEvent(&e)) {
-			if (e.type == SDL_QUIT) {
-				break;
-			}
-
-			if (e.type == SDL_KEYUP)
-      {
-        switch(e.key.keysym.sym)
-        {
-          case SDLK_z:
-          case SDLK_LEFT: player.targetspeed = player.speed > 0 ? player.targetspeed : 0; break;
-          case SDLK_x:
-          case SDLK_RIGHT: player.targetspeed = player.speed < 0 ? player.targetspeed : 0; break;
-          case SDLK_SPACE:
-            ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
-            ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
-          break;
-        }
-      }
-
-      if (e.type == SDL_KEYDOWN)
-      {
-        // Not part of the switch because we need "break" to break the loop...
-        if(e.key.keysym.sym == SDLK_ESCAPE)
-        {
-          break;
-        }
-
-        switch(e.key.keysym.sym)
-        {
-          case SDLK_z:
-          case SDLK_LEFT: player.targetspeed = -1 * player.maxspeed; break;
-          case SDLK_x:
-          case SDLK_RIGHT: player.targetspeed = player.maxspeed; break;
-          case SDLK_UP: ball.bearing += 5; break;
-          case SDLK_DOWN: ball.bearing -= 5; break;
-          case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
-          case SDLK_SPACE:
-          case SDLK_RETURN:
-            if(gamestate == gsTitle)
-              gamestate = gsStory;
-            else if(gamestate == gsStory)
-            {
-              gamestate = gsNewLevel;
-              arena.lives = STARTLIVES;
-            }
-          break;
-        }
-      }
-		}
   }
 
   // Exiting the program, so free all allocated memory
   //af_freeanimation(&f, "ball");
   arena_freebonuses(&arena);
-  arena_freebricks(&arena);
+  arena_freelevels(&arena);
+  arena_freebullets(&arena);
 
   af_freesamples(&f);
   af_freeanimations(&f);

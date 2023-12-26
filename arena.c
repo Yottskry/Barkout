@@ -1,96 +1,127 @@
 #include "arena.h"
 
-int arena_loadbricks(Arena* arena, ResourceFactory* factory)
+int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 {
-  char fname[255] = "";
-
-  sprintf(fname, "level%d.lvl", arena->level);
-
-  printf("Loading level %s\n", fname);
-
-  FILE* f = fopen(fname, "r");
-  char rowdata[14];
-  arena->brickcount = 0;
-  int brickno = 0;
-  int row = 0;
-  arena->remaining = 0;
-
-  // Read each line. This is the row position.
-  while(fscanf(f, "%s", rowdata) > 0)
+  for(int i = 0; i < NUMLEVELS; i++)
   {
-    // Read each character. This is the column.
-    for(unsigned int col = 0; col < strlen(rowdata); col++)
+    arena->levels[i].level = i + 1;
+
+    Level* level = &(arena->levels[i]);
+
+    char fname[255] = "";
+
+    sprintf(fname, "level%d.lvl", level->level);
+
+    printf("Loading level %s\n", fname);
+
+    FILE* f = fopen(fname, "r");
+    char rowdata[14];
+
+    level->brickcount = 0;
+    int brickno = 0;
+    int row = 0;
+    //arena->remaining = 0;
+
+    char bgname[4] = "bg1";
+    fscanf(f, "%s", bgname);
+    level->bg = af_getanimation(factory, bgname);
+
+    // Read each line. This is the row position.
+    while(fscanf(f, "%s", rowdata) > 0)
     {
-      if(rowdata[col] == '.')
-        continue;
+      // Read each character. This is the column.
+      for(unsigned int col = 0; col < strlen(rowdata); col++)
+      {
+        if(rowdata[col] == '.')
+          continue;
 
-      arena->bricks = realloc(arena->bricks, sizeof(Brick*) * ++arena->brickcount);
+        level->bricks = realloc(level->bricks, sizeof(Brick*) * ++level->brickcount);
 
-      arena->bricks[brickno] = malloc(sizeof(Brick));
-      arena->bricks[brickno]->left = arena->bounds.left + (col * BRICKW);
-      arena->bricks[brickno]->right = arena->bounds.left + (col * BRICKW) + BRICKW;
-      arena->bricks[brickno]->top = arena->bounds.top + (row * BRICKH);
-      arena->bricks[brickno]->bottom = arena->bounds.top + (row * BRICKH) + BRICKH;
-      arena->bricks[brickno]->hitcount = 1;
-      arena->bricks[brickno]->sprite = malloc(sizeof(Sprite));
-      arena->bricks[brickno]->type = btNormal;
+        level->bricks[brickno] = malloc(sizeof(Brick));
+        level->bricks[brickno]->left = arena->bounds.left + (col * BRICKW);
+        level->bricks[brickno]->right = arena->bounds.left + (col * BRICKW) + BRICKW;
+        level->bricks[brickno]->top = arena->bounds.top + (row * BRICKH);
+        level->bricks[brickno]->bottom = arena->bounds.top + (row * BRICKH) + BRICKH;
+        level->bricks[brickno]->hitcount = 1;
+        level->bricks[brickno]->sprite = malloc(sizeof(Sprite));
+        level->bricks[brickno]->type = btNormal;
 
-      Animation* brickanim;
-      char c = rowdata[col];
-      switch(c){
-        case 'r':
-          brickanim = af_getanimation(factory, "red");
-          arena->remaining++;
-        break;
-        case 'b':
-          brickanim = af_getanimation(factory, "blue");
-          arena->remaining++;
-        break;
-        case 'g':
-          brickanim = af_getanimation(factory, "green");
-          arena->remaining++;
-        break;
-        case 'p':
-          brickanim = af_getanimation(factory, "purple");
-          arena->remaining++;
-        break;
-        case 'w':
-          brickanim = af_getanimation(factory, "yellow");
-          arena->remaining++;
-        break;
-        case 'y':
-          brickanim = af_getanimation(factory, "grey");
-          arena->remaining++;
-        break;
-        case 'G':
-          arena->bricks[brickno]->hitcount = 2;
-          arena->bricks[brickno]->type = btHard;
-          brickanim = af_getanimation(factory, "darkgrey");
-          arena->remaining++;
-        break;
-        case 'O':
-          arena->bricks[brickno]->hitcount = -1;
-          arena->bricks[brickno]->type = btIndestructible;
-          brickanim = af_getanimation(factory, "orange");
-        break;
+        Animation* brickanim;
+        char c = rowdata[col];
+        switch(c){
+          case 'r':
+            brickanim = af_getanimation(factory, "red");
+            //arena->remaining++;
+          break;
+          case 'b':
+            brickanim = af_getanimation(factory, "blue");
+            //arena->remaining++;
+          break;
+          case 'g':
+            brickanim = af_getanimation(factory, "green");
+            //arena->remaining++;
+          break;
+          case 'p':
+            brickanim = af_getanimation(factory, "purple");
+            //arena->remaining++;
+          break;
+          case 'w':
+            brickanim = af_getanimation(factory, "yellow");
+            //arena->remaining++;
+          break;
+          case 'y':
+            brickanim = af_getanimation(factory, "grey");
+            //arena->remaining++;
+          break;
+          case 'G':
+            level->bricks[brickno]->hitcount = 2;
+            level->bricks[brickno]->type = btHard;
+            brickanim = af_getanimation(factory, "darkgrey");
+            //arena->remaining++;
+          break;
+          case 'O':
+            level->bricks[brickno]->hitcount = -1;
+            level->bricks[brickno]->type = btIndestructible;
+            brickanim = af_getanimation(factory, "orange");
+          break;
+        }
+
+        //af_setanimation(arena->bricks[brickno]->sprite, brickanim, 0, NULL, NULL);
+
+        level->bricks[brickno]->sprite->anim = brickanim;
+        level->bricks[brickno]->sprite->state = asStatic;
+        level->bricks[brickno]->sprite->currentframe = 0;
+        level->bricks[brickno]->sprite->loop = 0;
+        level->bricks[brickno]->sprite->lastticks = 0;
+        level->bricks[brickno]->sprite->onanimfinished = NULL;
+        level->bricks[brickno]->sprite->data = NULL;
+        brickno++;
       }
-
-      //af_setanimation(arena->bricks[brickno]->sprite, brickanim, 0, NULL, NULL);
-
-      arena->bricks[brickno]->sprite->anim = brickanim;
-      arena->bricks[brickno]->sprite->state = asStatic;
-      arena->bricks[brickno]->sprite->currentframe = 0;
-      arena->bricks[brickno]->sprite->loop = 0;
-      arena->bricks[brickno]->sprite->lastticks = 0;
-      arena->bricks[brickno]->sprite->onanimfinished = NULL;
-      arena->bricks[brickno]->sprite->data = NULL;
-      brickno++;
+      row++;
     }
-    row++;
-  }
 
-  fclose(f);
+    fclose(f);
+
+  }
   return 0;
+}
+
+void arena_loadbricks(Arena* arena, int level)
+{
+  arena->bricks = arena->levels[level-1].bricks;
+  arena->brickcount = arena->levels[level-1].brickcount;
+  arena->bg = arena->levels[level-1].bg;
+  arena->remaining = 0;
+  for(int i = 0; i < arena->levels[level-1].brickcount; i++)
+  {
+    arena->remaining += arena->levels[level-1].bricks[i]->type == btIndestructible ? 0 : 1;
+    switch(arena->levels[level-1].bricks[i]->type)
+    {
+      case btNormal: arena->levels[level-1].bricks[i]->hitcount = 1; break;
+      case btHard: arena->levels[level-1].bricks[i]->hitcount = 2; break;
+      case btIndestructible: arena->levels[level-1].bricks[i]->hitcount = -1; break;
+    }
+  }
 }
 
 void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
@@ -117,19 +148,23 @@ void arena_resetbricks(Arena* arena)
   }
 }
 
-void arena_freebricks(Arena* arena)
+void arena_freelevels(Arena* arena)
 {
-  for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
+  for(int levno = 0; levno < NUMLEVELS; levno++)
   {
-    free(arena->bricks[brickno]->sprite);
-    free(arena->bricks[brickno]);
+
+    for(int brickno = 0; brickno < arena->levels[levno].brickcount; brickno++)
+    {
+      free(arena->levels[levno].bricks[brickno]->sprite);
+      free(arena->levels[levno].bricks[brickno]);
+    }
+
+    free(arena->levels[levno].bricks);
+    arena->levels[levno].bricks = NULL;
+    arena->levels[levno].brickcount = 0;
+
+    printf("Freeing level\n");
   }
-
-  free(arena->bricks);
-  arena->bricks = NULL;
-  arena->brickcount = 0;
-
-  printf("Freeing level\n");
 }
 
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
@@ -151,7 +186,7 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
     case boCatch: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-c"); break;
     case boPlayer: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-p"); break;
     case boGrow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
-    case boFast: break;
+    case boLaser: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-l"); break;
     case boSlow: break;
     case boWarp: break;
   }
@@ -243,7 +278,7 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
 
     if((by > player->y) &&
         (bx+br > player->x) &&
-        (bx-br < player->x + player->w))
+        (bx-br < player->x + (int)(player->w)))
     {
       // Lose any existing Deadly or Catch power.
       ball->state = bsNormal;
@@ -276,9 +311,13 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           ball->state = bsNormal;
           player->state = plLong;
         break;
+        case boLaser:
+          af_setanimation(arena->factory, &(player->sprite),"bat-laser", 0, NULL, NULL, NULL);
+          player->state = plLaser;
+        break;
         case boWarp:
-        case boSlow:
-        case boFast: break;
+        case boSlow: break;
+
 
       }
 
@@ -376,7 +415,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         b->sprite->state = asPlayAndReset;
         if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
         {
-          Bonustype botype = rand() % 5;
+          Bonustype botype = rand() % 6;
           arena_addbonus(arena, b->left, b->bottom, botype);
           af_playsample(arena->factory, "brick");
         }
@@ -583,7 +622,7 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
   if((ball->cy - (player->y + player->h) < ball->radius) &&
        (player->x - ball->cx < ball->radius) &&
        (player->y - ball->cy < ball->radius) &&
-       (ball->cx - (player->x + player->w) < ball->radius))
+       (ball->cx - (player->x + (int)(player->w)) < ball->radius))
   {
     *e = eTop;
     ball->cy = player->y - ball->radius - 1;
@@ -620,6 +659,124 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
     return 1;
   }
   return 0;
+}
+
+void arena_addbullet(Arena* arena, Bat* player)
+{
+  if(arena->bulletcount >= MAXBULLETS)
+    return;
+
+  arena->bulletcount++;
+  arena->bullets = realloc(arena->bullets, sizeof(Bullet*) * arena->bulletcount);
+  arena->bullets[arena->bulletcount - 1] = malloc(sizeof(Bullet));
+  arena->bullets[arena->bulletcount - 1]->speed = 5;
+  arena->bullets[arena->bulletcount - 1]->x = player->x + 22;
+  arena->bullets[arena->bulletcount - 1]->y = player->y;
+
+  arena->bulletcount++;
+  arena->bullets = realloc(arena->bullets, sizeof(Bullet*) * arena->bulletcount);
+  arena->bullets[arena->bulletcount - 1] = malloc(sizeof(Bullet));
+  arena->bullets[arena->bulletcount - 1]->speed = 5;
+  arena->bullets[arena->bulletcount - 1]->x = player->x + player->w - 22 - 5; // 5 for bullet width
+  arena->bullets[arena->bulletcount - 1]->y = player->y;
+}
+
+void arena_movebullets(Arena* arena)
+{
+  for(int i = 0; i < arena->bulletcount; i++)
+  {
+    arena->bullets[i]->y -= arena->bullets[i]->speed;
+  }
+}
+
+void arena_drawbullets(Arena* arena, SDL_Renderer* renderer)
+{
+  for(int i = 0; i < arena->bulletcount; i++)
+  {
+    Bullet* b = arena->bullets[i];
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_Rect rect = { .x = b->x, .y = b->y, .w = 5, .h = 8 };
+    SDL_RenderFillRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_Rect rect2 = { .x = b->x+1, .y = b->y+1, .w = 3, .h = 6 };
+    SDL_RenderFillRect(renderer, &rect2);
+  }
+}
+
+void arena_freebullet(Arena* arena, int index)
+{
+  free(arena->bullets[index]);
+  arena->bullets[index] = NULL;
+  arena->bulletcount--;
+
+  for(int i = index; i < arena->bulletcount; i++)
+  {
+    arena->bullets[i] = arena->bullets[i+1];
+  }
+
+  if(arena->bulletcount > 0)
+    arena->bullets = realloc(arena->bullets, sizeof(Bullet*) * arena->bulletcount);
+  else
+  {
+    free(arena->bullets);
+    arena->bullets = NULL;
+  }
+}
+
+void arena_freebullets(Arena* arena)
+{
+  for(int i = arena->bulletcount-1; i >= 0; i--)
+  {
+    arena_freebullet(arena, i);
+  }
+}
+
+void arena_checkbulletcollisions(Arena* arena)
+{
+  for(int i = arena->bulletcount - 1; i >= 0; i--)
+  {
+    Bullet* bullet = arena->bullets[i];
+    if(bullet->y < arena->bounds.top)
+    {
+      arena_freebullet(arena, i);
+      continue;
+    }
+  }
+
+  // We could have included this within the loop above
+  // but it would make it harder for two bullets hitting
+  // one brick to only register as a single hit (which is what we want)
+
+
+  for(unsigned int j = 0; j < arena->brickcount; j++)
+  {
+    bool hit = false;
+    Brick* b = arena->bricks[j];
+    // Skip invincible bricks and those that
+    // are already knocked out.
+    if(b->hitcount <= 0)
+      continue;
+
+    for(int i = arena->bulletcount - 1; i >= 0; i--)
+    {
+      Bullet* bullet = arena->bullets[i];
+      if((bullet->y < b->bottom) &&
+         (bullet->x + 5 > b->left) &&
+         (bullet->x < b->right))
+      {
+          arena_freebullet(arena, i);
+          hit = true;
+          continue; // test next bullet
+      }
+    }
+
+    if(hit){
+      b->hitcount--;
+      if(b->hitcount == 0)
+        arena->remaining--;
+      af_playsample(arena->factory, "brick-laser");
+    }
+  }
 }
 
 void arena_drawlives(Arena* arena, App* app)

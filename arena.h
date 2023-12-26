@@ -13,11 +13,20 @@
 
 #define BRICKW 40
 #define BRICKH 25
+#define NUMLEVELS 2
+#define MAXBULLETS 10
 
 typedef enum { bsStatic, bsHit } Brickstate;
 typedef enum { btNormal, btHard, btIndestructible } Bricktype;
 typedef enum { eLeft, eRight, eTop, eBottom, eTopLeft, eTopRight, eBottomLeft, eBottomRight, eNone } Edge;
 typedef enum { gsTitle, gsStory, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused } Gamestate;
+
+typedef struct
+{
+  int x;
+  int y;
+  int speed;
+} Bullet;
 
 typedef struct
 {
@@ -34,6 +43,14 @@ typedef struct
 
 typedef struct
 {
+  int level;
+  int brickcount;
+  Animation* bg;
+  Brick** bricks;
+} Level;
+
+typedef struct
+{
   Bounds bounds;
   unsigned int width;
   unsigned int brickcount;
@@ -41,19 +58,25 @@ typedef struct
   unsigned int bonuscount;
   unsigned int score;
   unsigned int remaining;
+  int bulletcount;
   int lives; // Signed because we will reduce to -1 before saying Game Over
   int level;
+  Animation* bg;
   Uint32 counter;
   ResourceFactory* factory;
   Brick** bricks;
   Bonus** bonuses;
+  Bullet** bullets;
+  Level levels[NUMLEVELS];
 } Arena;
 
 // Level related functions
-int arena_loadbricks(Arena* arena, ResourceFactory* factory);
+int arena_loadlevels(Arena* arena, ResourceFactory* factory);
+
+void arena_loadbricks(Arena* arena, int level);
 void arena_drawbricks(Arena* arena, SDL_Renderer* renderer);
 void arena_resetbricks(Arena* arena);
-void arena_freebricks(Arena* arena);
+void arena_freelevels(Arena* arena);
 
 // Bonus related functions
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type);
@@ -71,6 +94,14 @@ void bat_aftergrow(void* sender, void* data);
 int ball_moveball(Ball* ball, Arena* arena, Bat* player);
 Brick* ball_collidesbricks(Arena* arena, Ball* ball, Edge* e);
 int ball_collidesbat(Ball* ball, Bat* player, Edge* e);
+
+// Bullet related functions
+void arena_addbullet(Arena* arena, Bat* player);
+void arena_movebullets(Arena* arena);
+void arena_drawbullets(Arena* arena, SDL_Renderer* renderer);
+void arena_freebullet(Arena* arena, int index);
+void arena_freebullets(Arena* arena);
+void arena_checkbulletcollisions(Arena* arena);
 
 void arena_drawlives(Arena* arena, App* app);
 
