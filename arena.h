@@ -13,8 +13,9 @@
 
 #define BRICKW 40
 #define BRICKH 25
-#define NUMLEVELS 2
+#define NUMLEVELS 3
 #define MAXBULLETS 10
+#define MAXSPEED 12
 
 typedef enum { bsStatic, bsHit } Brickstate;
 typedef enum { btNormal, btHard, btIndestructible } Bricktype;

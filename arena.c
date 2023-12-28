@@ -292,6 +292,8 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           // If the bat size is currently long, don't play the grow animation
           if(player->w != psShort)
             af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_aftershrink, (void*)arena, (void*)player);
+          else
+            bat_aftershrink((void*)arena, (void*)player);
           ball->state = bsNormal;
           player->state = plShort;
         break;
@@ -308,6 +310,8 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           // If the bat size is currently short, don't play the grow animation
           if(player->w != psLong)
             af_setanimation(arena->factory, &(player->sprite),"bat-grow", 0, bat_aftergrow, (void*)arena, (void*)player);
+          else
+            bat_aftergrow((void*)arena, (void*)player);
           ball->state = bsNormal;
           player->state = plLong;
         break;
@@ -413,10 +417,28 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           arena->remaining--;
 
         b->sprite->state = asPlayAndReset;
+
+        // Chance of bonus no more frequently than every BONUSFREQUENCY bricks
+        // and no more than two bonuses on screen at once
         if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2))
         {
-          Bonustype botype = rand() % 6;
-          arena_addbonus(arena, b->left, b->bottom, botype);
+          int bonusscore = rand() % 100;
+          Bonustype botype;
+
+          if(bonusscore > 90)
+            botype = boGrow;
+          else if (bonusscore > 85)
+            botype = boDeadly;
+          else if (bonusscore > 80)
+            botype = boPlayer;
+          else if (bonusscore > 70)
+            botype = boCatch;
+          else if (bonusscore > 60)
+            botype = boLaser;
+
+          if(bonusscore > 60)
+            arena_addbonus(arena, b->left, b->bottom, botype);
+
           af_playsample(arena->factory, "brick");
         }
         else if(b->type == btNormal)
@@ -444,9 +466,11 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           ball->state = bsStuck;
 
         Uint32 curticks = SDL_GetTicks();
+
         if(curticks - arena->counter >= 60000)
         {
-          ball->speed++;
+          if(ball->speed < MAXSPEED)
+            ball->speed++;
           arena->counter = curticks;
         }
 
@@ -506,30 +530,30 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           ball->bearing = 180 - ball->bearing;
         else
           ball->bearing = 360 - (ball->bearing - 180);
-        arena->bonuscounter += 2;
+        arena->bonuscounter++;
       break;
       case eBottom:
         if(ball->bearing < 90)
           ball->bearing = 180 - ball->bearing;
         else
           ball->bearing = 180 + (360 - ball->bearing);
-        arena->bonuscounter += 2;
+        arena->bonuscounter++;
       break;
       case eTopLeft:
         ball->bearing += 180;
-        arena->bonuscounter += 3;
+        arena->bonuscounter++;
       break;
       case eTopRight:
         ball->bearing -= 180;
-        arena->bonuscounter += 3;
+        arena->bonuscounter++;
       break;
       case eBottomLeft:
         ball->bearing = ball->bearing + 180;
-        arena->bonuscounter += 3;
+        arena->bonuscounter++;
       break;
       case eBottomRight:
         ball->bearing = ball->bearing - 180;
-        arena->bonuscounter += 3;
+        arena->bonuscounter++;
       break;
       case eNone: break;
     }

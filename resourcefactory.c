@@ -8,12 +8,15 @@
 Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, char* filename, char name[50], int w, int h)
 {
   // Load an image into a temporary surface.
-	SDL_Surface* tmp = IMG_Load(filename);
+	SDL_Surface* tmpImage = IMG_Load(filename);
+
+	assert(tmpImage != NULL);
+
 	// Literally can't remember why I do this. Transparency? Can't remember...
-	SDL_SetSurfaceAlphaMod(tmp, 255);
-	SDL_Surface* sfc = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGBA32, 0);
+	SDL_SetSurfaceAlphaMod(tmpImage, 255);
+	SDL_Surface* sfc = SDL_ConvertSurfaceFormat(tmpImage, SDL_PIXELFORMAT_RGBA32, 0);
 	// Free the original temporary surface
-	SDL_FreeSurface(tmp);
+	SDL_FreeSurface(tmpImage);
 
 	int nframes = (int)(sfc->w / w);
 

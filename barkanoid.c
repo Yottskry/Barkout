@@ -80,6 +80,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(f, renderer, "bg2.png", "bg2", 600, 600);
+  af_loadanimation(f, renderer, "bg3.png", "bg3", 600, 600);
   af_loadanimation(f, renderer, "scores.png", "scores", 200, 600);
   af_loadanimation(f, renderer, "bat.png", "bat", 82, 29);
   af_loadanimation(f, renderer, "ball.png", "ball", 17, 17);
@@ -98,6 +99,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "ball-deadly.png", "ball-deadly", 17, 17);
   af_loadanimation(f, renderer, "barkanoid-intro.png", "intro", 400, 75);
   af_loadanimation(f, renderer, "life.png", "life", 38, 16);
+
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
   af_loadsample(f, "barkanoid-brick.wav", "brick");
@@ -205,6 +207,8 @@ int main(int argc, char** argv)
         sscanf(argv[i+1], "%d", &startlevel);
     }
 	}
+
+  printf("Start level %d\n", startlevel);
 
 	SDL_SetCursor(SDL_DISABLE);
 
@@ -352,6 +356,11 @@ int main(int argc, char** argv)
 
         switch(e.key.keysym.sym)
         {
+          case SDLK_1:
+            if(gamestate == gsRunning)
+              arena_addbonus(&arena, 200, 200, boGrow);
+          break;
+
           case SDLK_z:
           case SDLK_LEFT: player.targetspeed = -1 * player.maxspeed; break;
           case SDLK_x:
@@ -370,7 +379,7 @@ int main(int argc, char** argv)
             {
               gamestate = gsNewLevel;
               arena.lives = STARTLIVES;
-              arena.level = 1;
+              arena.level = startlevel;
               arena.score = 0;
               arena_loadbricks(&arena, arena.level);
             }
@@ -402,7 +411,7 @@ int main(int argc, char** argv)
     if(gamestate == gsStory)
     {
       titlefinished = true;
-      arena.level = 1;
+      arena.level = startlevel;
       intro_drawstars(app.renderer, stars);
       a_drawsprite(&intro, app.renderer, 200, 220);
       text_drawflashstory(&app, &story1, &txt1, 300);
