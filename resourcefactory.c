@@ -7,8 +7,11 @@
 
 Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, char* filename, char name[50], int w, int h)
 {
+  char apath[255] = "./Sprites/";
+  strcat(apath, filename);
+
   // Load an image into a temporary surface.
-	SDL_Surface* tmpImage = IMG_Load(filename);
+	SDL_Surface* tmpImage = IMG_Load(apath);
 
 	assert(tmpImage != NULL);
 
@@ -119,6 +122,40 @@ void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
   }
 }
 
+void a_drawclippedsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y, SDL_Rect cliprect)
+{
+  Animation* anim = sprite->anim;
+  SDL_Rect src = {anim->framewidth * sprite->currentframe, 0, cliprect.w , anim->frameheight};
+  SDL_Rect dst = {x, y, anim->framewidth, anim->frameheight};
+  SDL_RenderCopy(renderer, anim->sheet, &src, &dst);
+
+  if(sprite->state != asStatic)
+  {
+    Uint32 ticks = SDL_GetTicks();
+    if(ticks - sprite->lastticks >= 50)
+    {
+      (sprite->currentframe)++;
+      sprite->lastticks = ticks;
+    }
+
+    if(sprite->currentframe == anim->size)
+    {
+      if(sprite->state != asPlayToEnd)
+        sprite->currentframe = 0;
+      else
+        sprite->currentframe = anim->size - 1;
+
+      if(sprite->state != asLooping)
+      {
+        sprite->state = asStatic;
+        if(sprite->onanimfinished != NULL)
+          sprite->onanimfinished(sprite->sender, sprite->data);
+      }
+
+    }
+  }
+}
+
 int af_freeanimations(ResourceFactory* factory)
 {
   for(int i = 0; i < factory->animationcount; i++)
@@ -149,9 +186,12 @@ void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], in
 
 Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char name[50])
 {
+  char apath[255] = "./Sounds/";
+  strcat(apath, filename);
+
   factory->samples = realloc(factory->samples, sizeof(Sample*) * (factory->samplecount + 1));
   factory->samples[factory->samplecount] = malloc(sizeof(Sample));
-  factory->samples[factory->samplecount]->sample = Mix_LoadWAV(filename);
+  factory->samples[factory->samplecount]->sample = Mix_LoadWAV(apath);
   strcpy(factory->samples[factory->samplecount]->name, name);
   factory->samplecount++;
   return factory->samples[factory->samplecount-1]->sample;

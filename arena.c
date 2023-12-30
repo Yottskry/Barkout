@@ -10,9 +10,9 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 
     char fname[255] = "";
 
-    sprintf(fname, "level%d.lvl", level->level);
+    sprintf(fname, "./Levels/level%d.lvl", level->level);
 
-    printf("Loading level %s\n", fname);
+    //printf("Loading level %s\n", fname);
 
     FILE* f = fopen(fname, "r");
     char rowdata[14];
@@ -163,13 +163,13 @@ void arena_freelevels(Arena* arena)
     arena->levels[levno].bricks = NULL;
     arena->levels[levno].brickcount = 0;
 
-    printf("Freeing level\n");
+    //printf("Freeing level\n");
   }
 }
 
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
 {
-  printf("Adding bonus\n");
+  //printf("Adding bonus\n");
   // There was a memory leak reported by valgrind here...
   // but actually the leak is because I hadn't yet freed
   // arena->bonuses (et al) before the program exits
@@ -187,8 +187,8 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
     case boPlayer: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-p"); break;
     case boGrow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
     case boLaser: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-l"); break;
+    case boWarp: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-w"); break;
     case boSlow: break;
-    case boWarp: break;
   }
 
   bonus->sprite->loop = 1;
@@ -220,7 +220,7 @@ int arena_movebonuses(Arena* arena)
 
 int arena_freebonus(Arena* arena, Bonus* bonus)
 {
-  printf("Freeing single bonus\n");
+  //printf("Freeing single bonus\n");
   for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     // Find the item to be removed
@@ -247,7 +247,7 @@ int arena_freebonuses(Arena* arena)
 {
   for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
-    printf("Freeing bonus\n");
+    //printf("Freeing bonus\n");
     free(arena->bonuses[i]->sprite);
     free(arena->bonuses[i]);
     arena->bonuses[i] = NULL;
@@ -320,6 +320,8 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           player->state = plLaser;
         break;
         case boWarp:
+          player->warpenabled = true;
+        break;
         case boSlow: break;
 
 
@@ -435,8 +437,14 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             botype = boCatch;
           else if (bonusscore > 60)
             botype = boLaser;
+          else if (bonusscore > 50)
+            botype = boShrink;
+          else if (bonusscore > 45)
+            botype = boWarp;
 
-          if(bonusscore > 60)
+          printf("Bonus number: %d\n", bonusscore);
+
+          if(bonusscore > 45)
             arena_addbonus(arena, b->left, b->bottom, botype);
 
           af_playsample(arena->factory, "brick");

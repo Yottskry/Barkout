@@ -3,6 +3,7 @@
 #include "app.h"
 #include "text.h"
 #include "intro.h"
+#include <time.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdbool.h>
@@ -94,11 +95,14 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "bonus-c.png", "bonus-c", 43, 25);
   af_loadanimation(f, renderer, "bonus-p.png", "bonus-p", 43, 25);
   af_loadanimation(f, renderer, "bonus-l.png", "bonus-l", 43, 25);
+  af_loadanimation(f, renderer, "bonus-w.png", "bonus-w", 43, 25);
   af_loadanimation(f, renderer, "bat_small.png", "bat-s", 51, 27);
   af_loadanimation(f, renderer, "bat_long.png", "bat-l", 122, 27);
   af_loadanimation(f, renderer, "ball-deadly.png", "ball-deadly", 17, 17);
   af_loadanimation(f, renderer, "barkanoid-intro.png", "intro", 400, 75);
   af_loadanimation(f, renderer, "life.png", "life", 38, 16);
+  af_loadanimation(f, renderer, "warp.png", "warp", 40, 80);
+  af_loadanimation(f, renderer, "border.png", "border", 600, 600);
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
@@ -148,6 +152,7 @@ void drawbackground(App* app, Arena* arena, ResourceFactory* factory)
   // Draw the background
   a_drawstaticframe(arena->bg, app->renderer, 0, 0, 0);
   a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0);
+  a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0);
 }
 
 void drawarenatext(App* app, Arena* arena, int hi)
@@ -159,19 +164,27 @@ void drawarenatext(App* app, Arena* arena, int hi)
 
   sprintf(highs, "%08d", hi);
 
-  text_drawtext(app, highs, 612, 82, (SDL_Color){0, 0, 0, 255}, 0);
-  text_drawtext(app, highs, 610, 80, (SDL_Color){255, 255, 255, 255}, 0);
+  text_drawtext(app, "Hi Score", 612, 82, (SDL_Color){0,0,0,255}, 0);
+  text_drawtext(app, "Hi Score", 610, 80, (SDL_Color){255,255,255,255}, 0);
+
+  text_drawtext(app, highs, 612, 122, (SDL_Color){0, 0, 0, 255}, 0);
+  text_drawtext(app, highs, 610, 120, (SDL_Color){255, 255, 255, 255}, 0);
 
   char scores[10] = "";
 
   sprintf(scores, "%08d", arena->score);
 
-  text_drawtext(app, scores, 612, 142, (SDL_Color){0, 0, 0, 255}, 0);
-  text_drawtext(app, scores, 610, 140, (SDL_Color){255, 255, 255, 255}, 0);
+  text_drawtext(app, "Score", 612, 202, (SDL_Color){0,0,0,255}, 0);
+  text_drawtext(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, 0);
+
+  text_drawtext(app, scores, 612, 242, (SDL_Color){0, 0, 0, 255}, 0);
+  text_drawtext(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, 0);
 }
 
 int main(int argc, char** argv)
 {
+  srand(time(0));
+
 	App app;
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 	{
@@ -215,7 +228,7 @@ int main(int argc, char** argv)
   app.font = TTF_OpenFont("Nordine.ttf", 32);
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
-	app.music = Mix_LoadMUS("barkanoidii.mp3");
+	app.music = Mix_LoadMUS("./Sounds/barkanoidii.mp3");
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
   SDL_RenderSetLogicalSize(app.renderer, 800, 600);
@@ -231,6 +244,8 @@ int main(int argc, char** argv)
   player.sprite.lastticks = 0;
   player.sprite.loop = 1;
   player.sprite.state = asLooping;
+  player.controlmethod = cmBarkanoid;
+  player.warpenabled = false;
 
   // Set up the ball
   Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 6, .bearing = 60, .radius = 7, .state = bsSticky };
@@ -245,6 +260,12 @@ int main(int argc, char** argv)
   intro.data = NULL;
   intro.sender = NULL;
   intro.onanimfinished = NULL;
+
+  Sprite warp = { .currentframe = 0, .lastticks = 0, .loop = 1, .state = asLooping };
+  warp.anim = af_getanimation(&f, "warp");
+  warp.data = NULL;
+  warp.sender = NULL;
+  warp.onanimfinished = NULL;
 
   // Set up the level
   Arena arena = { .bounds = { .top = 50, .bottom = 550, .left = 40, .right = 560 },
@@ -261,8 +282,6 @@ int main(int argc, char** argv)
                   .bullets = NULL,
                   .bg = NULL
                 };
-
-  //arena_loadbricks(&arena, &f);
 
   arena_loadlevels(&arena, &f);
 
@@ -313,6 +332,7 @@ int main(int argc, char** argv)
   FlashText txt3 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
   FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration =0, .text = "Fat Horse Games presents" };
   bool titlefinished = false;
+  int currentlywarping = 0;
 
   while(1)
   {
@@ -333,9 +353,15 @@ int main(int argc, char** argv)
         switch(e.key.keysym.sym)
         {
           case SDLK_z:
-          case SDLK_LEFT: player.targetspeed = player.speed > 0 ? player.targetspeed : 0; break;
+          case SDLK_LEFT:
+            if(currentlywarping == 0)
+              player.targetspeed = player.speed > 0 ? player.targetspeed : 0;
+          break;
           case SDLK_x:
-          case SDLK_RIGHT: player.targetspeed = player.speed < 0 ? player.targetspeed : 0; break;
+          case SDLK_RIGHT:
+            if(currentlywarping == 0)
+              player.targetspeed = player.speed < 0 ? player.targetspeed : 0;
+          break;
           case SDLK_SPACE:
             ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
             ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
@@ -358,15 +384,19 @@ int main(int argc, char** argv)
         {
           case SDLK_1:
             if(gamestate == gsRunning)
-              arena_addbonus(&arena, 200, 200, boGrow);
+              arena_addbonus(&arena, 200, 200, boWarp);
           break;
 
           case SDLK_z:
-          case SDLK_LEFT: player.targetspeed = -1 * player.maxspeed; break;
+          case SDLK_LEFT:
+            if(currentlywarping == 0)
+              player.targetspeed = -1 * player.maxspeed;
+          break;
           case SDLK_x:
-          case SDLK_RIGHT: player.targetspeed = player.maxspeed; break;
-          case SDLK_UP: ball.bearing += 5; break;
-          case SDLK_DOWN: ball.bearing -= 5; break;
+          case SDLK_RIGHT:
+            if(currentlywarping == 0)
+              player.targetspeed = player.maxspeed;
+          break;
           case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
           case SDLK_SPACE:
             if((gamestate == gsRunning) && (player.state == plLaser))
@@ -446,9 +476,17 @@ int main(int argc, char** argv)
       drawbackground(&app, &arena, &f);
       drawarenatext(&app, &arena, hi);
       arena_drawbricks(&arena, app.renderer);
+
+      if(player.warpenabled == true)
+        a_drawsprite(&warp, app.renderer, 560, arena.bounds.bottom - 80);
+
       // Move the ball, check for collisions with bat, arena, and bricks
       // In the event of losing the ball, reset the level
-      if(1 == ball_moveball(&ball, &arena, &player))
+      int lostball = 0;
+      if(currentlywarping == 0)
+        lostball = ball_moveball(&ball, &arena, &player);
+
+      if(1 == lostball)
       {
         // What we really want to do here is decrease the lives
         // remove any bonuses, and THEN show the "Get Ready!" text
@@ -476,8 +514,6 @@ int main(int argc, char** argv)
 
       if(arena.remaining == 0)
       {
-        // Load new level
-        //arena_freebricks(&arena);
         arena.level++;
         gamestate = gsNewLevel;
         // See the note above SDL_RenderPresent (below)
@@ -485,9 +521,20 @@ int main(int argc, char** argv)
       }
 
       // Move the bat, check we're within the arena
-      bat_movebat(&player, arena.bounds);
-      arena_movebonuses(&arena);
-      arena_movebullets(&arena);
+      currentlywarping = bat_movebat(&player, arena.bounds);
+      if(currentlywarping == 0)
+      {
+        arena_movebonuses(&arena);
+        arena_movebullets(&arena);
+      }
+      else
+      {
+        if(player.x > arena.bounds.right + 20)
+        {
+          arena.remaining = 0;
+          player.targetspeed = 0;
+        }
+      }
       arena_checkbulletcollisions(&arena);
       arena_batcollidesbonus(&arena, &player, &ball);
     } // This one is an else because we need one loop between
@@ -495,24 +542,19 @@ int main(int argc, char** argv)
 
     if(gamestate == gsGetReady)
     {
-      //drawbackground(&app, &arena, &f);
-      //drawarenatext(&app, &arena, hi);
-      //arena_drawbricks(&arena, app.renderer);
+      currentlywarping = 0;
       af_playsample(&f, "getready");
       delay = 3000;
-      //getready(&gamestate, gsRunning);
       gamestate = gsRunning;
       arena.counter = startticks;
     }
 
     if(gamestate == gsDying)
     {
-      //getready(&gamestate, gsTitle);
       gamestate = gsTitle;
       delay = 3000;
     }
 
-    //a_drawsprite(&bonus, app.renderer, 202, 450);
 	  if((gamestate != gsTitle) && (gamestate != gsStory) && (gamestate != gsDying))
 	  {
 
@@ -522,7 +564,7 @@ int main(int argc, char** argv)
         a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
 
       // Draw the bat
-      bat_drawbat(&player, app.renderer);
+      bat_drawbat(&player, app.renderer, arena.bounds);
 
       arena_drawbullets(&arena, app.renderer);
     }

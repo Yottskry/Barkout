@@ -13,7 +13,7 @@
 
 #define BRICKW 40
 #define BRICKH 25
-#define NUMLEVELS 3
+#define NUMLEVELS 4
 #define MAXBULLETS 10
 #define MAXSPEED 12
 

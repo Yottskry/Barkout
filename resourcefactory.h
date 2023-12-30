@@ -56,6 +56,8 @@ int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y, int
 
 void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y);
 
+void a_drawclippedsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y, SDL_Rect cliprect);
+
 int af_freeanimations(ResourceFactory* factory);
 
 void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*, void*), void* sender, void* data);
