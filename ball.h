@@ -1,6 +1,8 @@
 #ifndef _BALL_H_
 #define _BALL_H_
 
+#include "brick.h"
+
 #define PI 3.14159
 
 typedef enum
@@ -25,5 +27,7 @@ typedef struct
   Sprite sprite;
   Ballstate state;
 } Ball;
+
+Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e);
 
 #endif

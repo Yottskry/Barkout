@@ -4,6 +4,7 @@
 #include "text.h"
 #include "intro.h"
 #include <time.h>
+#include <stdio.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdbool.h>
@@ -11,6 +12,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <winreg.h>
+#else
+#include <sys/stat.h>
 #endif
 
 #define STARTLIVES 3
@@ -44,11 +47,23 @@ int loadhighscore()
     {
       score = 0;
     }
-
   }
   else
   {
     RegCloseKey(newKey);
+  }
+  #else // assume linux / BSD
+  char* homedir = getenv("HOME");
+  if(homedir == NULL)
+    return 0;
+  char barkdata[255] = "";
+  strcat(barkdata, homedir);
+  strcat(barkdata, "/.barkanoid/data");
+  FILE* scorefile = fopen(barkdata, "r");
+  if(scorefile != NULL)
+  {
+    fscanf(scorefile, "%d", &score);
+    fclose(scorefile);
   }
   #endif
   return score;
@@ -65,6 +80,19 @@ void savehighscore(int* score)
     RegSetValueExA(newKey, "highscore", 0, REG_DWORD, (BYTE*)score, sizeof(int));
     RegCloseKey(newKey);
   }
+  #else
+  char* homedir = getenv("HOME");
+  if(homedir == NULL)
+    return;
+  char barkdata[255] = "";
+  strcat(barkdata, homedir);
+  strcat(barkdata, "/.barkanoid");
+  mkdir(barkdata, 0777);
+  strcat(barkdata, "/data");
+  remove(barkdata);
+  FILE* scorefile = fopen(barkdata, "w");
+  fprintf(scorefile, "%d", *score);
+  fclose(scorefile);
   #endif
 }
 
@@ -108,16 +136,17 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-getready.wav", "getready");
   af_loadsample(f, "barkanoid-brick.wav", "brick");
   af_loadsample(f, "barkanoid-brick-high.wav", "brick-high");
+  af_loadsample(f, "barkanoid-brick-laser.wav", "brick-laser");
   af_loadsample(f, "barkanoid-bat.wav", "bat");
   af_loadsample(f, "barkanoid-dead.wav", "dead");
   af_loadsample(f, "barkanoid-1up.wav", "1up");
-  af_loadsample(f, "barkanoid-brick-laser.wav", "brick-laser");
+  af_loadsample(f, "barkanoid-warp.wav", "warp");
 }
 
 void gameover(App* app, Gamestate* gamestate)
 {
   *gamestate = gsDying;
-  text_drawbgtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, (SDL_Color){89, 125, 173, 255}, 0);
+  text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0);
   text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0);
 }
 
@@ -135,7 +164,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->cy = player->y - (ball->radius * 2) + 2;
   ball->speed = 6;
   *gamestate = gsGetReady;
-  text_drawbgtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, (SDL_Color){89, 125, 173, 255}, 0);
+  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0);
   text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0);
   return 0;
 }
@@ -477,16 +506,17 @@ int main(int argc, char** argv)
       drawarenatext(&app, &arena, hi);
       arena_drawbricks(&arena, app.renderer);
 
+      // draw the warp area on the right
       if(player.warpenabled == true)
         a_drawsprite(&warp, app.renderer, 560, arena.bounds.bottom - 80);
 
       // Move the ball, check for collisions with bat, arena, and bricks
       // In the event of losing the ball, reset the level
-      int lostball = 0;
+      int islostball = 0;
       if(currentlywarping == 0)
-        lostball = ball_moveball(&ball, &arena, &player);
+        islostball = ball_moveball(&ball, &arena, &player);
 
-      if(1 == lostball)
+      if(1 == islostball)
       {
         // What we really want to do here is decrease the lives
         // remove any bonuses, and THEN show the "Get Ready!" text
@@ -529,6 +559,8 @@ int main(int argc, char** argv)
       }
       else
       {
+        if(!Mix_Playing(-1))
+          af_playsample(&f, "warp");
         if(player.x > arena.bounds.right + 20)
         {
           arena.remaining = 0;

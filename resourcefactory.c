@@ -122,6 +122,8 @@ void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
   }
 }
 
+// This doesn't draw a clipped sprite, as such, because of a bug... but I left the bug in because
+// it makes a cool effect when warping! dst should be the same width as src, but isn't.
 void a_drawclippedsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y, SDL_Rect cliprect)
 {
   Animation* anim = sprite->anim;

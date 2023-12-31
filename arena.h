@@ -7,6 +7,7 @@
 #include "bat.h"
 #include "ball.h"
 #include "app.h"
+#include "brick.h"
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <math.h>
@@ -17,9 +18,6 @@
 #define MAXBULLETS 10
 #define MAXSPEED 12
 
-typedef enum { bsStatic, bsHit } Brickstate;
-typedef enum { btNormal, btHard, btIndestructible } Bricktype;
-typedef enum { eLeft, eRight, eTop, eBottom, eTopLeft, eTopRight, eBottomLeft, eBottomRight, eNone } Edge;
 typedef enum { gsTitle, gsStory, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused } Gamestate;
 
 typedef struct
@@ -28,19 +26,6 @@ typedef struct
   int y;
   int speed;
 } Bullet;
-
-typedef struct
-{
-  Sprite* sprite;
-  int left;
-  int top;
-  int right;
-  int bottom;
-  int hitcount;
-  int frame;
-  Bricktype type;
-  Uint32 lastticks;
-} Brick;
 
 typedef struct
 {
@@ -93,7 +78,6 @@ void bat_aftergrow(void* sender, void* data);
 
 // Ball related functions
 int ball_moveball(Ball* ball, Arena* arena, Bat* player);
-Brick* ball_collidesbricks(Arena* arena, Ball* ball, Edge* e);
 int ball_collidesbat(Ball* ball, Bat* player, Edge* e);
 
 // Bullet related functions
