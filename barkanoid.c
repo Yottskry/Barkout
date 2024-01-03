@@ -107,6 +107,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "purple.png", "purple", 44, 29);
   af_loadanimation(f, renderer, "grey.png", "grey", 44, 29);
   af_loadanimation(f, renderer, "yellow.png", "yellow", 44, 29);
+  af_loadanimation(f, renderer, "white.png", "white", 44, 29);
   af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(f, renderer, "bg2.png", "bg2", 600, 600);
   af_loadanimation(f, renderer, "bg3.png", "bg3", 600, 600);

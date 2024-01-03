@@ -73,6 +73,10 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
             brickanim = af_getanimation(factory, "grey");
             //arena->remaining++;
           break;
+          case 't':
+            brickanim = af_getanimation(factory, "white");
+            //arena->remaining++;
+          break;
           case 'G':
             level->bricks[brickno]->hitcount = 2;
             level->bricks[brickno]->type = btHard;
@@ -717,7 +721,7 @@ void arena_checkbulletcollisions(Arena* arena)
     Brick* b = arena->bricks[j];
     // Skip invincible bricks and those that
     // are already knocked out.
-    if(b->hitcount <= 0)
+    if((b->hitcount <= 0) && (b->type != btIndestructible))
       continue;
 
     for(int i = arena->bulletcount - 1; i >= 0; i--)
@@ -733,7 +737,7 @@ void arena_checkbulletcollisions(Arena* arena)
       }
     }
 
-    if(hit){
+    if((hit) && (b->type != btIndestructible)){
       b->hitcount--;
       if(b->hitcount == 0)
         arena->remaining--;
@@ -745,5 +749,5 @@ void arena_checkbulletcollisions(Arena* arena)
 void arena_drawlives(Arena* arena, App* app)
 {
   for(int i = 0; i < arena->lives; i++)
-    a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 30+(40*i), 560, 0);
+    a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 40+(40*i), 560, 0);
 }

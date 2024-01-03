@@ -8,13 +8,14 @@
 #include "ball.h"
 #include "app.h"
 #include "brick.h"
+#include "cat.h"
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <math.h>
 
 #define BRICKW 40
 #define BRICKH 25
-#define NUMLEVELS 4
+#define NUMLEVELS 7
 #define MAXBULLETS 10
 #define MAXSPEED 12
 
