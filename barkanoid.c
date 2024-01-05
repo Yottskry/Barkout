@@ -3,6 +3,7 @@
 #include "app.h"
 #include "text.h"
 #include "intro.h"
+#include "cat.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL.h>
@@ -132,6 +133,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "life.png", "life", 38, 16);
   af_loadanimation(f, renderer, "warp.png", "warp", 40, 80);
   af_loadanimation(f, renderer, "border.png", "border", 600, 600);
+  af_loadanimation(f, renderer, "cat.png", "cat", 40, 40);
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
@@ -237,7 +239,7 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	int startlevel = 1;
+	int startlevel = 2;
 	Uint32 flags = SDL_WINDOW_OPENGL;
 
 	for(int i = 0; i < argc; i++)
@@ -356,6 +358,12 @@ int main(int argc, char** argv)
     }
   };
 
+  Cat cat = {
+    .bounds = { .left = 450, .right = 490, .top = 50, .bottom = 90 },
+    .speed = 1,
+    .nextdirection = dDown,
+    .sprite = { .anim = af_getanimation(&f, "cat"), .currentframe = 0, .lastticks = 0, .loop = 1, .state = asLooping }
+  };
 
   FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
   FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
@@ -542,6 +550,9 @@ int main(int argc, char** argv)
       }
 
       arena_drawbonuses(&arena, app.renderer);
+
+      cat_move(&cat, arena.bricks, arena.brickcount, &arena.bounds);
+      cat_draw(&cat, app.renderer);
 
       if(arena.remaining == 0)
       {
