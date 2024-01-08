@@ -2,6 +2,8 @@
 #define _BALL_H_
 
 #include "brick.h"
+#include "bounds.h"
+#include <stdbool.h>
 
 #define PI 3.14159
 
@@ -28,6 +30,7 @@ typedef struct
   Ballstate state;
 } Ball;
 
+bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e);
 Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e);
 
 #endif

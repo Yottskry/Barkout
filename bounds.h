@@ -7,8 +7,17 @@ typedef struct
 {
   int left;
   int top;
-  int right;
-  int bottom;
+
+  union {
+    int right;
+    int width;
+  };
+
+  union {
+    int bottom;
+    int height;
+  };
+
 } Bounds;
 
 bool bounds_intersects(Bounds* b1, Bounds* b2);

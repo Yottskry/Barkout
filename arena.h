@@ -76,6 +76,7 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball);
 // Events
 void bat_aftershrink(void* sender, void* data);
 void bat_aftergrow(void* sender, void* data);
+void bat_afterlaser(void* sender, void* data);
 
 // Ball related functions
 int ball_moveball(Ball* ball, Arena* arena, Bat* player);

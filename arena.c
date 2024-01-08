@@ -320,7 +320,8 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           player->state = plLong;
         break;
         case boLaser:
-          af_setanimation(arena->factory, &(player->sprite),"bat-laser", 0, NULL, NULL, NULL);
+          af_setanimation(arena->factory, &(player->sprite),"bat-laserify", 0, bat_afterlaser, (void*)arena, (void*)player);
+          player->sprite.state = asPlayToEnd;
           player->state = plLaser;
         break;
         case boWarp:
@@ -357,6 +358,14 @@ void bat_aftergrow(void* sender, void* data)
   af_setanimation(arena->factory, &(player->sprite),"bat-l", 1, NULL, NULL, NULL);
   player->sprite.state = asLooping;
   player->w = psLong;
+}
+
+void bat_afterlaser(void* sender, void* data)
+{
+  Bat* player = (Bat*)data;
+  Arena* arena = (Arena*)sender;
+  af_setanimation(arena->factory, &(player->sprite), "bat-laser", 1, NULL, NULL, NULL);
+  player->sprite.state = asLooping;
 }
 
 int ball_moveball(Ball* ball, Arena* arena, Bat* player)

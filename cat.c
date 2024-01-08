@@ -1,14 +1,30 @@
 #include "cat.h"
 
+void cat_init(Cat* cat, ResourceFactory* f)
+{
+  cat->bounds.left = 450;
+  cat->bounds.width = 40;
+  cat->bounds.top = 50;
+  cat->bounds.height = 40;
+  cat->speed = 1;
+  cat->nextdirection = dDown;
+  cat->sprite.anim = af_getanimation(f, "cat");
+  cat->sprite.currentframe = 0;
+  cat->sprite.lastticks = 0;
+  cat->sprite.loop = 1;
+  cat->sprite.state = asLooping;
+  cat->state = csDead;
+}
+
 void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
 {
   //int newx = cat->bounds.left;
   //int newy = cat->bounds.top;
 
-  int cath = cat->bounds.bottom - cat->bounds.top;
-  int catw = cat->bounds.right - cat->bounds.left;
+  int cath = cat->bounds.height;
+  int catw = cat->bounds.width;
 
-  Bounds b = { .left = cat->bounds.left, .right = cat->bounds.right, .top = cat->bounds.top, .bottom = cat->bounds.bottom };
+  Bounds b = { .left = cat->bounds.left, .width = cat->bounds.width, .top = cat->bounds.top, .height = cat->bounds.height };
 
   switch(cat->nextdirection)
   {
@@ -38,7 +54,7 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
     // Can't collide with a destroyed brick
     if(brick->hitcount == 0)
       continue;
-    Bounds b1 = { .left = brick->left, .right = brick->right, .top = brick->top, .bottom = brick->bottom };
+    Bounds b1 = { .left = brick->left, .width = brick->right - brick->left, .top = brick->top, .height = brick->bottom - brick->top };
     // We have collided with a brick
     if(bounds_intersects(&b, &b1))
     {
@@ -46,20 +62,16 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
       switch(cat->nextdirection)
       {
         case dDown:
-          cat->bounds.bottom = b1.top - 1;
-          cat->bounds.top = cat->bounds.bottom - cath;
+          cat->bounds.top = b1.top - 1 - cath;
         break;
         case dUp:
-          cat->bounds.top = b1.bottom + 1;
-          cat->bounds.bottom = cat->bounds.top + cath;
+          cat->bounds.top = b1.top + b1.height + 1;
         break;
         case dLeft:
-          cat->bounds.left = b1.right + 1;
-          cat->bounds.right = cat->bounds.left + catw;
+          cat->bounds.left = b1.left + b1.width + 1;
         break;
         case dRight:
-          cat->bounds.right = b1.left - 1;
-          cat->bounds.left = cat->bounds.right - catw;
+          cat->bounds.left = b1.left - 1 - catw;
         break;
       }
       intersects = true;
@@ -71,34 +83,34 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
   if(b.left <= bounds->left)
   {
     cat->bounds.left = bounds->left + 1;
-    cat->bounds.right = cat->bounds.left + catw;
+    //cat->bounds.right = cat->bounds.left + catw;
     intersects = true;
   }
-  else if(b.right >= bounds->right)
+  else if(b.left + b.width >= bounds->right)
   {
-    cat->bounds.right = bounds->right - 1;
-    cat->bounds.left = cat->bounds.right - catw;
+    //cat->bounds.right = bounds->right - 1;
+    cat->bounds.left = bounds->right - catw - 1;
     intersects = true;
   }
-  else if(b.bottom >= bounds->bottom)
+  else if(b.top + b.height >= bounds->bottom)
   {
-    cat->bounds.bottom = bounds->bottom - 1;
-    cat->bounds.top = cat->bounds.bottom - cath;
+    //cat->bounds.bottom = bounds->bottom - 1;
+    cat->bounds.top = bounds->bottom - cath - 1;
     intersects = true;
   }
   else if(b.top <= bounds->top)
   {
     cat->bounds.top = bounds->top + 1;
-    cat->bounds.bottom = cat->bounds.top + cath;
+    //cat->bounds.bottom = cat->bounds.top + cath;
     intersects = true;
   }
 
   if(!intersects)
   {
     cat->bounds.left = b.left;
-    cat->bounds.right = b.right;
+    //cat->bounds.right = b.right;
     cat->bounds.top = b.top;
-    cat->bounds.bottom = b.bottom;
+    //cat->bounds.bottom = b.bottom;
 
     // Pick the next direction.
     int newdir = rand() % 25;
@@ -113,11 +125,9 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
         cat->nextdirection = newdir == 8 ? dLeft : newdir == 9 ? dRight : dUp;
       break;
       case dLeft:
-        //cat->nextdirection = newdir == 8 ? dUp : newdir == 9 ? dDown : dLeft;
         cat->nextdirection = newdir < 23 ? dLeft : dDown;
       break;
       case dRight:
-        //cat->nextdirection = newdir == 8 ? dUp : newdir == 9 ? dDown : dRight;
         cat->nextdirection = newdir < 23 ? dRight : dDown;
       break;
     }

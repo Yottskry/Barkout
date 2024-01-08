@@ -4,98 +4,16 @@
 #include "text.h"
 #include "intro.h"
 #include "cat.h"
+#include "scores.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <stdbool.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#include <winreg.h>
-#else
-#include <sys/stat.h>
-#endif
-
 #define STARTLIVES 3
-
-/* Have 13 bricks per level width. Let's say 600x600 playing area with 200x600 score area
------------------
-|           |   |
-|           |   |
-|           |   |
-|           |   |
-|           |   |
-|           |   |
------------------
-
-40px * 13 bricks = 520px + 40 each side for walls = 600
-
-*/
-
-int loadhighscore()
-{
-  int score = 0;
-  #ifdef _WIN32
-  HKEY newKey;
-  long retval;
-  retval = RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, KEY_READ, &newKey);
-  if(retval == ERROR_SUCCESS)
-  {
-    long unsigned int lpSize = sizeof(int);
-    retval = RegQueryValueExA(newKey, "highscore", 0, NULL, (BYTE*)(&score), &lpSize);
-    if(retval != ERROR_SUCCESS)
-    {
-      score = 0;
-    }
-  }
-  else
-  {
-    RegCloseKey(newKey);
-  }
-  #else // assume linux / BSD
-  char* homedir = getenv("HOME");
-  if(homedir == NULL)
-    return 0;
-  char barkdata[255] = "";
-  strcat(barkdata, homedir);
-  strcat(barkdata, "/.barkanoid/data");
-  FILE* scorefile = fopen(barkdata, "r");
-  if(scorefile != NULL)
-  {
-    fscanf(scorefile, "%d", &score);
-    fclose(scorefile);
-  }
-  #endif
-  return score;
-}
-
-void savehighscore(int* score)
-{
-  #ifdef _WIN32
-  HKEY newKey;
-  long retval;
-  retval = RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, "", 0, KEY_WRITE, 0, &newKey, NULL);
-  if(retval == ERROR_SUCCESS)
-  {
-    RegSetValueExA(newKey, "highscore", 0, REG_DWORD, (BYTE*)score, sizeof(int));
-    RegCloseKey(newKey);
-  }
-  #else
-  char* homedir = getenv("HOME");
-  if(homedir == NULL)
-    return;
-  char barkdata[255] = "";
-  strcat(barkdata, homedir);
-  strcat(barkdata, "/.barkanoid");
-  mkdir(barkdata, 0777);
-  strcat(barkdata, "/data");
-  remove(barkdata);
-  FILE* scorefile = fopen(barkdata, "w");
-  fprintf(scorefile, "%d", *score);
-  fclose(scorefile);
-  #endif
-}
+#define FIRSTBADDIE 25000
+#define NEXTBADDIE 15000
 
 void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
 {
@@ -358,19 +276,21 @@ int main(int argc, char** argv)
     }
   };
 
-  Cat cat = {
-    .bounds = { .left = 450, .right = 490, .top = 50, .bottom = 90 },
-    .speed = 1,
-    .nextdirection = dDown,
-    .sprite = { .anim = af_getanimation(&f, "cat"), .currentframe = 0, .lastticks = 0, .loop = 1, .state = asLooping }
-  };
+  Cat cats[3];
+  for(int i = 0; i < 3; i++)
+    cat_init(&cats[i], &f);
+
+  cats[0].state = csAlive;
 
   FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
   FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
   FlashText txt3 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
-  FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration =0, .text = "Fat Horse Games presents" };
+  FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration = 0, .text = "Fat Horse Games presents" };
+
   bool titlefinished = false;
   int currentlywarping = 0;
+
+  Uint32 baddiecounter = 0;
 
   while(1)
   {
@@ -422,7 +342,7 @@ int main(int argc, char** argv)
         {
           case SDLK_1:
             if(gamestate == gsRunning)
-              arena_addbonus(&arena, 200, 200, boWarp);
+              arena_addbonus(&arena, 200, 200, boLaser);
           break;
 
           case SDLK_z:
@@ -506,6 +426,10 @@ int main(int argc, char** argv)
       arena_drawbricks(&arena, app.renderer);
       // Reset immediately changes the state to gsGetReady
       // So this block only executes once
+      cats[0].state = csDead;
+      cats[1].state = csDead;
+      cats[2].state = csDead;
+      baddiecounter = SDL_GetTicks();
       reset(&app, &ball, &player, &arena, &gamestate);
     }
 
@@ -551,8 +475,38 @@ int main(int argc, char** argv)
 
       arena_drawbonuses(&arena, app.renderer);
 
-      cat_move(&cat, arena.bricks, arena.brickcount, &arena.bounds);
-      cat_draw(&cat, app.renderer);
+      int alivecount = 0;
+      for(int i = 0; i < 3; i++)
+      {
+        // Test collisions with bat / ball before testing state
+        // if(cat_collidesbat()...
+
+        if(cats[i].state == csAlive)
+        {
+          alivecount++;
+          cat_move(&cats[i], arena.bricks, arena.brickcount, &arena.bounds);
+          cat_draw(&cats[i], app.renderer);
+        }
+      }
+
+      if((alivecount == 0) && ((SDL_GetTicks() - baddiecounter) > FIRSTBADDIE))
+      {
+        // set the position first?
+        cats[0].state = csAlive;
+        baddiecounter = SDL_GetTicks();
+      }
+      else if((alivecount < 3) && ((SDL_GetTicks() - baddiecounter) > NEXTBADDIE))
+      {
+        for(int i = 0; i < 3; i++)
+        {
+          if(cats[i].state == csDead)
+          {
+            cats[i].state = csAlive;
+            baddiecounter = SDL_GetTicks();
+            break;
+          }
+        }
+      }
 
       if(arena.remaining == 0)
       {
