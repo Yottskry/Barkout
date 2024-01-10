@@ -18,8 +18,8 @@ void cat_init(Cat* cat, ResourceFactory* f)
 
 void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
 {
-  //int newx = cat->bounds.left;
-  //int newy = cat->bounds.top;
+  if(cat->state != csAlive)
+    return;
 
   int cath = cat->bounds.height;
   int catw = cat->bounds.width;
@@ -59,6 +59,8 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
     if(bounds_intersects(&b, &b1))
     {
       // Set the position to the edge of the brick
+      // Is this necessary? Surely we just don't move at all?
+      /*
       switch(cat->nextdirection)
       {
         case dDown:
@@ -74,6 +76,7 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
           cat->bounds.left = b1.left - 1 - catw;
         break;
       }
+      */
       intersects = true;
       break; // Out of loop, set next direction
     }
@@ -158,4 +161,94 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
 void cat_draw(Cat* cat, SDL_Renderer* renderer)
 {
   a_drawsprite(&cat->sprite, renderer, cat->bounds.left, cat->bounds.top);
+}
+
+void cat_spawn(Cat* cats, ResourceFactory* factory, int x, int y)
+{
+  static Uint32 baddiecounter;
+  if(baddiecounter == 0)
+    baddiecounter = SDL_GetTicks();
+  Uint32 currentcounter = SDL_GetTicks();
+
+  int alivecount = 0;
+  for(int i = 0; i < BADDIECOUNT; i++)
+  {
+    if(cats[i].state != csDead)
+      alivecount++;
+  }
+
+  if((alivecount == 0) && ((currentcounter - baddiecounter) > FIRSTBADDIE))
+  {
+    // set the position first?
+    cats[0].state = csSpawning;
+    cats[0].bounds.left = x;
+    cats[0].bounds.top = y;
+    af_setanimation(factory, &(cats[0].sprite), "cat-spawn", 0, cat_afterspawn, (void*)&(cats[0]), (void*)factory);
+    baddiecounter = currentcounter;
+  }
+  else if((alivecount < BADDIECOUNT) && ((currentcounter - baddiecounter) > NEXTBADDIE))
+  {
+    for(int i = 0; i < BADDIECOUNT; i++)
+    {
+      if(cats[i].state == csDead)
+      {
+        cats[i].state = csSpawning;
+        cats[i].bounds.left = x;
+        cats[i].bounds.top = y;
+        af_setanimation(factory, &(cats[i].sprite), "cat-spawn", 0, cat_afterspawn, (void*)&(cats[i]), (void*)factory);
+        baddiecounter = currentcounter;
+        break;
+      }
+    }
+  }
+}
+
+bool cat_collidesball(Cat* cats, Ball* ball, ResourceFactory* factory)
+{
+  Edge edge = eNone;
+  for(int i = 0; i < BADDIECOUNT; i++)
+  {
+    if(cats[i].state == csAlive)
+    {
+      if(ball_collidesbounds(ball, &cats[i].bounds, &edge))
+      {
+        ball_ricochet(ball, edge);
+        af_setanimation(factory, &(cats[i].sprite), "cat-die", 0, cat_afterdie, (void*)&(cats[i]), (void*)factory);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool cat_collidesbat(Cat* cats, Bounds* bounds, ResourceFactory* factory)
+{
+  for(int i = 0; i < BADDIECOUNT; i++)
+  {
+    if(cats[i].state == csAlive)
+    {
+      if(bounds_intersects(&cats[i].bounds, bounds))
+      {
+        af_setanimation(factory, &(cats[i].sprite), "cat-die", 0, cat_afterdie, (void*)&(cats[i]), (void*)factory);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void cat_afterdie(void* sender, void* data)
+{
+  ResourceFactory* factory = (ResourceFactory*)data;
+  Cat* cat = (Cat*)sender;
+  af_setanimation(factory, &cat->sprite, "cat", 1, NULL, NULL, NULL);
+  cat->state = csDead;
+}
+
+void cat_afterspawn(void* sender, void* data)
+{
+  ResourceFactory* factory = (ResourceFactory*)data;
+  Cat* cat = (Cat*)sender;
+  af_setanimation(factory, &cat->sprite, "cat", 0, NULL, NULL, NULL);
+  cat->state = csAlive;
 }

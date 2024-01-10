@@ -12,8 +12,6 @@
 #include <stdbool.h>
 
 #define STARTLIVES 3
-#define FIRSTBADDIE 25000
-#define NEXTBADDIE 15000
 
 void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
 {
@@ -52,6 +50,8 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "warp.png", "warp", 40, 80);
   af_loadanimation(f, renderer, "border.png", "border", 600, 600);
   af_loadanimation(f, renderer, "cat.png", "cat", 40, 40);
+  af_loadanimation(f, renderer, "cat-die.png", "cat-die", 40, 40);
+  af_loadanimation(f, renderer, "cat-spawn.png", "cat-spawn", 40, 40);
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
@@ -157,7 +157,7 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	int startlevel = 2;
+	int startlevel = 3;
 	Uint32 flags = SDL_WINDOW_OPENGL;
 
 	for(int i = 0; i < argc; i++)
@@ -290,7 +290,7 @@ int main(int argc, char** argv)
   bool titlefinished = false;
   int currentlywarping = 0;
 
-  Uint32 baddiecounter = 0;
+  //Uint32 baddiecounter = 0;
 
   while(1)
   {
@@ -429,7 +429,7 @@ int main(int argc, char** argv)
       cats[0].state = csDead;
       cats[1].state = csDead;
       cats[2].state = csDead;
-      baddiecounter = SDL_GetTicks();
+      //baddiecounter = SDL_GetTicks();
       reset(&app, &ball, &player, &arena, &gamestate);
     }
 
@@ -475,38 +475,23 @@ int main(int argc, char** argv)
 
       arena_drawbonuses(&arena, app.renderer);
 
-      int alivecount = 0;
-      for(int i = 0; i < 3; i++)
+      //int alivecount = 0;
+      for(int i = 0; i < BADDIECOUNT; i++)
       {
         // Test collisions with bat / ball before testing state
         // if(cat_collidesbat()...
 
-        if(cats[i].state == csAlive)
+        if(cats[i].state != csDead)
         {
-          alivecount++;
+          //alivecount++;
           cat_move(&cats[i], arena.bricks, arena.brickcount, &arena.bounds);
           cat_draw(&cats[i], app.renderer);
         }
       }
 
-      if((alivecount == 0) && ((SDL_GetTicks() - baddiecounter) > FIRSTBADDIE))
-      {
-        // set the position first?
-        cats[0].state = csAlive;
-        baddiecounter = SDL_GetTicks();
-      }
-      else if((alivecount < 3) && ((SDL_GetTicks() - baddiecounter) > NEXTBADDIE))
-      {
-        for(int i = 0; i < 3; i++)
-        {
-          if(cats[i].state == csDead)
-          {
-            cats[i].state = csAlive;
-            baddiecounter = SDL_GetTicks();
-            break;
-          }
-        }
-      }
+      cat_spawn(cats, &f, arena.spawnx, arena.spawny);
+      cat_collidesball(cats, &ball, &f);
+      cat_collidesbat(cats, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
 
       if(arena.remaining == 0)
       {

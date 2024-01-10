@@ -25,7 +25,8 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     char bgname[4] = "bg1";
     fscanf(f, "%s", bgname);
     level->bg = af_getanimation(factory, bgname);
-
+    level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
+    level->spawny = arena->bounds.top;
     // Read each line. This is the row position.
     while(fscanf(f, "%s", rowdata) > 0)
     {
@@ -34,6 +35,13 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
       {
         if(rowdata[col] == '.')
           continue;
+
+        if(rowdata[col] == '@')
+        {
+          level->spawnx = arena->bounds.left + (col * BRICKW);
+          level->spawny = arena->bounds.top + (row * BRICKH);
+          continue;
+        }
 
         level->bricks = realloc(level->bricks, sizeof(Brick*) * ++level->brickcount);
 
@@ -116,6 +124,9 @@ void arena_loadbricks(Arena* arena, int level)
   arena->brickcount = arena->levels[level-1].brickcount;
   arena->bg = arena->levels[level-1].bg;
   arena->remaining = 0;
+  arena->spawnx = arena->levels[level-1].spawnx;
+  arena->spawny = arena->levels[level-1].spawny;
+
   for(int i = 0; i < arena->levels[level-1].brickcount; i++)
   {
     arena->remaining += arena->levels[level-1].bricks[i]->type == btIndestructible ? 0 : 1;
@@ -536,48 +547,10 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       ball->cy = lasty;
     }
 
-    switch(hitedge)
-    {
-      case eLeft:
-        ball->bearing = 360 - ball->bearing;
-        arena->bonuscounter++;
-      break;
-      case eRight:
-        ball->bearing = 360 - ball->bearing;
-        arena->bonuscounter++;
-      break;
-      case eTop:
-        if(ball->bearing < 180)
-          ball->bearing = 180 - ball->bearing;
-        else
-          ball->bearing = 360 - (ball->bearing - 180);
-        arena->bonuscounter++;
-      break;
-      case eBottom:
-        if(ball->bearing < 90)
-          ball->bearing = 180 - ball->bearing;
-        else
-          ball->bearing = 180 + (360 - ball->bearing);
-        arena->bonuscounter++;
-      break;
-      case eTopLeft:
-        ball->bearing += 180;
-        arena->bonuscounter++;
-      break;
-      case eTopRight:
-        ball->bearing -= 180;
-        arena->bonuscounter++;
-      break;
-      case eBottomLeft:
-        ball->bearing = ball->bearing + 180;
-        arena->bonuscounter++;
-      break;
-      case eBottomRight:
-        ball->bearing = ball->bearing - 180;
-        arena->bonuscounter++;
-      break;
-      case eNone: break;
-    }
+    if(hitedge != eNone)
+      arena->bonuscounter++;
+
+    ball_ricochet(ball, hitedge);
 
   }
   else if(ball->state == bsSticky || ball->state == bsStuck)

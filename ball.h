@@ -32,5 +32,6 @@ typedef struct
 
 bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e);
 Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e);
+void ball_ricochet(Ball* ball, Edge hitedge);
 
 #endif

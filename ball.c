@@ -85,3 +85,41 @@ Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
 
   return NULL;
 }
+
+void ball_ricochet(Ball* ball, Edge hitedge)
+{
+  switch(hitedge)
+  {
+    case eLeft:
+      ball->bearing = 360 - ball->bearing;
+    break;
+    case eRight:
+      ball->bearing = 360 - ball->bearing;
+    break;
+    case eTop:
+      if(ball->bearing < 180)
+        ball->bearing = 180 - ball->bearing;
+      else
+        ball->bearing = 360 - (ball->bearing - 180);
+    break;
+    case eBottom:
+      if(ball->bearing < 90)
+        ball->bearing = 180 - ball->bearing;
+      else
+        ball->bearing = 180 + (360 - ball->bearing);
+    break;
+    case eTopLeft:
+      ball->bearing += 180;
+    break;
+    case eTopRight:
+      ball->bearing -= 180;
+    break;
+    case eBottomLeft:
+      ball->bearing = ball->bearing + 180;
+    break;
+    case eBottomRight:
+      ball->bearing = ball->bearing - 180;
+    break;
+    case eNone: break;
+  }
+}

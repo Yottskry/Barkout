@@ -32,6 +32,8 @@ typedef struct
 {
   int level;
   int brickcount;
+  int spawnx;
+  int spawny;
   Animation* bg;
   Brick** bricks;
 } Level;
@@ -48,6 +50,8 @@ typedef struct
   int bulletcount;
   int lives; // Signed because we will reduce to -1 before saying Game Over
   int level;
+  int spawnx;
+  int spawny;
   Animation* bg;
   Uint32 counter;
   ResourceFactory* factory;
