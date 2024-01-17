@@ -365,7 +365,7 @@ int main(int argc, char** argv)
         {
           case SDLK_1:
             if(gamestate == gsRunning)
-              arena_addbonus(&arena, 200, 200, boLaser);
+              arena_addbonus(&arena, 200, 200, boCatch);
           break;
 
           case SDLK_z:

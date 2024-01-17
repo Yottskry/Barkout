@@ -18,6 +18,7 @@
 #define NUMLEVELS 8
 #define MAXBULLETS 10
 #define MAXSPEED 12
+#define BRICKSCORE 100
 
 typedef unsigned char byte;
 

@@ -488,7 +488,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       // on the brick edge
       if(b!=NULL)
       {
-        arena->score += 100;
+        arena->score += BRICKSCORE;
 
         if((b->type != btIndestructible) && (b->hitcount == 0))
           arena->remaining--;
@@ -773,7 +773,10 @@ void arena_checkbulletcollisions(Arena* arena)
     if((hit) && (b->type != btIndestructible)){
       b->hitcount--;
       if(b->hitcount == 0)
+      {
+        arena->score += BRICKSCORE;
         arena->remaining--;
+      }
       af_playsample(arena->factory, "brick-laser");
     }
   }
