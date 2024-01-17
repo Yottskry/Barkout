@@ -123,3 +123,36 @@ void ball_ricochet(Ball* ball, Edge hitedge)
     case eNone: break;
   }
 }
+
+void ball_drawball(Ball* ball, SDL_Renderer* renderer)
+{
+  // Draw the sparkles...
+  for(int i = 0; i < NUMSPARKLES; i++)
+  {
+    if(ball->sparkles[i].alpha == 0)
+    {
+      ball->sparkles[i].alpha = (rand() % 150) + 150;
+      // Set new position
+      ball->sparkles[i].x = ball->cx + (rand() % 18) - 9;
+      ball->sparkles[i].y = ball->cy + (rand() % 18) - 9;
+      // The amount to reduce the green component by.
+      // This is doubled for the red component to give a shade of blue.
+      ball->sparkles[i].gdiff = rand() % 80;
+    }
+
+    Uint16 a = ball->sparkles[i].alpha;
+
+    if(a > 255)
+      a = 255 - (a - 255);
+
+    SDL_SetRenderDrawColor(renderer, 255 - (ball->sparkles[i].gdiff * 2),255 - (ball->sparkles[i].gdiff),255,(Uint8)a);
+    SDL_RenderFillRect(renderer, &(SDL_Rect){.x = ball->sparkles[i].x, .y = ball->sparkles[i].y, .w = 2, .h = 2});
+    if(ball->sparkles[i].alpha < 12)
+      ball->sparkles[i].alpha = 0;
+    else
+      ball->sparkles[i].alpha -= 12;
+
+  }
+
+  a_drawsprite(&ball->sprite, renderer, ball->cx - ball->radius, ball->cy - ball->radius);
+}

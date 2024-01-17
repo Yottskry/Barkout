@@ -12,7 +12,7 @@
 // The bad guys!
 
 typedef enum { dUp, dDown, dLeft, dRight } Direction;
-typedef enum { csSpawning, csAlive, csDead } CatState;
+typedef enum { csSpawning, csAlive, csDying, csDead } CatState;
 
 typedef struct
 {

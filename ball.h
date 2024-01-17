@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #define PI 3.14159
+#define NUMSPARKLES 20
 
 typedef enum
 {
@@ -20,6 +21,14 @@ typedef struct
 {
   int x;
   int y;
+  Uint16 alpha;
+  Uint32 gdiff;
+} Sparkle;
+
+typedef struct
+{
+  int x;
+  int y;
   int cx;
   int cy;
   int radius;
@@ -28,10 +37,12 @@ typedef struct
   double bearing;
   Sprite sprite;
   Ballstate state;
+  Sparkle sparkles[NUMSPARKLES];
 } Ball;
 
 bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e);
 Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e);
 void ball_ricochet(Ball* ball, Edge hitedge);
+void ball_drawball(Ball* ball, SDL_Renderer* renderer);
 
 #endif

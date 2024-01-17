@@ -26,6 +26,8 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(f, renderer, "white.png", "white", 44, 29);
   af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
+  af_loadanimation(f, renderer, "bg1_mg.png", "bg1-mg", 600, 600);
+  af_loadanimation(f, renderer, "bg1_fg.png", "bg1-fg", 600, 600);
   af_loadanimation(f, renderer, "bg2.png", "bg2", 600, 600);
   af_loadanimation(f, renderer, "bg3.png", "bg3", 600, 600);
   af_loadanimation(f, renderer, "scores.png", "scores", 200, 600);
@@ -62,6 +64,8 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-dead.wav", "dead");
   af_loadsample(f, "barkanoid-1up.wav", "1up");
   af_loadsample(f, "barkanoid-warp.wav", "warp");
+  af_loadsample(f, "barkanoid-hitcat.wav", "cat-hit");
+  af_loadsample(f, "barkanoid-laser.wav", "laser");
 }
 
 void gameover(App* app, Gamestate* gamestate)
@@ -97,10 +101,21 @@ int getready(Gamestate* gamestate, Gamestate nextstate)
   return 0;
 }
 
-void drawbackground(App* app, Arena* arena, ResourceFactory* factory)
+void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
 {
+  int ofs = 0;
+  int ofs2 = 0;
+
+  if(player != NULL)
+  {
+    ofs = (player->x - ((arena->bounds.right + arena->bounds.left) / 2)) / -30;
+    ofs2 = (player->x - ((arena->bounds.right + arena->bounds.left) / 2)) / -10;
+  }
+
   // Draw the background
   a_drawstaticframe(arena->bg, app->renderer, 0, 0, 0);
+  a_drawstaticframe(arena->mg, app->renderer, ofs, 0, 0);
+  a_drawstaticframe(arena->fg, app->renderer, ofs2, 0, 0);
   a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0);
   a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0);
 }
@@ -157,7 +172,7 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	int startlevel = 3;
+	int startlevel = 1;
 	Uint32 flags = SDL_WINDOW_OPENGL;
 
 	for(int i = 0; i < argc; i++)
@@ -197,6 +212,7 @@ int main(int argc, char** argv)
   player.controlmethod = cmBarkanoid;
   player.warpenabled = false;
 
+
   // Set up the ball
   Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 6, .bearing = 60, .radius = 7, .state = bsSticky };
   ball.sprite.anim = af_getanimation(&f, "ball");
@@ -204,6 +220,13 @@ int main(int argc, char** argv)
   ball.sprite.lastticks = 0;
   ball.sprite.loop = 1;
   ball.sprite.state = asLooping;
+  for(int i = 0; i < NUMSPARKLES; i++)
+  {
+    ball.sparkles[i].alpha = 0;
+    ball.sparkles[i].x = 0;
+    ball.sparkles[i].y = 0;
+    ball.sparkles[i].gdiff = 0;
+  }
 
   Sprite intro = { .currentframe = 0, .lastticks = 0, .loop = 0, .state = asPlayToEnd };
   intro.anim = af_getanimation(&f, "intro");
@@ -358,7 +381,10 @@ int main(int argc, char** argv)
           case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
           case SDLK_SPACE:
             if((gamestate == gsRunning) && (player.state == plLaser))
+            {
+              af_playsample(&f, "laser");
               arena_addbullet(&arena, &player);
+            }
 
           case SDLK_RETURN:
             if(gamestate == gsTitle)
@@ -420,7 +446,7 @@ int main(int argc, char** argv)
       if(Mix_PlayingMusic() != 0)
         Mix_HaltMusic();
       arena_loadbricks(&arena, arena.level);
-      drawbackground(&app, &arena, &f);
+      drawbackground(&app, &arena, NULL, &f);
       drawarenatext(&app, &arena, hi);
       arena_drawbricks(&arena, app.renderer);
       arena_drawbricks(&arena, app.renderer);
@@ -435,7 +461,7 @@ int main(int argc, char** argv)
 
     if(gamestate == gsRunning)
     {
-      drawbackground(&app, &arena, &f);
+      drawbackground(&app, &arena, &player, &f);
       drawarenatext(&app, &arena, hi);
       arena_drawbricks(&arena, app.renderer);
 
@@ -544,7 +570,10 @@ int main(int argc, char** argv)
       arena_drawlives(&arena, &app);
       // Draw the ball
       if((ball.cy - ball.radius) < (arena.bounds.bottom - 15))
-        a_drawsprite(&(ball.sprite), app.renderer, ball.cx - ball.radius, ball.cy - ball.radius);
+      {
+
+        ball_drawball(&ball, app.renderer);
+      }
 
       // Draw the bat
       bat_drawbat(&player, app.renderer, arena.bounds);

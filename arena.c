@@ -1,5 +1,41 @@
 #include "arena.h"
 
+/*  To avoid plaintext files, we take a normal level file (in the Delphi editor)
+    we take each character in the file in turn and bit shift it left (in groups of 4)
+    to form a Uint32. We then XOR that number with FFFFFFFF to invert it and save a
+    file in that format. The very first UInt32 in the file is the number of Uints to
+    read.
+
+    So a file consists of a Uint32 counter (X) + X * Uint32s, including CRLF info.
+
+*/
+
+char* arena_loadbinary(char* fname)
+{
+  Uint32 i;
+
+  FILE* f = fopen(fname, "rb");
+  fread(&i, sizeof(Uint32), 1, f);
+  Uint32 fsize = i;
+  char* rowdata = calloc(i + 1, sizeof(Uint32));
+  int j = 0;
+  for(Uint32 x = 0; x < fsize; x++)
+  {
+    fread(&i, sizeof(Uint32), 1, f);
+    i = i ^ 0xFFFFFFFF;
+    // Got four characters.
+    if ((i & 0x000000FF) != 0)
+      rowdata[j++] = i & 0x000000FF;
+    if (((i & 0x0000FF00) >> (1 * 8)) != 0)
+      rowdata[j++] = ((i & 0x0000FF00) >> (1 * 8));
+    if (((i & 0x00FF0000) >> (1 * 8)) != 0)
+      rowdata[j++] = ((i & 0x00FF0000) >> (2 * 8));
+    if (((i & 0xFF000000) >> (1 * 8)) != 0)
+      rowdata[j++] = ((i & 0xFF000000) >> (3 * 8));
+  }
+  return rowdata;
+}
+
 int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 {
   for(int i = 0; i < NUMLEVELS; i++)
@@ -12,7 +48,12 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 
     sprintf(fname, "./Levels/level%d.lvl", level->level);
 
-    //printf("Loading level %s\n", fname);
+
+    //char fname2[255] = "";
+
+    //sprintf(fname2, "./Levels/level%d.dat", 1);
+
+    //char* rows = arena_loadbinary(fname2);
 
     FILE* f = fopen(fname, "r");
     char rowdata[14];
@@ -22,13 +63,20 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     int row = 0;
     //arena->remaining = 0;
 
+    //char* rowdata = strtok(rows, "\r\n");
+
     char bgname[4] = "bg1";
+//  strcpy(bgname, rowdata);
     fscanf(f, "%s", bgname);
     level->bg = af_getanimation(factory, bgname);
+    level->mg = af_getanimation(factory, "bg1-mg");
+    level->fg = af_getanimation(factory, "bg1-fg");
     level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
     level->spawny = arena->bounds.top;
     // Read each line. This is the row position.
     while(fscanf(f, "%s", rowdata) > 0)
+  //rowdata = strtok(NULL, "\r\n");
+    //while(rowdata != NULL)
     {
       // Read each character. This is the column.
       for(unsigned int col = 0; col < strlen(rowdata); col++)
@@ -110,7 +158,8 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
         brickno++;
       }
       row++;
-    }
+      //rowdata = strtok(NULL, "\r\n");
+    } // _WHERE_
 
     fclose(f);
 
@@ -123,6 +172,8 @@ void arena_loadbricks(Arena* arena, int level)
   arena->bricks = arena->levels[level-1].bricks;
   arena->brickcount = arena->levels[level-1].brickcount;
   arena->bg = arena->levels[level-1].bg;
+  arena->mg = arena->levels[level-1].mg;
+  arena->fg = arena->levels[level-1].fg;
   arena->remaining = 0;
   arena->spawnx = arena->levels[level-1].spawnx;
   arena->spawny = arena->levels[level-1].spawny;

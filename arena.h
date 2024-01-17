@@ -15,9 +15,11 @@
 
 #define BRICKW 40
 #define BRICKH 25
-#define NUMLEVELS 7
+#define NUMLEVELS 8
 #define MAXBULLETS 10
 #define MAXSPEED 12
+
+typedef unsigned char byte;
 
 typedef enum { gsTitle, gsStory, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused } Gamestate;
 
@@ -35,6 +37,8 @@ typedef struct
   int spawnx;
   int spawny;
   Animation* bg;
+  Animation* mg;
+  Animation* fg;
   Brick** bricks;
 } Level;
 
@@ -53,6 +57,8 @@ typedef struct
   int spawnx;
   int spawny;
   Animation* bg;
+  Animation* mg;
+  Animation* fg;
   Uint32 counter;
   ResourceFactory* factory;
   Brick** bricks;

@@ -212,7 +212,9 @@ bool cat_collidesball(Cat* cats, Ball* ball, ResourceFactory* factory)
     {
       if(ball_collidesbounds(ball, &cats[i].bounds, &edge))
       {
+        cats[i].state = csDying;
         ball_ricochet(ball, edge);
+        af_playsample(factory, "cat-hit");
         af_setanimation(factory, &(cats[i].sprite), "cat-die", 0, cat_afterdie, (void*)&(cats[i]), (void*)factory);
         return true;
       }
@@ -229,6 +231,8 @@ bool cat_collidesbat(Cat* cats, Bounds* bounds, ResourceFactory* factory)
     {
       if(bounds_intersects(&cats[i].bounds, bounds))
       {
+        cats[i].state = csDying;
+        af_playsample(factory, "cat-hit");
         af_setanimation(factory, &(cats[i].sprite), "cat-die", 0, cat_afterdie, (void*)&(cats[i]), (void*)factory);
         return true;
       }
