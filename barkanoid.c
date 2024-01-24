@@ -5,6 +5,7 @@
 #include "intro.h"
 #include "cat.h"
 #include "scores.h"
+#include "config.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL.h>
@@ -27,9 +28,13 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "white.png", "white", 44, 29);
   af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(f, renderer, "bg1_mg.png", "bg1-mg", 600, 600);
-  af_loadanimation(f, renderer, "bg1_fg.png", "bg1-fg", 600, 600);
+  af_loadanimation(f, renderer, "bg1_fg.png", "bg1-fg", 660, 600);
   af_loadanimation(f, renderer, "bg2.png", "bg2", 600, 600);
+  af_loadanimation(f, renderer, "bg2_mg.png", "bg2-mg", 600, 600);
+  af_loadanimation(f, renderer, "bg2_fg.png", "bg2-fg", 660, 600);
   af_loadanimation(f, renderer, "bg3.png", "bg3", 600, 600);
+  af_loadanimation(f, renderer, "bg3_mg.png", "bg3-mg", 600, 600);
+  af_loadanimation(f, renderer, "bg3_fg.png", "bg3-fg", 660, 600);
   af_loadanimation(f, renderer, "scores.png", "scores", 200, 600);
   af_loadanimation(f, renderer, "bat.png", "bat", 82, 29);
   af_loadanimation(f, renderer, "ball.png", "ball", 17, 17);
@@ -115,7 +120,7 @@ void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factor
   // Draw the background
   a_drawstaticframe(arena->bg, app->renderer, 0, 0, 0);
   a_drawstaticframe(arena->mg, app->renderer, ofs, 0, 0);
-  a_drawstaticframe(arena->fg, app->renderer, ofs2, 0, 0);
+  a_drawstaticframe(arena->fg, app->renderer, ofs2 - 30, 0, 0);
   a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0);
   a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0);
 }
@@ -209,7 +214,7 @@ int main(int argc, char** argv)
   player.sprite.lastticks = 0;
   player.sprite.loop = 1;
   player.sprite.state = asLooping;
-  player.controlmethod = cmBarkanoid;
+  //player.controlmethod = cmBarkanoid;
   player.warpenabled = false;
 
 
@@ -220,7 +225,7 @@ int main(int argc, char** argv)
   ball.sprite.lastticks = 0;
   ball.sprite.loop = 1;
   ball.sprite.state = asLooping;
-  for(int i = 0; i < NUMSPARKLES; i++)
+  for(int i = 0; i < MAXTRAILPARTICLES; i++)
   {
     ball.sparkles[i].alpha = 0;
     ball.sparkles[i].x = 0;
@@ -241,7 +246,7 @@ int main(int argc, char** argv)
   warp.onanimfinished = NULL;
 
   // Set up the level
-  Arena arena = { .bounds = { .top = 50, .bottom = 550, .left = 40, .right = 560 },
+  Arena arena = { .bounds = { .top = 40, .bottom = 550, .left = 40, .right = 560 },
                   .width = 520,
                   .bonuscounter = 0,
                   .bonuscount = 0,
@@ -255,6 +260,8 @@ int main(int argc, char** argv)
                   .bullets = NULL,
                   .bg = NULL
                 };
+
+  config_load();
 
   arena_loadlevels(&arena, &f);
 
@@ -457,6 +464,14 @@ int main(int argc, char** argv)
       cats[2].state = csDead;
       //baddiecounter = SDL_GetTicks();
       reset(&app, &ball, &player, &arena, &gamestate);
+    }
+
+    if(gamestate == gsPaused)
+    {
+      drawbackground(&app, &arena, &player, &f);
+      drawarenatext(&app, &arena, hi);
+      arena_drawbricks(&arena, app.renderer);
+      arena_drawbonuses(&arena, app.renderer);
     }
 
     if(gamestate == gsRunning)

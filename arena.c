@@ -1,4 +1,5 @@
 #include "arena.h"
+#include "config.h"
 
 /*  To avoid plaintext files, we take a normal level file (in the Delphi editor)
     we take each character in the file in turn and bit shift it left (in groups of 4)
@@ -68,9 +69,20 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     char bgname[4] = "bg1";
 //  strcpy(bgname, rowdata);
     fscanf(f, "%s", bgname);
+
+    char mgname[8] = "";
+    char fgname[8] = "";
+
+    strcpy(mgname, bgname);
+    strcpy(fgname, bgname);
+
+    strcat(mgname, "-mg");
+    strcat(fgname, "-fg");
+
     level->bg = af_getanimation(factory, bgname);
-    level->mg = af_getanimation(factory, "bg1-mg");
-    level->fg = af_getanimation(factory, "bg1-fg");
+    level->mg = af_getanimation(factory, mgname);
+    level->fg = af_getanimation(factory, fgname);
+
     level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
     level->spawny = arena->bounds.top;
     // Read each line. This is the row position.
@@ -180,12 +192,33 @@ void arena_loadbricks(Arena* arena, int level)
 
   for(int i = 0; i < arena->levels[level-1].brickcount; i++)
   {
+    Brick* brick = arena->levels[level-1].bricks[i];
+
     arena->remaining += arena->levels[level-1].bricks[i]->type == btIndestructible ? 0 : 1;
-    switch(arena->levels[level-1].bricks[i]->type)
+    switch(brick->type)
     {
       case btNormal: arena->levels[level-1].bricks[i]->hitcount = 1; break;
       case btHard: arena->levels[level-1].bricks[i]->hitcount = 2; break;
       case btIndestructible: arena->levels[level-1].bricks[i]->hitcount = -1; break;
+    }
+
+    for(int j = 0; j < MAXBRICKPARTICLES; j++)
+    {
+      brick->particles[j].alpha = (rand() % 55) + 201;
+      brick->particles[j].gdiff = 0;
+      brick->particles[j].x = rand() % BRICKW;
+      brick->particles[j].y = rand() % BRICKH;
+      brick->particles[j].yv = ((rand() % 6) + 1) * -1;
+      if(brick->particles[j].x < 10)
+        brick->particles[j].xv = ((rand() % 3) * -1) - 3; // -6 to -3
+      else if(brick->particles[j].x < 20)
+        brick->particles[j].xv = (rand() % 3) * -1; // -2 to 0
+      else if(brick->particles[j].x < 30)
+        brick->particles[j].xv = (rand() % 3); // 0 to 2
+      else
+        brick->particles[j].xv = (rand() % 3) + 3; // 3 to 6
+      brick->particles[j].x += brick->left;
+      brick->particles[j].y += brick->top;
     }
   }
 }
@@ -194,9 +227,33 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
 {
   for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
   {
-    if(arena->bricks[brickno]->hitcount != 0)
+    Brick* brick = arena->bricks[brickno];
+    Animation* anim = brick->sprite->anim;
+    if(brick->hitcount != 0)
     {
-      a_drawsprite(arena->bricks[brickno]->sprite, renderer, arena->bricks[brickno]->left, arena->bricks[brickno]->top);
+      a_drawsprite(brick->sprite, renderer, brick->left, brick->top);
+    }
+    else
+    {
+      for(int j = 0; j < config_getbrickparticles(); j++)
+      {
+        if(brick->particles[j].alpha > 0)
+        {
+          int w = (rand() % 4) + 1;
+          SDL_SetRenderDrawColor(renderer, anim->keycolorr, anim->keycolorg, anim->keycolorb, (Uint8)brick->particles[j].alpha);
+          SDL_RenderFillRect(renderer, &(SDL_Rect){.x = brick->particles[j].x, .y = brick->particles[j].y, .w = w, .h = w});
+          brick->particles[j].x += brick->particles[j].xv;
+          brick->particles[j].y += brick->particles[j].yv;
+
+          brick->particles[j].yv = brick->particles[j].yv < 5 ? brick->particles[j].yv + 1 : brick->particles[j].yv;
+
+          if(brick->particles[j].alpha < BRICKDECAY)
+            brick->particles[j].alpha = 0;
+          else
+            brick->particles[j].alpha -= rand() % BRICKDECAY;
+
+        }
+      }
     }
   }
 }

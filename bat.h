@@ -9,7 +9,6 @@
 
 typedef enum { psNormal = 79, psLong = 120, psShort = 60 } Playersize;
 typedef enum { plNormal, plShort, plLong, plSticky, plLaser } Playerstate;
-typedef enum { cmBarkanoid = 1, cmClassic = 2 } ControlMethod;
 
 typedef struct
 {
@@ -21,7 +20,6 @@ typedef struct
   int speed;
   int targetspeed;
   unsigned int lives;
-  ControlMethod controlmethod;
   Playerstate state;
   bool warpenabled;
   Sprite sprite;

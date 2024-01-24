@@ -18,6 +18,23 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
 	// Literally can't remember why I do this. Transparency? Can't remember...
 	SDL_SetSurfaceAlphaMod(tmpImage, 255);
 	SDL_Surface* sfc = SDL_ConvertSurfaceFormat(tmpImage, SDL_PIXELFORMAT_RGBA32, 0);
+
+	// Get a pixel from the middle of the first frame so we have an idea
+	// what colour the animation is if we want to do particle effects like
+	// exploding bricks
+	int midx = w / 2;
+	int midy = h / 2;
+
+  Uint8 bpp = sfc->format->BytesPerPixel;
+  /* Here p is the address to the pixel we want to retrieve */
+  Uint8* p = (Uint8 *)sfc->pixels + midy * sfc->pitch + midx * bpp;
+
+	Uint8 r = 0;
+	Uint8 g = 0;
+	Uint8 b = 0;
+
+	SDL_GetRGB(*((Uint32*)p), sfc->format, &r, &g, &b);
+
 	// Free the original temporary surface
 	SDL_FreeSurface(tmpImage);
 
@@ -49,6 +66,9 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
   anim->size = nframes;
   anim->framewidth = w;
   anim->frameheight = h;
+  anim->keycolorr = r;
+  anim->keycolorg = g;
+  anim->keycolorb = b;
 	strcpy(anim->name, name);
 
   factory->animationcount++;

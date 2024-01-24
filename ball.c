@@ -1,4 +1,5 @@
 #include "ball.h"
+#include "config.h"
 
 // Brought this out into its own function so we can use it
 // to test collisions with baddies too, and thus also
@@ -129,7 +130,7 @@ void ball_drawball(Ball* ball, SDL_Renderer* renderer)
   // Draw the sparkles...
   if((ball->state == bsDeadly) || (ball->state == bsStuck) || (ball->state == bsLoose))
   {
-    for(int i = 0; i < NUMSPARKLES; i++)
+    for(int i = 0; i < config_gettrailparticles(); i++)
     {
       if(ball->sparkles[i].alpha == 0)
       {

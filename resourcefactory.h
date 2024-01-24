@@ -15,6 +15,9 @@ typedef struct
 	int framewidth;
 	int frameheight;
 	SDL_Texture* sheet;
+	Uint8 keycolorr;
+	Uint8 keycolorg;
+	Uint8 keycolorb;
 } Animation;
 
 typedef struct

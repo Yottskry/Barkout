@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #define PI 3.14159
-#define NUMSPARKLES 20
+#define MAXTRAILPARTICLES 255
 
 typedef enum
 {
@@ -21,14 +21,6 @@ typedef struct
 {
   int x;
   int y;
-  Uint16 alpha;
-  Uint32 gdiff;
-} Sparkle;
-
-typedef struct
-{
-  int x;
-  int y;
   int cx;
   int cy;
   int radius;
@@ -37,7 +29,7 @@ typedef struct
   double bearing;
   Sprite sprite;
   Ballstate state;
-  Sparkle sparkles[NUMSPARKLES];
+  Sparkle sparkles[MAXTRAILPARTICLES];
 } Ball;
 
 bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e);
