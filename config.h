@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-typedef enum { cmBarkanoid = 1, cmClassic = 2 } ControlMethod;
+typedef enum { cmBarkanoid = 0, cmClassic = 1 } ControlMethod;
 
 typedef struct {
   ControlMethod controlmethod;

@@ -22,7 +22,7 @@
 
 typedef unsigned char byte;
 
-typedef enum { gsTitle, gsStory, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused } Gamestate;
+typedef enum { gsTitle, gsMenu, gsStory, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused } Gamestate;
 
 typedef struct
 {

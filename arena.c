@@ -563,20 +563,20 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             botype = boGrow;
           else if (bonusscore > 85)
             botype = boDeadly;
-          else if (bonusscore > 80)
+          else if (bonusscore > 82)
             botype = boPlayer;
           else if (bonusscore > 70)
             botype = boCatch;
-          else if (bonusscore > 60)
+          else if (bonusscore > 63)
             botype = boLaser;
-          else if (bonusscore > 50)
+          else if (bonusscore > 63)
             botype = boShrink;
-          else if (bonusscore > 45)
+          else if (bonusscore > 60)
             botype = boWarp;
 
           printf("Bonus number: %d\n", bonusscore);
 
-          if(bonusscore > 45)
+          if(bonusscore > 60)
             arena_addbonus(arena, b->left, b->bottom, botype);
 
           af_playsample(arena->factory, "brick");
@@ -683,34 +683,62 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
   {
     *e = eTop;
     ball->cy = player->y - ball->radius - 1;
-    //if(ball->cx + 2 < player->x && ball->bearing < 180)
-    //  *e = eTopLeft;
-    //else if((ball->cx - 2 > (player->x + player->w)) && (ball->bearing > 180))
-    //  *e = eTopRight;
-    //else
-    if((abs(player->speed) >= 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
+
+    // Barkanoid control method, allow spin
+    if(config_getcontrolmethod() == cmBarkanoid)
     {
-        // we need a right-angled triangle
-        double rads = (180 - ball->bearing) * (PI / 180);
-        double nextx = ball->speed * sinl(rads);
-        double nexty = ball->speed * cosl(rads);
+      if((abs(player->speed) >= 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
+      {
+          // we need a right-angled triangle
+          double rads = (180 - ball->bearing) * (PI / 180);
+          double nextx = ball->speed * sinl(rads);
+          double nexty = ball->speed * cosl(rads);
 
-        double newx = (int)(nextx + player->speed);
+          double newx = (int)(nextx + player->speed);
 
-        //now we need a new "hypotenuse"
-        double nspd = sqrt((newx*newx) + (nexty*nexty));
+          //now we need a new "hypotenuse"
+          double nspd = sqrt((newx*newx) + (nexty*nexty));
 
-        rads = asinl((double)(newx/nspd));
-        double bearing = rads / (PI / 180);
+          rads = asinl((double)(newx/nspd));
+          double bearing = rads / (PI / 180);
 
-        if((ball->bearing + bearing > 110) && (ball->bearing + bearing < 250))
-          ball->bearing += bearing;
+          if((ball->bearing + bearing > 110) && (ball->bearing + bearing < 250))
+            ball->bearing += bearing;
+      }
 
-        // Don't allow entirely horizontal travel
-        //if(ball->bearing <= 100)
-        //  ball->bearing = 120;
-        //else if(ball->bearing >= 260)
-        //  ball->bearing = 240;
+    }
+    else // Control method = Classic, no spin, but angle based on bat segment hit
+    {
+      int e1 = player->w / 10;
+      int q1 = player->w / 5;
+      int q2 = player->w / 2;
+      int q3 = player->w - q1;
+      int q4 = player->w - e1;
+
+      if(ball->cx < player->x + e1)
+      {
+        ball->bearing = 250;
+      }
+      else if(ball->cx < player->x + q1)
+      {
+        ball->bearing = 240;
+      }
+      else if(ball->cx < player->x + q2)
+      {
+        ball->bearing = 210;
+      }
+      else if(ball->cx < player->x + q3)
+      {
+        ball->bearing = 150;
+      }
+      else if(ball->cx < player->x + q4)
+      {
+        ball->bearing = 120;
+      }
+      else // right edge
+      {
+        ball->bearing = 110;
+      }
     }
 
     return 1;

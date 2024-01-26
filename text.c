@@ -27,6 +27,31 @@ void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, in
   SDL_DestroyTexture(tex);
 }
 
+void text_drawwrappedtext(App* app, const char* text, int x, int y, SDL_Color color, int flags, int len)
+{
+  SDL_Color cWhite = {255,255,255,255};
+  SDL_Surface* txt = TTF_RenderUTF8_Solid_Wrapped(app->font, text, cWhite, len);
+
+  assert(txt != NULL);
+
+  SDL_Texture* tex = SDL_CreateTextureFromSurface(app->renderer, txt);
+
+  assert(tex != NULL);
+
+  int xpos = x;
+
+  if((flags & TEXT_CENTRED) == TEXT_CENTRED)
+    xpos = (int)((SCREENW - txt->w) / 2);
+
+  SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
+  SDL_SetTextureAlphaMod(tex, color.a);
+  SDL_Rect src = {0, 0, txt->w, txt->h};
+  SDL_Rect dst = {xpos, y, txt->w, txt->h};
+  SDL_RenderCopy(app->renderer, tex, &src, &dst);
+  SDL_FreeSurface(txt);
+  SDL_DestroyTexture(tex);
+}
+
 void text_drawbgtext(App* app, const char* text, int x, int y, SDL_Color color, SDL_Color bgcolor, int flags)
 {
   //SDL_Color cWhite = {255,255,255,255};

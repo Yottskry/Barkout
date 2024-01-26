@@ -15,7 +15,7 @@ Config* config_load()
 {
   config.brickparticles = 15;
   config.trailparticles = 20;
-  config.controlmethod = cmBarkanoid;
+  config.controlmethod = cmClassic;
 
   #ifdef _WIN32
   HKEY newKey;
@@ -25,15 +25,7 @@ Config* config_load()
   {
     long unsigned int lpSize = sizeof(int);
     retval = RegQueryValueExA(newKey, "brickparticles", 0, NULL, (BYTE*)(&config.brickparticles), &lpSize);
-    if(retval != ERROR_SUCCESS)
-    {
-      score = config.brickparticles;
-    }
     retval = RegQueryValueExA(newKey, "trailparticles", 0, NULL, (BYTE*)(&config.brickparticles), &lpSize);
-    if(retval != ERROR_SUCCESS)
-    {
-      score = config.trailparticles;
-    }
   }
   else
   {
@@ -77,7 +69,7 @@ int config_gettrailparticles()
 
 ControlMethod config_getcontrolmethod()
 {
-  return cmBarkanoid;
+  return config.controlmethod;
 }
 
 void config_setbrickparticles(int brickparticles)

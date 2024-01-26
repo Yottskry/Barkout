@@ -24,6 +24,8 @@ typedef struct
 
 void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, int flags);
 
+void text_drawwrappedtext(App* app, const char* text, int x, int y, SDL_Color color, int flags, int len);
+
 void text_drawbgtext(App* app, const char* text, int x, int y, SDL_Color color, SDL_Color bgcolor, int flags);
 
 bool text_drawflashtext(App* app, FlashText* text, int x, int y, int speed);

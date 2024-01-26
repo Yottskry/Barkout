@@ -6,6 +6,7 @@
 #include "cat.h"
 #include "scores.h"
 #include "config.h"
+#include "menu.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL.h>
@@ -13,6 +14,8 @@
 #include <stdbool.h>
 
 #define STARTLIVES 3
+#define OPT1 "Ball angle is determined by segment of bat hit"
+#define OPT2 "Bat speed and direction influences ball spin and angle"
 
 void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
 {
@@ -149,6 +152,16 @@ void drawarenatext(App* app, Arena* arena, int hi)
 
   text_drawtext(app, scores, 612, 242, (SDL_Color){0, 0, 0, 255}, 0);
   text_drawtext(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, 0);
+
+  char level[4] = "";
+
+  sprintf(level, "%02d", arena->level);
+
+  text_drawtext(app, "Round", 612, 322, (SDL_Color){0,0,0,255}, 0);
+  text_drawtext(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, 0);
+
+  text_drawtext(app, level, 742, 322, (SDL_Color){0, 0, 0, 255}, 0);
+  text_drawtext(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0);
 }
 
 int main(int argc, char** argv)
@@ -262,6 +275,13 @@ int main(int argc, char** argv)
                 };
 
   config_load();
+
+  Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 300 };
+  MenuItem* item = menu_additem(&menu, "Start game");
+  item = menu_additem(&menu, "Control method");
+  menu_additemoption(item, "Barkanoid", OPT2, (int)cmBarkanoid);
+  menu_additemoption(item, "Classic", OPT1, (int)cmClassic);
+  menu_additem(&menu, "Difficulty");
 
   arena_loadlevels(&arena, &f);
 
@@ -382,8 +402,15 @@ int main(int argc, char** argv)
           break;
           case SDLK_x:
           case SDLK_RIGHT:
-            if(currentlywarping == 0)
-              player.targetspeed = player.maxspeed;
+            if(gamestate == gsRunning)
+            {
+              if(currentlywarping == 0)
+                player.targetspeed = player.maxspeed;
+            }
+            else if(gamestate==gsMenu)
+            {
+              menu_nextoption(&menu);
+            }
           break;
           case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
           case SDLK_SPACE:
@@ -395,6 +422,8 @@ int main(int argc, char** argv)
 
           case SDLK_RETURN:
             if(gamestate == gsTitle)
+              gamestate = gsMenu;
+            else if(gamestate == gsMenu)
               gamestate = gsStory;
             else if(gamestate == gsStory)
             {
@@ -404,6 +433,25 @@ int main(int argc, char** argv)
               arena.score = 0;
               arena_loadbricks(&arena, arena.level);
             }
+          break;
+          case SDLK_DOWN:
+            if(gamestate==gsMenu)
+            {
+              menu_next(&menu);
+            }
+          break;
+          case SDLK_UP:
+            if(gamestate==gsMenu)
+            {
+              menu_previous(&menu);
+            }
+          break;
+          case SDLK_F1:
+            printf("Diagnostics: \n");
+            printf("ball speed: %d\n", ball.speed);
+            printf("ball bearing: %f\n", ball.bearing);
+            printf("remaining bricks: %d\n", arena.remaining);
+            printf("current level: %d\n", arena.level);
           break;
         }
       }
@@ -426,7 +474,23 @@ int main(int argc, char** argv)
         a_drawsprite(&intro, app.renderer, 200, 220);
         text_drawflashtext(&app, &pressstart, 260, 300, 2);
       }
+
       intro_movestars(stars);
+    }
+
+    if(gamestate == gsMenu)
+    {
+      titlefinished = true;
+
+      intro_drawstars(app.renderer, stars);
+      a_drawsprite(&intro, app.renderer, 200, 220);
+
+      menu_drawmenu(&menu, &app);
+
+      intro_movestars(stars);
+      // problem is that on our next loop, if we've changed
+      // to gsNewLevel we draw one single frame of the previous
+      // level layout
     }
 
     if(gamestate == gsStory)
@@ -579,7 +643,7 @@ int main(int argc, char** argv)
       delay = 3000;
     }
 
-	  if((gamestate != gsTitle) && (gamestate != gsStory) && (gamestate != gsDying))
+	  if((gamestate != gsTitle) && (gamestate != gsMenu) && (gamestate != gsStory) && (gamestate != gsDying))
 	  {
 
       arena_drawlives(&arena, &app);
