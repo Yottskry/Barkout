@@ -253,6 +253,7 @@ void cat_afterspawn(void* sender, void* data)
 {
   ResourceFactory* factory = (ResourceFactory*)data;
   Cat* cat = (Cat*)sender;
-  af_setanimation(factory, &cat->sprite, "cat", 0, NULL, NULL, NULL);
+  af_setanimation(factory, &cat->sprite, "cat", 1, NULL, NULL, NULL);
+  cat->sprite.state = asLooping;
   cat->state = csAlive;
 }

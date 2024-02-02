@@ -18,6 +18,8 @@ typedef struct
   int selectedvalue;
   int selectedindex;
   int optioncount;
+  int* controlvalue;
+  void (*onexecute)(void*);
   MenuItemOption** options;
 } MenuItem;
 
@@ -30,9 +32,10 @@ typedef struct
   int optionx;
   int x;
   int y;
+  App* app;
 } Menu;
 
-MenuItem* menu_additem(Menu* menu, const char* text);
+MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*));
 MenuItemOption* menu_additemoption(MenuItem* menuitem, const char* optiontext, const char* optiondescription, int optionvalue);
 void menu_drawmenu(Menu* menu, App* app);
 void menu_next(Menu* menu);
@@ -40,5 +43,6 @@ void menu_previous(Menu* menu);
 void menu_nextoption(Menu* menu);
 void menu_previousoption(Menu* menu);
 void menu_free(Menu* menu);
+void menu_execute(Menu* menu);
 
 #endif // _MENU_H_

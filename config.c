@@ -54,7 +54,7 @@ Config* config_load()
     fclose(datafile);
   }
   #endif
-  return 0;
+  return &config;
 }
 
 int config_getbrickparticles()

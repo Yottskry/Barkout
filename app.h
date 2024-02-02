@@ -9,12 +9,15 @@
 #define SCREENW 800
 #define SCREENH 600
 
+typedef enum { gsTitle, gsMenu, gsStory, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused, gsQuit } Gamestate;
+
 typedef struct
 {
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	TTF_Font* font;
 	Mix_Music* music;
+	Gamestate gamestate;
 } App;
 
 #endif // _APP_H_

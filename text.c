@@ -31,6 +31,7 @@ void text_drawwrappedtext(App* app, const char* text, int x, int y, SDL_Color co
 {
   SDL_Color cWhite = {255,255,255,255};
   SDL_Surface* txt = TTF_RenderUTF8_Solid_Wrapped(app->font, text, cWhite, len);
+  //SDL_Surface* txt = TTF_RenderUTF8_Solid(app->font, text, cWhite);
 
   assert(txt != NULL);
 

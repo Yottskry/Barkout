@@ -7,7 +7,7 @@
 #include "resourcefactory.h"
 
 typedef enum { bsStatic, bsHit } Brickstate;
-typedef enum { btNormal, btHard, btIndestructible } Bricktype;
+typedef enum { btNormal, btHard, btIndestructible, btWormhole } Bricktype;
 typedef enum { eLeft, eRight, eTop, eBottom, eTopLeft, eTopRight, eBottomLeft, eBottomRight, eNone } Edge;
 
 // Used by Bricks and the Ball.

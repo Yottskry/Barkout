@@ -30,6 +30,7 @@ typedef struct
   Sprite sprite;
   Ballstate state;
   Sparkle sparkles[MAXTRAILPARTICLES];
+  Brick* warpdest;
 } Ball;
 
 bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e);

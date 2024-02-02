@@ -62,6 +62,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "cat.png", "cat", 40, 40);
   af_loadanimation(f, renderer, "cat-die.png", "cat-die", 40, 40);
   af_loadanimation(f, renderer, "cat-spawn.png", "cat-spawn", 40, 40);
+  af_loadanimation(f, renderer, "wormhole.png", "wormhole", 40, 25);
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
@@ -96,6 +97,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius * 2) + 2;
   ball->speed = 6;
+  ball->warpdest = NULL;
   *gamestate = gsGetReady;
   text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0);
   text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0);
@@ -107,6 +109,23 @@ int getready(Gamestate* gamestate, Gamestate nextstate)
   //SDL_Delay(3000);
   *gamestate = nextstate;
   return 0;
+}
+
+void menu_quitclick(void* data)
+{
+  App* app = (App*)data;
+  app->gamestate = gsQuit;
+}
+
+void menu_startclick(void* data)
+{
+  App* app = (App*)data;
+  app->gamestate = gsStory;
+}
+
+void menu_creditsclicks(void* data)
+{
+  App* app = (App*)data;
 }
 
 void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
@@ -190,7 +209,7 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	int startlevel = 1;
+	int startlevel = 10;
 	Uint32 flags = SDL_WINDOW_OPENGL;
 
 	for(int i = 0; i < argc; i++)
@@ -212,6 +231,7 @@ int main(int argc, char** argv)
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
 	app.music = Mix_LoadMUS("./Sounds/barkanoidii.mp3");
+  app.gamestate = gsTitle;
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
   SDL_RenderSetLogicalSize(app.renderer, 800, 600);
@@ -274,14 +294,15 @@ int main(int argc, char** argv)
                   .bg = NULL
                 };
 
-  config_load();
+  Config* config = config_load();
 
-  Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 300 };
-  MenuItem* item = menu_additem(&menu, "Start game");
-  item = menu_additem(&menu, "Control method");
+  Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 320, .app=&app };
+  MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick);
+  item = menu_additem(&menu, "Control method", (int*)&(config->controlmethod), NULL);
   menu_additemoption(item, "Barkanoid", OPT2, (int)cmBarkanoid);
   menu_additemoption(item, "Classic", OPT1, (int)cmClassic);
-  menu_additem(&menu, "Difficulty");
+  menu_additem(&menu, "Credits", NULL, NULL);
+  menu_additem(&menu, "Quit", NULL, menu_quitclick);
 
   arena_loadlevels(&arena, &f);
 
@@ -289,7 +310,7 @@ int main(int argc, char** argv)
 
   Star stars[STARS];
   intro_init(stars);
-  Gamestate gamestate = gsTitle;
+  //Gamestate gamestate = gsTitle;
 
   FlashText pressstart = { .text = "Press 1P Start", .alpha = 0, .targetalpha = 255, .duration = 0 };
 
@@ -340,9 +361,7 @@ int main(int argc, char** argv)
   bool titlefinished = false;
   int currentlywarping = 0;
 
-  //Uint32 baddiecounter = 0;
-
-  while(1)
+  while(app.gamestate != gsQuit)
   {
     // Compare this to the end of the loop to set the frame rate
     Uint32 startticks = SDL_GetTicks();
@@ -382,8 +401,8 @@ int main(int argc, char** argv)
         // Not part of the switch because we need "break" to break the loop...
         if(e.key.keysym.sym == SDLK_ESCAPE)
         {
-          if((gamestate != gsTitle) && (gamestate != gsStory))
-            gamestate = gsTitle;
+          if((app.gamestate != gsTitle) && (app.gamestate != gsStory))
+            app.gamestate = gsTitle;
           else
             break;
         }
@@ -391,7 +410,7 @@ int main(int argc, char** argv)
         switch(e.key.keysym.sym)
         {
           case SDLK_1:
-            if(gamestate == gsRunning)
+            if(app.gamestate == gsRunning)
               arena_addbonus(&arena, 200, 200, boCatch);
           break;
 
@@ -402,32 +421,32 @@ int main(int argc, char** argv)
           break;
           case SDLK_x:
           case SDLK_RIGHT:
-            if(gamestate == gsRunning)
+            if(app.gamestate == gsRunning)
             {
               if(currentlywarping == 0)
                 player.targetspeed = player.maxspeed;
             }
-            else if(gamestate==gsMenu)
+            else if(app.gamestate==gsMenu)
             {
               menu_nextoption(&menu);
             }
           break;
-          case SDLK_p: gamestate = gamestate == gsRunning ? gsPaused : gsRunning; break;
+          case SDLK_p: app.gamestate = app.gamestate == gsRunning ? gsPaused : gsRunning; break;
           case SDLK_SPACE:
-            if((gamestate == gsRunning) && (player.state == plLaser))
+            if((app.gamestate == gsRunning) && (player.state == plLaser))
             {
               af_playsample(&f, "laser");
               arena_addbullet(&arena, &player);
             }
 
           case SDLK_RETURN:
-            if(gamestate == gsTitle)
-              gamestate = gsMenu;
-            else if(gamestate == gsMenu)
-              gamestate = gsStory;
-            else if(gamestate == gsStory)
+            if(app.gamestate == gsTitle)
+              app.gamestate = gsMenu;
+            else if(app.gamestate == gsMenu)
+              menu_execute(&menu);
+            else if(app.gamestate == gsStory)
             {
-              gamestate = gsNewLevel;
+              app.gamestate = gsNewLevel;
               arena.lives = STARTLIVES;
               arena.level = startlevel;
               arena.score = 0;
@@ -435,13 +454,13 @@ int main(int argc, char** argv)
             }
           break;
           case SDLK_DOWN:
-            if(gamestate==gsMenu)
+            if(app.gamestate==gsMenu)
             {
               menu_next(&menu);
             }
           break;
           case SDLK_UP:
-            if(gamestate==gsMenu)
+            if(app.gamestate==gsMenu)
             {
               menu_previous(&menu);
             }
@@ -460,7 +479,7 @@ int main(int argc, char** argv)
 		// Clear the screen
 	  SDL_RenderClear(app.renderer);
 
-    if(gamestate == gsTitle)
+    if(app.gamestate == gsTitle)
     {
       if(Mix_PlayingMusic() == 0)
           Mix_PlayMusic(app.music, 0);
@@ -478,7 +497,7 @@ int main(int argc, char** argv)
       intro_movestars(stars);
     }
 
-    if(gamestate == gsMenu)
+    if(app.gamestate == gsMenu)
     {
       titlefinished = true;
 
@@ -493,7 +512,7 @@ int main(int argc, char** argv)
       // level layout
     }
 
-    if(gamestate == gsStory)
+    if(app.gamestate == gsStory)
     {
       titlefinished = true;
       arena.level = startlevel;
@@ -502,7 +521,7 @@ int main(int argc, char** argv)
       text_drawflashstory(&app, &story1, &txt1, 300);
       text_drawflashstory(&app, &story2, &txt2, 340);
       if(text_drawflashstory(&app, &story3, &txt3, 380))
-        gamestate = gsNewLevel;
+        app.gamestate = gsNewLevel;
       intro_movestars(stars);
       // problem is that on our next loop, if we've changed
       // to gsNewLevel we draw one single frame of the previous
@@ -512,7 +531,7 @@ int main(int argc, char** argv)
     // before we say "Get Ready!" so we need an else
     // to avoid moving directly from gsStory to gsNewLevel
     // in one loop iteration.
-    else if(gamestate == gsNewLevel)
+    else if(app.gamestate == gsNewLevel)
     {
       if(Mix_PlayingMusic() != 0)
         Mix_HaltMusic();
@@ -527,10 +546,10 @@ int main(int argc, char** argv)
       cats[1].state = csDead;
       cats[2].state = csDead;
       //baddiecounter = SDL_GetTicks();
-      reset(&app, &ball, &player, &arena, &gamestate);
+      reset(&app, &ball, &player, &arena, &app.gamestate);
     }
 
-    if(gamestate == gsPaused)
+    if(app.gamestate == gsPaused)
     {
       drawbackground(&app, &arena, &player, &f);
       drawarenatext(&app, &arena, hi);
@@ -538,7 +557,7 @@ int main(int argc, char** argv)
       arena_drawbonuses(&arena, app.renderer);
     }
 
-    if(gamestate == gsRunning)
+    if(app.gamestate == gsRunning)
     {
       drawbackground(&app, &arena, &player, &f);
       drawarenatext(&app, &arena, hi);
@@ -567,12 +586,12 @@ int main(int argc, char** argv)
         {
           // Lives already reset, but ideally we want to delay
           // the delay() call until after the next render
-          reset(&app, &ball, &player, &arena, &gamestate);
+          reset(&app, &ball, &player, &arena, &app.gamestate);
           delay = 3000;
         }
         else
         {
-          gameover(&app, &gamestate);
+          gameover(&app, &app.gamestate);
           savehighscore(((int*)&arena.score));
           arena_resetbricks(&arena);
         }
@@ -601,7 +620,7 @@ int main(int argc, char** argv)
       if(arena.remaining == 0)
       {
         arena.level++;
-        gamestate = gsNewLevel;
+        app.gamestate = gsNewLevel;
         // See the note above SDL_RenderPresent (below)
         //continue;
       }
@@ -626,24 +645,24 @@ int main(int argc, char** argv)
       arena_checkbulletcollisions(&arena);
       arena_batcollidesbonus(&arena, &player, &ball);
     } // This one is an else because we need one loop between
-      // change of gamestate for the Get Ready text to render.
+      // change of app.gamestate for the Get Ready text to render.
 
-    if(gamestate == gsGetReady)
+    if(app.gamestate == gsGetReady)
     {
       currentlywarping = 0;
       af_playsample(&f, "getready");
       delay = 3000;
-      gamestate = gsRunning;
+      app.gamestate = gsRunning;
       arena.counter = startticks;
     }
 
-    if(gamestate == gsDying)
+    if(app.gamestate == gsDying)
     {
-      gamestate = gsTitle;
+      app.gamestate = gsTitle;
       delay = 3000;
     }
 
-	  if((gamestate != gsTitle) && (gamestate != gsMenu) && (gamestate != gsStory) && (gamestate != gsDying))
+	  if((app.gamestate != gsTitle) && (app.gamestate != gsMenu) && (app.gamestate != gsStory) && (app.gamestate != gsDying))
 	  {
 
       arena_drawlives(&arena, &app);
@@ -677,6 +696,8 @@ int main(int argc, char** argv)
   }
 
   // Exiting the program, so free all allocated memory
+
+  menu_free(&menu);
   //af_freeanimation(&f, "ball");
   arena_freebonuses(&arena);
   arena_freelevels(&arena);
