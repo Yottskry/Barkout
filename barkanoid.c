@@ -62,7 +62,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "cat.png", "cat", 40, 40);
   af_loadanimation(f, renderer, "cat-die.png", "cat-die", 40, 40);
   af_loadanimation(f, renderer, "cat-spawn.png", "cat-spawn", 40, 40);
-  af_loadanimation(f, renderer, "wormhole.png", "wormhole", 40, 25);
+  af_loadanimation(f, renderer, "wormhole2.png", "wormhole", 40, 25);
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
