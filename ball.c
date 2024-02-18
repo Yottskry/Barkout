@@ -11,7 +11,7 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e)
        (bounds->top - ball->cy <= ball->radius) &&
        (ball->cx - (bounds->left + bounds->width) <= ball->radius))
   {
-    // Determin distance to each each of the brick so we
+    // Determine distance to each each of the brick so we
     // can work out which the ball should reflect off
     int deltar = abs(ball->cx - ball->radius - (bounds->left + bounds->width));
     int deltal = abs(ball->cx + ball->radius - bounds->left);

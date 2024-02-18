@@ -416,8 +416,15 @@ int main(int argc, char** argv)
 
           case SDLK_z:
           case SDLK_LEFT:
-            if(currentlywarping == 0)
-              player.targetspeed = -1 * player.maxspeed;
+            if(app.gamestate == gsRunning)
+            {
+              if(currentlywarping == 0)
+                player.targetspeed = -1 * player.maxspeed;
+            }
+            else if(app.gamestate==gsMenu)
+            {
+              menu_previousoption(&menu);
+            }
           break;
           case SDLK_x:
           case SDLK_RIGHT:

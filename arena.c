@@ -199,8 +199,6 @@ void arena_loadbricks(Arena* arena, int level)
   {
     Brick* brick = arena->levels[level-1].bricks[i];
 
-    //arena->remaining += arena->levels[level-1].bricks[i]->type == btIndestructible ? 0 : 1;
-
     if((arena->levels[level-1].bricks[i]->type != btIndestructible) &&
        (arena->levels[level-1].bricks[i]->type != btWormhole))
     {
@@ -264,7 +262,6 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
             brick->particles[j].alpha = 0;
           else
             brick->particles[j].alpha -= rand() % BRICKDECAY;
-
         }
       }
     }
@@ -289,7 +286,6 @@ void arena_freelevels(Arena* arena)
 {
   for(int levno = 0; levno < NUMLEVELS; levno++)
   {
-
     for(int brickno = 0; brickno < arena->levels[levno].brickcount; brickno++)
     {
       free(arena->levels[levno].bricks[brickno]->sprite);
@@ -299,14 +295,11 @@ void arena_freelevels(Arena* arena)
     free(arena->levels[levno].bricks);
     arena->levels[levno].bricks = NULL;
     arena->levels[levno].brickcount = 0;
-
-    //printf("Freeing level\n");
   }
 }
 
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
 {
-  //printf("Adding bonus\n");
   // There was a memory leak reported by valgrind here...
   // but actually the leak is because I hadn't yet freed
   // arena->bonuses (et al) before the program exits
@@ -357,7 +350,6 @@ int arena_movebonuses(Arena* arena)
 
 int arena_freebonus(Arena* arena, Bonus* bonus)
 {
-  //printf("Freeing single bonus\n");
   for(unsigned int i = 0; i < arena->bonuscount; i++)
   {
     // Find the item to be removed
@@ -556,28 +548,42 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
       b = ball_collidesbricks(ball, arena->bricks, arena->brickcount, &hitedge);
 
-
       // We've hit a brick. Ball will be positioned
       // on the brick edge
       if(b!=NULL)
       {
         if(b->type == btWormhole)
         {
-          // Prevent ricochet from the wormhole
-          hitedge = eNone;
-          if(b != ball->warpdest)
+          // If we hit a wormhole, check the collision again to
+          // ensure it's in the middle section, not an edge, but
+          // if it is an edge we don't yet treat that as no collision.
+
+          Bounds wbound = { .left = b->left + 9, .width = 25, .height = 25, .top = b->top };
+
+          if(ball_collidesbounds(ball, &wbound, &hitedge))
           {
-            // Find the other wormhole brick
-            for(unsigned int j = 0; j < arena->brickcount; j++)
+            // Prevent ricochet from the wormhole
+            hitedge = eNone;
+            if(b != ball->warpdest)
             {
-              if((arena->bricks[j]->type == btWormhole) && (arena->bricks[j] != b))
+              // Find the other wormhole brick
+              for(unsigned int j = 0; j < arena->brickcount; j++)
               {
-                ball->warpdest = arena->bricks[j];
-                ball->cx = arena->bricks[j]->left + 10;
-                ball->cy = arena->bricks[j]->top + 10;
-                return 0;
+                if((arena->bricks[j]->type == btWormhole) && (arena->bricks[j] != b))
+                {
+                  ball->warpdest = arena->bricks[j];
+                  ball->cx = arena->bricks[j]->left + 20;
+                  ball->cy = arena->bricks[j]->top + 12;
+                  ball->x = ball->cx - ball->radius;
+                  ball->y = ball->cy - ball->radius;
+                  return 0;
+                }
               }
             }
+          }
+          else
+          {
+            b = NULL;
           }
         }
         else

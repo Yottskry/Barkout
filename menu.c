@@ -31,6 +31,7 @@ MenuItemOption* menu_additemoption(MenuItem* menuitem, const char* optiontext, c
   menuitem->options[menuitem->optioncount-1] = option;
   if(option->value == menuitem->selectedvalue)
     menuitem->selectedindex = menuitem->optioncount-1;
+  return option;
 }
 
 void menu_drawmenu(Menu* menu, App* app)
@@ -84,6 +85,12 @@ void menu_nextoption(Menu* menu)
 
 void menu_previousoption(Menu* menu)
 {
+  MenuItem* item = menu->items[menu->selectedindex];
+  item->selectedindex--;
+  if(item->selectedindex < 0)
+    item->selectedindex = item->optioncount - 1;
+  item->selectedvalue = item->options[item->selectedindex]->value;
+  *(item->controlvalue) = item->selectedvalue;
 }
 
 void menu_free(Menu* menu)
