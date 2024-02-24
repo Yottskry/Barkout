@@ -566,10 +566,24 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             hitedge = eNone;
             if(b != ball->warpdest)
             {
+              unsigned int index = 0;
               // Find the other wormhole brick
               for(unsigned int j = 0; j < arena->brickcount; j++)
               {
-                if((arena->bricks[j]->type == btWormhole) && (arena->bricks[j] != b))
+                if(arena->bricks[j] == b)
+                {
+                  index = j;
+                }
+              }
+
+              unsigned int j = index;
+              j++;
+              while(j != index)
+              {
+                if(j==arena->brickcount)
+                  j = 0;
+                // Allow us to warp to ourselves as a failsafe in case only one wormhole is present
+                if((arena->bricks[j]->type == btWormhole) /*&& (arena->bricks[j] != b)*/)
                 {
                   ball->warpdest = arena->bricks[j];
                   ball->cx = arena->bricks[j]->left + 20;
@@ -578,12 +592,18 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
                   ball->y = ball->cy - ball->radius;
                   return 0;
                 }
+                j++;
               }
             }
+            // Uncomment this to have the ball slowly expelled from the hole!
+            //return 0;
+            //break;
           }
           else
           {
             b = NULL;
+            hitedge = eNone;
+            //continue;
           }
         }
         else
@@ -643,7 +663,8 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           break;
         }
       }
-      else // b == null
+
+      if(b==NULL) // b == null
       {
         // No contact with any brick so we can say we're clear of the warp destination
         ball->warpdest = NULL;
