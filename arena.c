@@ -91,7 +91,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     //while(rowdata != NULL)
     {
       // Read each character. This is the column.
-      for(unsigned int col = 0; col < strlen(rowdata); col++)
+      for(size_t col = 0; col < strlen(rowdata); col++)
       {
         if(rowdata[col] == '.')
           continue;
@@ -119,37 +119,29 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
         switch(c){
           case 'r':
             brickanim = af_getanimation(factory, "red");
-            //arena->remaining++;
           break;
           case 'b':
             brickanim = af_getanimation(factory, "blue");
-            //arena->remaining++;
           break;
           case 'g':
             brickanim = af_getanimation(factory, "green");
-            //arena->remaining++;
           break;
           case 'p':
             brickanim = af_getanimation(factory, "purple");
-            //arena->remaining++;
           break;
           case 'w':
             brickanim = af_getanimation(factory, "yellow");
-            //arena->remaining++;
           break;
           case 'y':
             brickanim = af_getanimation(factory, "grey");
-            //arena->remaining++;
           break;
           case 't':
             brickanim = af_getanimation(factory, "white");
-            //arena->remaining++;
           break;
           case 'G':
             level->bricks[brickno]->hitcount = 2;
             level->bricks[brickno]->type = btHard;
             brickanim = af_getanimation(factory, "darkgrey");
-            //arena->remaining++;
           break;
           case 'O':
             level->bricks[brickno]->hitcount = -1;
@@ -162,8 +154,6 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
             brickanim = af_getanimation(factory, "wormhole");
           break;
         }
-
-        //af_setanimation(arena->bricks[brickno]->sprite, brickanim, 0, NULL, NULL);
 
         level->bricks[brickno]->sprite->anim = brickanim;
         level->bricks[brickno]->sprite->state = level->bricks[brickno]->type == btWormhole ? asLooping : asStatic;
@@ -179,7 +169,6 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     } // _WHERE_
 
     fclose(f);
-
   }
   return 0;
 }
@@ -236,7 +225,7 @@ void arena_loadbricks(Arena* arena, int level)
 
 void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
 {
-  for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
+  for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
     Brick* brick = arena->bricks[brickno];
     Animation* anim = brick->sprite->anim;
@@ -270,7 +259,7 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
 
 void arena_resetbricks(Arena* arena)
 {
-  for(unsigned int brickno = 0; brickno < arena->brickcount; brickno++)
+  for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
     switch(arena->bricks[brickno]->type)
     {
@@ -334,71 +323,9 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   return bonus;
 }
 
-int arena_movebonuses(Arena* arena)
-{
-  for(unsigned int i = 0; i < arena->bonuscount; i++)
-  {
-    Bonus* bonus = arena->bonuses[i];
-    bonus->y += 1;
-    if(bonus->y > arena->bounds.bottom)
-    {
-      arena_freebonus(arena, bonus);
-    }
-  }
-  return 0;
-}
-
-int arena_freebonus(Arena* arena, Bonus* bonus)
-{
-  for(unsigned int i = 0; i < arena->bonuscount; i++)
-  {
-    // Find the item to be removed
-    if(arena->bonuses[i] == bonus)
-    {
-      // sprite-anim is managed by the resourcefactory,
-      // so we don't free it here.
-      free(bonus->sprite);
-      free(bonus);
-      arena->bonuses[i] = NULL;
-
-      // Move all subsequent items up one
-      for(unsigned int j = i; j < arena->bonuscount - 1; j++)
-        arena->bonuses[j] = arena->bonuses[j+1];
-    }
-
-    arena->bonuscount--;
-    arena->bonuses = realloc(arena->bonuses, sizeof(Bonus*) * arena->bonuscount);
-  }
-  return 0;
-}
-
-int arena_freebonuses(Arena* arena)
-{
-  for(unsigned int i = 0; i < arena->bonuscount; i++)
-  {
-    //printf("Freeing bonus\n");
-    free(arena->bonuses[i]->sprite);
-    free(arena->bonuses[i]);
-    arena->bonuses[i] = NULL;
-  }
-  free(arena->bonuses);
-  arena->bonuscount = 0;
-  arena->bonuses = NULL;
-  return 0;
-}
-
-int arena_drawbonuses(Arena* arena, SDL_Renderer* renderer)
-{
-  for(unsigned int i = 0; i < arena->bonuscount; i++)
-  {
-    a_drawsprite(arena->bonuses[i]->sprite, renderer, arena->bonuses[i]->x, arena->bonuses[i]->y);
-  }
-  return 0;
-}
-
 Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
 {
-  for(unsigned int i = 0; i < arena->bonuscount; i++)
+  for(int i = 0; i < arena->bonuscount; i++)
   {
     int bx = arena->bonuses[i]->x + arena->bonuses[i]->w;
     int by = arena->bonuses[i]->y + arena->bonuses[i]->h;
@@ -453,14 +380,12 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           player->warpenabled = true;
         break;
         case boSlow: break;
-
-
       }
 
       if(player->state != plShort && player->state != plLong)
         player->w = psNormal;
 
-      arena_freebonus(arena, arena->bonuses[i]);
+      bonus_freebonus(&arena->bonuses, &arena->bonuscount, arena->bonuses[i]);
     }
   }
   return NULL;
@@ -473,7 +398,6 @@ void bat_aftershrink(void* sender, void* data)
   af_setanimation(arena->factory, &(player->sprite),"bat-s", 1, NULL, NULL, NULL);
   player->sprite.state = asLooping;
   player->w = psShort;
-  printf("Player width is...%d x \n", player->w);
 }
 
 void bat_aftergrow(void* sender, void* data)
@@ -566,9 +490,9 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             hitedge = eNone;
             if(b != ball->warpdest)
             {
-              unsigned int index = 0;
+              int index = 0;
               // Find the other wormhole brick
-              for(unsigned int j = 0; j < arena->brickcount; j++)
+              for(int j = 0; j < arena->brickcount; j++)
               {
                 if(arena->bricks[j] == b)
                 {
@@ -576,7 +500,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
                 }
               }
 
-              unsigned int j = index;
+              int j = index;
               j++;
               while(j != index)
               {
@@ -603,7 +527,6 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           {
             b = NULL;
             hitedge = eNone;
-            //continue;
           }
         }
         else
@@ -637,8 +560,6 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
               botype = boShrink;
             else if (bonusscore > 60)
               botype = boWarp;
-
-            printf("Bonus number: %d\n", bonusscore);
 
             if(bonusscore > 60)
               arena_addbonus(arena, b->left, b->bottom, botype);
@@ -747,10 +668,10 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
 int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
 {
-  if((ball->cy - (player->y + player->h) < ball->radius) &&
-       (player->x - ball->cx < ball->radius) &&
-       (player->y - ball->cy < ball->radius) &&
-       (ball->cx - (player->x + (int)(player->w)) < ball->radius))
+  if ((ball->cy - (player->y + player->h) < ball->radius) &&
+      (player->x - ball->cx < ball->radius) &&
+      (player->y - ball->cy < ball->radius) &&
+      (ball->cx - (player->x + (int)(player->w)) < ball->radius))
   {
     *e = eTop;
     ball->cy = player->y - ball->radius - 1;
@@ -904,7 +825,7 @@ void arena_checkbulletcollisions(Arena* arena)
   // one brick to only register as a single hit (which is what we want)
 
 
-  for(unsigned int j = 0; j < arena->brickcount; j++)
+  for(int j = 0; j < arena->brickcount; j++)
   {
     bool hit = false;
     Brick* b = arena->bricks[j];

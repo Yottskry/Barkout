@@ -18,7 +18,7 @@
 #define NUMLEVELS 10
 #define MAXBULLETS 10
 #define MAXSPEED 12
-#define BRICKSCORE 100
+#define BRICKSCORE 10
 
 typedef unsigned char byte;
 
@@ -44,12 +44,12 @@ typedef struct
 typedef struct
 {
   Bounds bounds;
-  unsigned int width;
-  unsigned int brickcount;
+  int width;
+  int brickcount;
   long bonuscounter;
-  unsigned int bonuscount;
-  unsigned int score;
-  unsigned int remaining;
+  int bonuscount;
+  int score;
+  int remaining;
   int bulletcount;
   int lives; // Signed because we will reduce to -1 before saying Game Over
   int level;
@@ -74,12 +74,8 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer);
 void arena_resetbricks(Arena* arena);
 void arena_freelevels(Arena* arena);
 
-// Bonus related functions
+// Bonus related functions - mostly moved to bonus.h
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type);
-int arena_movebonuses(Arena* arena);
-int arena_freebonus(Arena* arena, Bonus* bonus);
-int arena_freebonuses(Arena* arena);
-int arena_drawbonuses(Arena* arena, SDL_Renderer* renderer);
 Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball);
 
 // Events

@@ -89,7 +89,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
   player->x = arena->width / 2;
   bat_reset(player, arena->factory);
-  arena_freebonuses(arena);
+  bonus_freebonuses(&arena->bonuses, &arena->bonuscount);
   arena_freebullets(arena);
   arena->counter = SDL_GetTicks();
   af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	int startlevel = 10;
+	int startlevel = 1;
 	Uint32 flags = SDL_WINDOW_OPENGL;
 
 	for(int i = 0; i < argc; i++)
@@ -222,8 +222,6 @@ int main(int argc, char** argv)
         sscanf(argv[i+1], "%d", &startlevel);
     }
 	}
-
-  printf("Start level %d\n", startlevel);
 
 	SDL_SetCursor(SDL_DISABLE);
 
@@ -411,7 +409,7 @@ int main(int argc, char** argv)
         {
           case SDLK_1:
             if(app.gamestate == gsRunning)
-              arena_addbonus(&arena, 200, 200, boCatch);
+              arena_addbonus(&arena, 200, 300, boWarp);
           break;
 
           case SDLK_z:
@@ -484,6 +482,7 @@ int main(int argc, char** argv)
 		}
 
 		// Clear the screen
+		SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 255);
 	  SDL_RenderClear(app.renderer);
 
     if(app.gamestate == gsTitle)
@@ -561,7 +560,7 @@ int main(int argc, char** argv)
       drawbackground(&app, &arena, &player, &f);
       drawarenatext(&app, &arena, hi);
       arena_drawbricks(&arena, app.renderer);
-      arena_drawbonuses(&arena, app.renderer);
+      bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
     }
 
     if(app.gamestate == gsRunning)
@@ -604,7 +603,7 @@ int main(int argc, char** argv)
         }
       }
 
-      arena_drawbonuses(&arena, app.renderer);
+      bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
 
       //int alivecount = 0;
       for(int i = 0; i < BADDIECOUNT; i++)
@@ -636,15 +635,25 @@ int main(int argc, char** argv)
       currentlywarping = bat_movebat(&player, arena.bounds);
       if(currentlywarping == 0)
       {
-        arena_movebonuses(&arena);
+        bonus_movebonuses(&arena.bonuses, &arena.bonuscount, arena.bounds);
         arena_movebullets(&arena);
       }
       else
       {
         if(!Mix_Playing(-1))
           af_playsample(&f, "warp");
-        if(player.x > arena.bounds.right + 20)
+
+        // Don't add the scores for the remaining bricks in one go,
+        // but add them incrementally for a nice "ticking up" effect.
+        if(arena.remaining > 0)
         {
+          arena.score += BRICKSCORE;
+          arena.remaining--;
+        }
+
+        if((player.x > arena.bounds.right + 20) && (arena.remaining == 0))
+        {
+          //arena.score += BRICKSCORE * arena.remaining;
           arena.remaining = 0;
           player.targetspeed = 0;
         }
@@ -706,7 +715,7 @@ int main(int argc, char** argv)
 
   menu_free(&menu);
   //af_freeanimation(&f, "ball");
-  arena_freebonuses(&arena);
+  bonus_freebonuses(&arena.bonuses, &arena.bonuscount);
   arena_freelevels(&arena);
   arena_freebullets(&arena);
 
