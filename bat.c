@@ -28,13 +28,13 @@ int bat_movebat(Bat* player, const Bounds bounds)
     player->targetspeed = 0;
   }
 
-  if((player->x + player->w > bounds.right) && (!player->warpenabled))
+  if((player->x + (int)player->w > bounds.right) && (!player->warpenabled))
   {
     player->x = bounds.right - player->w;
     player->speed = 0;
     player->targetspeed = 0;
   }
-  else if(player->x + player->w > bounds.right)
+  else if(player->x + (int)player->w > bounds.right)
   {
     player->targetspeed = 2;
     // Return 1 to show we're currently warping...

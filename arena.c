@@ -514,6 +514,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
                   ball->cy = arena->bricks[j]->top + 12;
                   ball->x = ball->cx - ball->radius;
                   ball->y = ball->cy - ball->radius;
+                  af_playsample(arena->factory, "wormhole-in");
                   return 0;
                 }
                 j++;

@@ -75,6 +75,8 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-warp.wav", "warp");
   af_loadsample(f, "barkanoid-hitcat.wav", "cat-hit");
   af_loadsample(f, "barkanoid-laser.wav", "laser");
+  af_loadsample(f, "barkanoid-wormhole-in.wav", "wormhole-in");
+  af_loadsample(f, "barkanoid-wormhole-out.wav", "wormhole-out");
 }
 
 void gameover(App* app, Gamestate* gamestate)
@@ -294,11 +296,12 @@ int main(int argc, char** argv)
 
   Config* config = config_load();
 
-  Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 320, .app=&app };
+  Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 220, .app=&app };
   MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick);
   item = menu_additem(&menu, "Control method", (int*)&(config->controlmethod), NULL);
   menu_additemoption(item, "Barkanoid", OPT2, (int)cmBarkanoid);
   menu_additemoption(item, "Classic", OPT1, (int)cmClassic);
+  menu_additem(&menu, "How to Play", NULL, NULL);
   menu_additem(&menu, "Credits", NULL, NULL);
   menu_additem(&menu, "Quit", NULL, menu_quitclick);
 
@@ -492,12 +495,12 @@ int main(int argc, char** argv)
 
       if(!titlefinished){
         // Returns true when text has completed fade in and out
-        titlefinished = text_drawflashtext(&app, &fathorse, 200, 160, 2);
+        titlefinished = text_drawflashtext(&app, &fathorse, 200, 100, 2);
       }
       intro_drawstars(app.renderer, stars);
       if(titlefinished){
-        a_drawsprite(&intro, app.renderer, 200, 220);
-        text_drawflashtext(&app, &pressstart, 260, 300, 2);
+        a_drawsprite(&intro, app.renderer, 200, 160);
+        text_drawflashtext(&app, &pressstart, 260, 220, 2);
       }
 
       intro_movestars(stars);
@@ -508,7 +511,7 @@ int main(int argc, char** argv)
       titlefinished = true;
 
       intro_drawstars(app.renderer, stars);
-      a_drawsprite(&intro, app.renderer, 200, 220);
+      a_drawsprite(&intro, app.renderer, 200, 160);
 
       menu_drawmenu(&menu, &app);
 
