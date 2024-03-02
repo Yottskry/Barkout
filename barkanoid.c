@@ -125,9 +125,16 @@ void menu_startclick(void* data)
   app->gamestate = gsStory;
 }
 
-void menu_creditsclicks(void* data)
+void menu_creditsclick(void* data)
 {
   App* app = (App*)data;
+  app->gamestate = gsCredits;
+}
+
+void menu_howtoplayclick(void* data)
+{
+  App* app = (App*)data;
+  app->gamestate = gsHelp;
 }
 
 void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
@@ -183,6 +190,72 @@ void drawarenatext(App* app, Arena* arena, int hi)
 
   text_drawtext(app, level, 742, 322, (SDL_Color){0, 0, 0, 255}, 0);
   text_drawtext(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0);
+}
+
+void drawhowtoplace(ResourceFactory* factory, App* app)
+{
+  int left = 40;
+  int top = 50;
+
+  SDL_Color white = {255,255,255,255};
+
+  text_drawtext(app, "How to Play", left, top, white, 0);
+  top += 25;
+  text_drawtext(app, "Use your craft, Maus, to direct", left, top, white, 0);
+  top += 25;
+  text_drawtext(app, "the energy ball and destroy the", left, top, white, 0);
+  top += 25;
+  text_drawtext(app, "infrastructure of the evil", left, top, white, 0);
+  top += 25;
+  text_drawtext(app, "Cat Empire!", left, top, white, 0);
+  top += 25;
+  text_drawtext(app, "Some of the structure may reveal", left, top, white, 0);
+  top += 25;
+  text_drawtext(app, "powerful bonuses when destroyed.", left, top, white, 0);
+  top += 25;
+  text_drawtext(app, "Use them wisely!", left, top, white, 0);
+  top += 40;
+  text_drawtext(app, "Bonuses", left, top, white, 0);
+  top += 35;
+  a_drawstaticframe(af_getanimation(factory, "bonus-c"), app->renderer, left, top, 0);
+  text_drawtext(app, "The ball sticks to the Maus", left + 100, top - 2, white, 0);
+  top += 35;
+  a_drawstaticframe(af_getanimation(factory, "bonus-l"), app->renderer, left, top, 0);
+  text_drawtext(app, "Enable the Maus's laser guns", left + 100, top - 2, white, 0);
+  top += 35;
+  a_drawstaticframe(af_getanimation(factory, "bonus-d"), app->renderer, left, top, 0);
+  text_drawtext(app, "Enhance the energy ball", left + 100, top - 2, white, 0);
+  top += 35;
+  a_drawstaticframe(af_getanimation(factory, "bonus-e"), app->renderer, left, top, 0);
+  text_drawtext(app, "Extend the Maus!", left + 100, top - 2, white, 0);
+  top += 35;
+  a_drawstaticframe(af_getanimation(factory, "bonus-s"), app->renderer, left, top, 0);
+  text_drawtext(app, "Shrink the Maus. Avoid this one.", left + 100, top - 2, white, 0);
+  top += 35;
+  a_drawstaticframe(af_getanimation(factory, "bonus-p"), app->renderer, left, top, 0);
+  text_drawtext(app, "Extra player!", left + 100, top - 2, white, 0);
+  top += 35;
+  a_drawstaticframe(af_getanimation(factory, "bonus-w"), app->renderer, left, top, 0);
+  text_drawtext(app, "Warp to the next round", left + 100, top - 2, white, 0);
+}
+
+void drawcredits(App* app)
+{
+  int left = 150;
+
+  SDL_Color white = {255,255,255,255};
+
+  text_drawtext(app, "Credits", left, 110, white, 0);
+  text_drawtext(app, "_____________________________________", left, 120, white, 0);
+  text_drawtext(app, "Programming", left, 160, white, 0);
+  text_drawtext(app, "Graphics", left, 200, white, 0);
+  text_drawtext(app, "Sound FX", left, 240, white, 0);
+  text_drawtext(app, "Music", left, 280, white, 0);
+
+  text_drawtext(app, "Go team!", left, 360, white, 0);
+
+  for(int i = 0; i < 4; i++)
+    text_drawtext(app, "Fat Harry", left + 260, 160 + (i*40), white, 0);
 }
 
 int main(int argc, char** argv)
@@ -296,13 +369,13 @@ int main(int argc, char** argv)
 
   Config* config = config_load();
 
-  Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 220, .app=&app };
+  Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 240, .app=&app };
   MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick);
   item = menu_additem(&menu, "Control method", (int*)&(config->controlmethod), NULL);
   menu_additemoption(item, "Barkanoid", OPT2, (int)cmBarkanoid);
   menu_additemoption(item, "Classic", OPT1, (int)cmClassic);
-  menu_additem(&menu, "How to Play", NULL, NULL);
-  menu_additem(&menu, "Credits", NULL, NULL);
+  menu_additem(&menu, "How to Play", NULL, menu_howtoplayclick);
+  menu_additem(&menu, "Credits", NULL, menu_creditsclick);
   menu_additem(&menu, "Quit", NULL, menu_quitclick);
 
   arena_loadlevels(&arena, &f);
@@ -448,7 +521,7 @@ int main(int argc, char** argv)
             }
 
           case SDLK_RETURN:
-            if(app.gamestate == gsTitle)
+            if((app.gamestate == gsTitle) || (app.gamestate == gsCredits) || (app.gamestate == gsHelp))
               app.gamestate = gsMenu;
             else if(app.gamestate == gsMenu)
               menu_execute(&menu);
@@ -519,6 +592,19 @@ int main(int argc, char** argv)
       // problem is that on our next loop, if we've changed
       // to gsNewLevel we draw one single frame of the previous
       // level layout
+    }
+
+    if((app.gamestate == gsCredits) || (app.gamestate == gsHelp))
+    {
+      titlefinished = true;
+      intro_drawstars(app.renderer, stars);
+
+      if(app.gamestate == gsCredits)
+        drawcredits(&app);
+      else
+        drawhowtoplace(&f, &app);
+
+      intro_movestars(stars);
     }
 
     if(app.gamestate == gsStory)
@@ -681,7 +767,8 @@ int main(int argc, char** argv)
       delay = 3000;
     }
 
-	  if((app.gamestate != gsTitle) && (app.gamestate != gsMenu) && (app.gamestate != gsStory) && (app.gamestate != gsDying))
+	  //if((app.gamestate != gsTitle) && (app.gamestate != gsMenu) && (app.gamestate != gsStory) && (app.gamestate != gsDying))
+	  if((app.gamestate == gsRunning) || (app.gamestate == gsPaused) || (app.gamestate == gsNewLevel) || (app.gamestate == gsGetReady))
 	  {
 
       arena_drawlives(&arena, &app);

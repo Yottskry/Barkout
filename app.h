@@ -9,7 +9,7 @@
 #define SCREENW 800
 #define SCREENH 600
 
-typedef enum { gsTitle, gsMenu, gsStory, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused, gsQuit } Gamestate;
+typedef enum { gsTitle, gsMenu, gsStory, gsCredits, gsHelp, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused, gsQuit } Gamestate;
 
 typedef struct
 {
