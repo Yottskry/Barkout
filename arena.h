@@ -15,7 +15,6 @@
 
 #define BRICKW 40
 #define BRICKH 25
-#define NUMLEVELS 10
 #define MAXBULLETS 10
 #define MAXSPEED 12
 #define BRICKSCORE 10
@@ -63,7 +62,9 @@ typedef struct
   Brick** bricks;
   Bonus** bonuses;
   Bullet** bullets;
-  Level levels[NUMLEVELS];
+  int numlevels;
+  //Level levels[NUMLEVELS];
+  Level* levels;
 } Arena;
 
 // Level related functions

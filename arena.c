@@ -1,6 +1,10 @@
 #include "arena.h"
 #include "config.h"
-
+#ifndef _WIN32
+#include <dirent.h>
+#else
+#include <windows.h>
+#endif // WIN32
 /*  To avoid plaintext files, we take a normal level file (in the Delphi editor)
     we take each character in the file in turn and bit shift it left (in groups of 4)
     to form a Uint32. We then XOR that number with FFFFFFFF to invert it and save a
@@ -39,11 +43,49 @@ char* arena_loadbinary(char* fname)
 
 int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 {
-  for(int i = 0; i < NUMLEVELS; i++)
+  arena->numlevels = 0;
+  #ifndef _WIN32
+  DIR* d;
+  struct dirent* dir;
+  d = opendir("./Levels/");
+  if(d)
+  {
+    while((dir = readdir(d))!=NULL)
+    {
+      if(dir->d_type != DT_REG)
+        continue;
+      int len = strlen(dir->d_name);
+      char* cpy = calloc(sizeof(char), len+1);
+      strncpy(cpy, dir->d_name, len);
+      if(strcmp(cpy+(len-4), ".lvl")==0)
+        arena->numlevels++;
+      free(cpy);
+    }
+    closedir(d);
+  }
+  #else
+  HANDLE hFind;
+  WIN32_FIND_DATA fd;
+  hFind = FindFirstFile("./Levels/*.lvl", &fd);
+  if(hFind != INVALID_HANDLE_VALUE)
+  {
+    arena->numlevels++;
+    while(FindNextFile(hFind, &fd))
+    {
+      arena->numlevels++;
+    }
+    FindClose(hFind);
+  }
+  #endif // _WIN32
+
+  arena->levels = malloc(arena->numlevels * sizeof(Level));
+
+  for(int i = 0; i < arena->numlevels; i++)
   {
     arena->levels[i].level = i + 1;
 
     Level* level = &(arena->levels[i]);
+    level->bricks = NULL;
 
     char fname[255] = "";
 
@@ -273,7 +315,7 @@ void arena_resetbricks(Arena* arena)
 
 void arena_freelevels(Arena* arena)
 {
-  for(int levno = 0; levno < NUMLEVELS; levno++)
+  for(int levno = 0; levno < arena->numlevels; levno++)
   {
     for(int brickno = 0; brickno < arena->levels[levno].brickcount; brickno++)
     {
@@ -285,6 +327,7 @@ void arena_freelevels(Arena* arena)
     arena->levels[levno].bricks = NULL;
     arena->levels[levno].brickcount = 0;
   }
+  free(arena->levels);
 }
 
 Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)

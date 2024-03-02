@@ -364,7 +364,9 @@ int main(int argc, char** argv)
                   .counter = 0,
                   .bulletcount = 0,
                   .bullets = NULL,
-                  .bg = NULL
+                  .bg = NULL,
+                  .numlevels = 0,
+                  .levels = NULL
                 };
 
   Config* config = config_load();
