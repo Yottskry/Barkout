@@ -65,10 +65,15 @@ Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
 {
   for(int brickno = brickcount-1; brickno >= 0; brickno--)
   {
-    if(bricks[brickno]->hitcount == 0)
+    Brick* brick = bricks[brickno];
+
+    if(brick->hitcount == 0)
       continue;
 
-    Brick* brick = bricks[brickno];
+    // Resurrecting brick is invisible BUT... counter is not
+    // non-zero until animation has finished.
+    if((brick->type == btResurrecting) && (brick->counter > 0))
+      continue;
 
     Bounds bounds = {
       .left = brick->left,
@@ -79,7 +84,9 @@ Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
 
     if(ball_collidesbounds(ball, &bounds, e))
     {
-      brick->hitcount--;
+      // Only destroy brick if it is vulnerable on that edge
+      if(!(brick->solidedges & *e))
+        brick->hitcount--;
       return brick;
     }
   }

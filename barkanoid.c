@@ -63,6 +63,9 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "cat-die.png", "cat-die", 40, 40);
   af_loadanimation(f, renderer, "cat-spawn.png", "cat-spawn", 40, 40);
   af_loadanimation(f, renderer, "wormhole2.png", "wormhole", 40, 25);
+  af_loadanimation(f, renderer, "white_top.png", "white-top", 44, 29);
+  af_loadanimation(f, renderer, "green_bottom.png", "green-bottom", 44, 29);
+  af_loadanimation(f, renderer, "grey_broken.png", "grey-broken", 44, 29);
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
@@ -487,7 +490,7 @@ int main(int argc, char** argv)
         {
           case SDLK_1:
             if(app.gamestate == gsRunning)
-              arena_addbonus(&arena, 200, 300, boWarp);
+              arena_addbonus(&arena, 200, 300, boLaser);
           break;
 
           case SDLK_z:
