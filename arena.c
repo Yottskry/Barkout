@@ -198,6 +198,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
             brickanim = af_getanimation(factory, "grey-broken");
             level->bricks[brickno]->type = btResurrecting;
             level->bricks[brickno]->sprite->sender = (void*)(level->bricks[brickno]);
+            level->bricks[brickno]->sprite->data = (void*)(factory);
             level->bricks[brickno]->sprite->onanimfinished = arena_brickfinished;
           break;
           case 'G':
@@ -964,7 +965,20 @@ void arena_brickfinished(void* sender, void* data)
   Brick* brick = (Brick*)sender;
   brick->counter = RESURRECTTIMER;
   brick->sprite->currentframe = 0;
+  ResourceFactory* factory = (ResourceFactory*)data;
+  af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickrepaired, (void*)brick, (void*)factory);
   // Set the animation to the reappearing animation here
   // as the frame doesn't increase unless the sprite as
   // drawn, and it won't draw while the counter > 0
+}
+
+void arena_brickrepaired(void* sender, void* data)
+{
+  // Repair animation has finished. Set it back to standard brick animation.
+  Brick* brick = (Brick*)sender;
+  brick->sprite->currentframe = 0;
+  ResourceFactory* factory = (ResourceFactory*)data;
+  af_setanimation(factory, brick->sprite, "grey-broken", 0, arena_brickfinished, (void*)brick, (void*)factory);
+  // We need to set this to prevent these two routines just calling each other forever
+  brick->sprite->state = asStatic;
 }

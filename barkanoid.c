@@ -66,6 +66,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "white_top.png", "white-top", 44, 29);
   af_loadanimation(f, renderer, "green_bottom.png", "green-bottom", 44, 29);
   af_loadanimation(f, renderer, "grey_broken.png", "grey-broken", 44, 29);
+  af_loadanimation(f, renderer, "grey_repair.png", "grey-repair", 44, 29);
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");

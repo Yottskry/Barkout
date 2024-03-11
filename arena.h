@@ -98,5 +98,6 @@ void arena_checkbulletcollisions(Arena* arena);
 
 void arena_drawlives(Arena* arena, App* app);
 void arena_brickfinished(void* sender, void* data);
+void arena_brickrepaired(void* sender, void* data);
 
 #endif

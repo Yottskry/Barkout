@@ -3,7 +3,7 @@
 
 #define MAXBRICKPARTICLES 255
 #define BRICKDECAY 25
-#define RESURRECTTIMER 1000
+#define RESURRECTTIMER 600
 
 #include "resourcefactory.h"
 
