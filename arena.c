@@ -302,6 +302,8 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
     else if(brick->counter > 0)
     {
       brick->counter--;
+      if(brick->counter == 0)
+        af_playsample(arena->factory, "wormhole-out");
     }
     else
     {
@@ -331,13 +333,18 @@ void arena_resetbricks(Arena* arena)
 {
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
+    arena->bricks[brickno]->counter = 0;
     switch(arena->bricks[brickno]->type)
     {
       case btNormal: arena->bricks[brickno]->hitcount = 1; break;
       case btHard: arena->bricks[brickno]->hitcount = 2; break;
       case btIndestructible: arena->bricks[brickno]->hitcount = -1; break;
       case btWormhole: arena->bricks[brickno]->hitcount = -1; break;
-      case btResurrecting: arena->bricks[brickno]->hitcount = -1; break;
+      case btResurrecting:
+        arena->bricks[brickno]->hitcount = -1;
+        af_setanimation(arena->factory, arena->bricks[brickno]->sprite, "grey-broken", 0, arena_brickfinished, (void*)arena->bricks[brickno], (void*)arena->factory);
+        arena->bricks[brickno]->sprite->state = asStatic;
+      break;
     }
   }
 }
@@ -644,9 +651,9 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
               botype = boDeadly;
             else if (bonusscore > 82)
               botype = boPlayer;
-            else if (bonusscore > 70)
+            else if (bonusscore > 75)
               botype = boCatch;
-            else if (bonusscore > 63)
+            else if (bonusscore > 70)
               botype = boLaser;
             else if (bonusscore > 63)
               botype = boShrink;

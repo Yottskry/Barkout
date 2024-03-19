@@ -447,6 +447,8 @@ int main(int argc, char** argv)
     Uint32 startticks = SDL_GetTicks();
     Uint32 delay = 0;
 
+    int islostball = 0;
+
     // If we check the keys here, then in many cases the state
     // will only change here, so we'll draw the correct frame each time
     SDL_Event e;
@@ -454,6 +456,27 @@ int main(int argc, char** argv)
 			if (e.type == SDL_QUIT) {
 				break;
 			}
+
+			/* // We'll come back to this...
+			if (e.type == SDL_MOUSEMOTION)
+			{
+        if (e.motion.x > player.x + player.w)
+        {
+          if(currentlywarping == 0)
+            player.targetspeed = player.maxspeed;
+        }
+        else if (e.motion.xrel < player.x)
+        {
+          if(currentlywarping == 0)
+            player.targetspeed = -1 * player.maxspeed;
+        }
+        else
+        {
+          // Mouse is stationary
+          player.targetspeed = 0;
+        }
+			}
+      */
 
 			if (e.type == SDL_KEYUP)
       {
@@ -478,6 +501,7 @@ int main(int argc, char** argv)
 
       if (e.type == SDL_KEYDOWN)
       {
+
         // Not part of the switch because we need "break" to break the loop...
         if(e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -492,6 +516,12 @@ int main(int argc, char** argv)
           case SDLK_1:
             if(app.gamestate == gsRunning)
               arena_addbonus(&arena, 200, 300, boLaser);
+          break;
+
+          case SDLK_k:
+            // Kill self - if stuck in a loop, for example
+            if(app.gamestate == gsRunning)
+                islostball = 1;
           break;
 
           case SDLK_z:
@@ -670,9 +700,9 @@ int main(int argc, char** argv)
 
       // Move the ball, check for collisions with bat, arena, and bricks
       // In the event of losing the ball, reset the level
-      int islostball = 0;
+      // Check if it was already set (by keypress)
       if(currentlywarping == 0)
-        islostball = ball_moveball(&ball, &arena, &player);
+        islostball = ball_moveball(&ball, &arena, &player) || islostball;
 
       if(1 == islostball)
       {
@@ -693,7 +723,11 @@ int main(int argc, char** argv)
         else
         {
           gameover(&app, &app.gamestate);
-          savehighscore(((int*)&arena.score));
+          if(arena.score > hi)
+          {
+            savehighscore(((int*)&arena.score));
+            hi = arena.score;
+          }
           arena_resetbricks(&arena);
         }
       }
