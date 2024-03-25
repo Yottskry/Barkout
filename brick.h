@@ -32,6 +32,7 @@ typedef struct
   int right;
   int bottom;
   int hitcount;
+  int starthitcount;
   int frame;
   Bricktype type;
   Uint32 lastticks;

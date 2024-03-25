@@ -54,29 +54,14 @@ void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds)
     // Can't collide with a destroyed brick
     if(brick->hitcount == 0)
       continue;
+
+    if(brick->counter > 0)
+      continue;
+
     Bounds b1 = { .left = brick->left, .width = brick->right - brick->left, .top = brick->top, .height = brick->bottom - brick->top };
     // We have collided with a brick
     if(bounds_intersects(&b, &b1))
     {
-      // Set the position to the edge of the brick
-      // Is this necessary? Surely we just don't move at all?
-      /*
-      switch(cat->nextdirection)
-      {
-        case dDown:
-          cat->bounds.top = b1.top - 1 - cath;
-        break;
-        case dUp:
-          cat->bounds.top = b1.top + b1.height + 1;
-        break;
-        case dLeft:
-          cat->bounds.left = b1.left + b1.width + 1;
-        break;
-        case dRight:
-          cat->bounds.left = b1.left - 1 - catw;
-        break;
-      }
-      */
       intersects = true;
       break; // Out of loop, set next direction
     }

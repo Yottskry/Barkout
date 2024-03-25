@@ -86,6 +86,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 
     Level* level = &(arena->levels[i]);
     level->bricks = NULL;
+    level->onlevelend = NULL;
 
     char fname[255] = "";
 
@@ -111,6 +112,9 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     char bgname[4] = "bg1";
 //  strcpy(bgname, rowdata);
     fscanf(f, "%s", bgname);
+
+    level->maxbonuslevel = 8;
+    fscanf(f, "%d", &level->maxbonuslevel);
 
     char mgname[8] = "";
     char fgname[8] = "";
@@ -145,21 +149,24 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
           continue;
         }
 
-        level->bricks = realloc(level->bricks, sizeof(Brick*) * ++level->brickcount);
+        Brick* brick;
 
+        level->bricks = realloc(level->bricks, sizeof(Brick*) * ++level->brickcount);
         level->bricks[brickno] = malloc(sizeof(Brick));
-        level->bricks[brickno]->left = arena->bounds.left + (col * BRICKW);
-        level->bricks[brickno]->right = arena->bounds.left + (col * BRICKW) + BRICKW;
-        level->bricks[brickno]->top = arena->bounds.top + (row * BRICKH);
-        level->bricks[brickno]->bottom = arena->bounds.top + (row * BRICKH) + BRICKH;
-        level->bricks[brickno]->hitcount = 1;
-        level->bricks[brickno]->sprite = malloc(sizeof(Sprite));
-        level->bricks[brickno]->type = btNormal;
-        level->bricks[brickno]->solidedges = eNone;
-        level->bricks[brickno]->counter = 0;
-        level->bricks[brickno]->sprite->onanimfinished = NULL;
-        level->bricks[brickno]->sprite->data = NULL;
-        level->bricks[brickno]->sprite->sender = NULL;
+
+        brick = level->bricks[brickno];
+        brick->left = arena->bounds.left + (col * BRICKW);
+        brick->right = arena->bounds.left + (col * BRICKW) + BRICKW;
+        brick->top = arena->bounds.top + (row * BRICKH);
+        brick->bottom = arena->bounds.top + (row * BRICKH) + BRICKH;
+        brick->starthitcount = 1;
+        brick->sprite = malloc(sizeof(Sprite));
+        brick->type = btNormal;
+        brick->solidedges = eNone;
+        brick->counter = 0;
+        brick->sprite->onanimfinished = NULL;
+        brick->sprite->data = NULL;
+        brick->sprite->sender = NULL;
         Animation* brickanim;
         char c = rowdata[col];
         switch(c){
@@ -185,46 +192,57 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
             brickanim = af_getanimation(factory, "white");
           break;
           case 'v':
-            level->bricks[brickno]->solidedges = eLeft | eRight | eBottom;
+            brick->solidedges = eLeft | eRight | eBottom;
             brickanim = af_getanimation(factory, "white-top");
           break;
           case '^':
-            level->bricks[brickno]->solidedges = eLeft | eRight | eTop;
+            brick->solidedges = eLeft | eRight | eTop;
             brickanim = af_getanimation(factory, "green-bottom");
           break;
           case '#':
             // Resurrecting bricks
-            level->bricks[brickno]->hitcount = -1;
+            brick->starthitcount = -1;
             brickanim = af_getanimation(factory, "grey-broken");
-            level->bricks[brickno]->type = btResurrecting;
-            level->bricks[brickno]->sprite->sender = (void*)(level->bricks[brickno]);
-            level->bricks[brickno]->sprite->data = (void*)(factory);
-            level->bricks[brickno]->sprite->onanimfinished = arena_brickfinished;
+            brick->type = btResurrecting;
+            brick->sprite->sender = (void*)(brick);
+            brick->sprite->data = (void*)(factory);
+            brick->sprite->onanimfinished = arena_brickfinished;
           break;
           case 'G':
-            level->bricks[brickno]->hitcount = 2;
-            level->bricks[brickno]->type = btHard;
+            brick->starthitcount = 2;
+            brick->type = btHard;
             brickanim = af_getanimation(factory, "darkgrey");
           break;
           case 'O':
-            level->bricks[brickno]->hitcount = -1;
-            level->bricks[brickno]->type = btIndestructible;
+            brick->starthitcount = -1;
+            brick->type = btIndestructible;
             // Not really necessary as we never test for this type of brick
-            level->bricks[brickno]->solidedges = eLeft | eRight | eTop | eBottom;
+            brick->solidedges = eLeft | eRight | eTop | eBottom;
             brickanim = af_getanimation(factory, "orange");
           break;
           case '*':
-            level->bricks[brickno]->hitcount = -1;
-            level->bricks[brickno]->type = btWormhole;
+            brick->starthitcount = -1;
+            brick->type = btWormhole;
+            brick->left = arena->bounds.left + (col * BRICKW) - (BRICKW / 2);
+            brick->right = arena->bounds.left + (col * BRICKW) + (BRICKW * 2);
+            brick->top = arena->bounds.top + (row * BRICKH) - (BRICKH / 2);
+            brick->bottom = arena->bounds.top + (row * BRICKH) + (BRICKH * 2);
             brickanim = af_getanimation(factory, "wormhole");
           break;
+          case '%':
+            // The boss brick!
+            brick->starthitcount = 32;
+            brick->right = arena->bounds.left + (col * BRICKW) + (BRICKW * 3);
+            brick->bottom = arena->bounds.top + (row * BRICKH) + (BRICKH * 4);
+            brickanim = af_getanimation(factory, "boss");
+          break;
         }
-
-        level->bricks[brickno]->sprite->anim = brickanim;
-        level->bricks[brickno]->sprite->state = level->bricks[brickno]->type == btWormhole ? asLooping : asStatic;
-        level->bricks[brickno]->sprite->currentframe = 0;
-        level->bricks[brickno]->sprite->loop = level->bricks[brickno]->type == btWormhole ? 1 : 0;
-        level->bricks[brickno]->sprite->lastticks = 0;
+        brick->hitcount = brick->starthitcount;
+        brick->sprite->anim = brickanim;
+        brick->sprite->state = brick->type == btWormhole ? asLooping : asStatic;
+        brick->sprite->currentframe = 0;
+        brick->sprite->loop = brick->type == btWormhole ? 1 : 0;
+        brick->sprite->lastticks = 0;
 
         brickno++;
       }
@@ -252,21 +270,14 @@ void arena_loadbricks(Arena* arena, int level)
   {
     Brick* brick = arena->levels[level-1].bricks[i];
 
-    if((arena->levels[level-1].bricks[i]->type != btIndestructible) &&
-       (arena->levels[level-1].bricks[i]->type != btWormhole) &&
-       (arena->levels[level-1].bricks[i]->type != btResurrecting))
+    if((brick->type != btIndestructible) &&
+       (brick->type != btWormhole) &&
+       (brick->type != btResurrecting))
     {
       arena->remaining++;
     }
 
-    switch(brick->type)
-    {
-      case btNormal: arena->levels[level-1].bricks[i]->hitcount = 1; break;
-      case btHard: arena->levels[level-1].bricks[i]->hitcount = 2; break;
-      case btIndestructible: arena->levels[level-1].bricks[i]->hitcount = -1; break;
-      case btWormhole: arena->levels[level-1].bricks[i]->hitcount = -1; break;
-      case btResurrecting: arena->levels[level-1].bricks[i]->hitcount = -1; break;
-    }
+    brick->hitcount = brick->starthitcount;
 
     for(int j = 0; j < MAXBRICKPARTICLES; j++)
     {
@@ -291,9 +302,23 @@ void arena_loadbricks(Arena* arena, int level)
 
 void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
 {
+  // Draw wormholes first so they appear below other bricks in Z-order
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
     Brick* brick = arena->bricks[brickno];
+    if(brick->type != btWormhole)
+      continue;
+
+    a_drawsprite(brick->sprite, renderer, brick->left, brick->top);
+  }
+
+  for(int brickno = 0; brickno < arena->brickcount; brickno++)
+  {
+    Brick* brick = arena->bricks[brickno];
+
+    if(brick->type == btWormhole)
+      continue;
+
     Animation* anim = brick->sprite->anim;
     if((brick->hitcount != 0) && (brick->counter == 0))
     {
@@ -334,17 +359,13 @@ void arena_resetbricks(Arena* arena)
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
     arena->bricks[brickno]->counter = 0;
-    switch(arena->bricks[brickno]->type)
+    arena->bricks[brickno]->hitcount = arena->bricks[brickno]->starthitcount;
+
+    if(arena->bricks[brickno]->type == btResurrecting)
     {
-      case btNormal: arena->bricks[brickno]->hitcount = 1; break;
-      case btHard: arena->bricks[brickno]->hitcount = 2; break;
-      case btIndestructible: arena->bricks[brickno]->hitcount = -1; break;
-      case btWormhole: arena->bricks[brickno]->hitcount = -1; break;
-      case btResurrecting:
-        arena->bricks[brickno]->hitcount = -1;
-        af_setanimation(arena->factory, arena->bricks[brickno]->sprite, "grey-broken", 0, arena_brickfinished, (void*)arena->bricks[brickno], (void*)arena->factory);
-        arena->bricks[brickno]->sprite->state = asStatic;
-      break;
+      arena->bricks[brickno]->hitcount = -1;
+      af_setanimation(arena->factory, arena->bricks[brickno]->sprite, "grey-broken", 0, arena_brickfinished, (void*)arena->bricks[brickno], (void*)arena->factory);
+      arena->bricks[brickno]->sprite->state = asStatic;
     }
   }
 }
@@ -387,6 +408,7 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
     case boLaser: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-l"); break;
     case boWarp: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-w"); break;
     case boSlow: break;
+    case boNone: break;
   }
 
   bonus->sprite->loop = 1;
@@ -459,6 +481,7 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
           player->warpenabled = true;
         break;
         case boSlow: break;
+        case boNone: break;
       }
 
       if(player->state != plShort && player->state != plLong)
@@ -561,7 +584,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           // ensure it's in the middle section, not an edge, but
           // if it is an edge we don't yet treat that as no collision.
 
-          Bounds wbound = { .left = b->left + 9, .width = 25, .height = 25, .top = b->top };
+          Bounds wbound = { .left = b->left + 18, .width = 50, .height = 50, .top = b->top };
 
           if(ball_collidesbounds(ball, &wbound, &hitedge))
           {
@@ -589,8 +612,8 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
                 if((arena->bricks[j]->type == btWormhole) /*&& (arena->bricks[j] != b)*/)
                 {
                   ball->warpdest = arena->bricks[j];
-                  ball->cx = arena->bricks[j]->left + 20;
-                  ball->cy = arena->bricks[j]->top + 12;
+                  ball->cx = arena->bricks[j]->left + 40;
+                  ball->cy = arena->bricks[j]->top + 24;
                   ball->x = ball->cx - ball->radius;
                   ball->y = ball->cy - ball->radius;
                   af_playsample(arena->factory, "wormhole-in");
@@ -623,6 +646,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             // first hit before animation starts
             b->sprite->state = asPlayToEnd;
             arena->score += BRICKSCORE;
+            af_playsample(arena->factory, "brick");
           }
 
         }
@@ -640,10 +664,12 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
           // Chance of bonus no more frequently than every BONUSFREQUENCY bricks
           // and no more than two bonuses on screen at once
-          if((arena->bonuscounter % BONUSFREQUENCY == 0) && (b->type == btNormal) && (arena->bonuscount < 2) && !(b->solidedges & hitedge))
+          if((arena->bonuscounter % BONUSFREQUENCY == 0) &&
+             (b->hitcount == 0) && (b->type == btNormal) &&
+             (arena->bonuscount < 2) && !(b->solidedges & hitedge))
           {
             int bonusscore = rand() % 100;
-            Bonustype botype;
+            Bonustype botype = boNone;
 
             if(bonusscore > 90)
               botype = boGrow;
@@ -660,7 +686,9 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             else if (bonusscore > 60)
               botype = boWarp;
 
-            if(bonusscore > 60)
+            // We can limit the maximum bonus on each level if we want
+            // e.g. to prevent laser or warp on the boss level
+            if((botype != boNone) && (botype >= arena->levels[arena->level - 1].maxbonuslevel))
               arena_addbonus(arena, b->left, b->bottom, botype);
 
             af_playsample(arena->factory, "brick");

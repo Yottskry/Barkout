@@ -1,7 +1,7 @@
 #include "menu.h"
 #include "config.h"
 
-MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*))
+MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*), void (*ontoggle)(void*, void*))
 {
   MenuItem* item = malloc(sizeof(MenuItem));
   item->options = NULL;
@@ -14,6 +14,7 @@ MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*o
   item->optioncount = 0;
   item->controlvalue = controlvalue;
   item->onexecute = onexecute;
+  item->ontoggle = ontoggle;
   menu->itemcount++;
   menu->items = realloc(menu->items, sizeof(MenuItem*)*menu->itemcount);
   menu->items[menu->itemcount-1] = item;
@@ -44,18 +45,12 @@ void menu_drawmenu(Menu* menu, App* app)
     else
       text_drawtext(app, item->text, menu->x, 40*i + menu->y, (SDL_Color){255, 255, 255, 100}, 0);
 
-    //for(int j = 0; j < menu->items[i]->optioncount; j++)
-    //{
-      //if(menu->items[i]->selectedvalue == menu->items[i]->options[j]->value)
-      //{
-      if(item->optioncount > 0)
-      {
-        text_drawtext(app, item->options[item->selectedindex]->text, menu->optionx, 40*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0);
-        if(i==menu->selectedindex)
-          text_drawwrappedtext(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600);
-      }
-      //}
-    //}
+    if(item->optioncount > 0)
+    {
+      text_drawtext(app, item->options[item->selectedindex]->text, menu->optionx, 40*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0);
+      if(i==menu->selectedindex)
+        text_drawwrappedtext(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600);
+    }
   }
 }
 
@@ -81,6 +76,9 @@ void menu_nextoption(Menu* menu)
     item->selectedindex = 0;
   item->selectedvalue = item->options[item->selectedindex]->value;
   *(item->controlvalue) = item->selectedvalue;
+
+  if(item->ontoggle != NULL)
+    item->ontoggle((void*)menu->app, (void*)item);
 }
 
 void menu_previousoption(Menu* menu)
@@ -91,6 +89,9 @@ void menu_previousoption(Menu* menu)
     item->selectedindex = item->optioncount - 1;
   item->selectedvalue = item->options[item->selectedindex]->value;
   *(item->controlvalue) = item->selectedvalue;
+
+  if(item->ontoggle != NULL)
+    item->ontoggle((void*)menu->app, (void*)item);
 }
 
 void menu_free(Menu* menu)

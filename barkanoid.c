@@ -62,11 +62,13 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "cat.png", "cat", 40, 40);
   af_loadanimation(f, renderer, "cat-die.png", "cat-die", 40, 40);
   af_loadanimation(f, renderer, "cat-spawn.png", "cat-spawn", 40, 40);
-  af_loadanimation(f, renderer, "wormhole2.png", "wormhole", 40, 25);
+  af_loadanimation(f, renderer, "wormhole2.png", "wormhole", 80, 50);
   af_loadanimation(f, renderer, "white_top.png", "white-top", 44, 29);
   af_loadanimation(f, renderer, "green_bottom.png", "green-bottom", 44, 29);
   af_loadanimation(f, renderer, "grey_broken.png", "grey-broken", 44, 29);
   af_loadanimation(f, renderer, "grey_repair.png", "grey-repair", 44, 29);
+  af_loadanimation(f, renderer, "boss.png", "boss", 124, 104);
+
 
   // And some sound
   af_loadsample(f, "barkanoid-getready.wav", "getready");
@@ -139,6 +141,17 @@ void menu_howtoplayclick(void* data)
 {
   App* app = (App*)data;
   app->gamestate = gsHelp;
+}
+
+void menu_fullscreentoggle(void* data, void* item)
+{
+  App* app = (App*)data;
+  MenuItem* menuitem = (MenuItem*)item;
+
+  if(menuitem->selectedvalue == 1)
+    SDL_SetWindowFullscreen(app->window, SDL_WINDOW_FULLSCREEN);
+  else
+    SDL_SetWindowFullscreen(app->window, 0);
 }
 
 void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
@@ -290,11 +303,15 @@ int main(int argc, char** argv)
 
 	int startlevel = 1;
 	Uint32 flags = SDL_WINDOW_OPENGL;
+  config_setfullscreen(false);
 
 	for(int i = 0; i < argc; i++)
 	{
     if(strcmp(argv[i], "-f") == 0)
+    {
       flags |= SDL_WINDOW_FULLSCREEN;
+      config_setfullscreen(true);
+    }
     if(strcmp(argv[i], "-l") == 0)
     {
       if(i+1 < argc)
@@ -302,12 +319,10 @@ int main(int argc, char** argv)
     }
 	}
 
-	SDL_SetCursor(SDL_DISABLE);
-
   app.font = TTF_OpenFont("Nordine.ttf", 32);
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
-	app.music = Mix_LoadMUS("./Sounds/barkanoidii.mp3");
+	app.music = Mix_LoadMUS("./Sounds/barkanoidiii.mp3");
   app.gamestate = gsTitle;
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
@@ -376,13 +391,21 @@ int main(int argc, char** argv)
   Config* config = config_load();
 
   Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 240, .app=&app };
-  MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick);
-  item = menu_additem(&menu, "Control method", (int*)&(config->controlmethod), NULL);
+  MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick, NULL);
+  item = menu_additem(&menu, "Control method", (int*)&(config->controlmethod), NULL, NULL);
   menu_additemoption(item, "Barkanoid", OPT2, (int)cmBarkanoid);
   menu_additemoption(item, "Classic", OPT1, (int)cmClassic);
-  menu_additem(&menu, "How to Play", NULL, menu_howtoplayclick);
-  menu_additem(&menu, "Credits", NULL, menu_creditsclick);
-  menu_additem(&menu, "Quit", NULL, menu_quitclick);
+  item = menu_additem(&menu, "Full screen", (int*)&(config->fullscreen), NULL, menu_fullscreentoggle);
+  menu_additemoption(item, "Yes", "Stretch to full screen", 1);
+  menu_additemoption(item, "No", "Play windowed", 0);
+  menu_additem(&menu, "How to Play", NULL, menu_howtoplayclick, NULL);
+  menu_additem(&menu, "Credits", NULL, menu_creditsclick, NULL);
+  menu_additem(&menu, "Quit", NULL, menu_quitclick, NULL);
+
+
+
+	SDL_ShowCursor(SDL_DISABLE);
+
 
   arena_loadlevels(&arena, &f);
 

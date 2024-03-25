@@ -20,6 +20,7 @@ typedef struct
   int optioncount;
   int* controlvalue;
   void (*onexecute)(void*);
+  void (*ontoggle)(void*, void*);
   MenuItemOption** options;
 } MenuItem;
 
@@ -35,7 +36,7 @@ typedef struct
   App* app;
 } Menu;
 
-MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*));
+MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*), void (*ontoggle)(void*, void*));
 MenuItemOption* menu_additemoption(MenuItem* menuitem, const char* optiontext, const char* optiondescription, int optionvalue);
 void menu_drawmenu(Menu* menu, App* app);
 void menu_next(Menu* menu);

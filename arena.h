@@ -34,10 +34,12 @@ typedef struct
   int brickcount;
   int spawnx;
   int spawny;
+  int maxbonuslevel;
   Animation* bg;
   Animation* mg;
   Animation* fg;
   Brick** bricks;
+  void (*onlevelend)(void*, void*);
 } Level;
 
 typedef struct
@@ -63,7 +65,6 @@ typedef struct
   Bonus** bonuses;
   Bullet** bullets;
   int numlevels;
-  //Level levels[NUMLEVELS];
   Level* levels;
 } Arena;
 

@@ -84,6 +84,11 @@ void config_setcontrolmethod(ControlMethod method)
 {
 }
 
+void config_setfullscreen(bool fullscreen)
+{
+  config.fullscreen = fullscreen;
+}
+
 void config_save(Config* config)
 {
 }
