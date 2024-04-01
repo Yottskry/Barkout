@@ -24,9 +24,13 @@ typedef struct
 } Cat;
 
 
-//Cat* cat_create();
+typedef struct
+{
+  int count;
+  Cat** cats;
+} Cattery; // a cat factory :D
+
 void cat_init(Cat* cat, ResourceFactory* f);
-//void cat_free(Cat* cat);
 void cat_move(Cat* cat, Brick** bricks, int brickcount, Bounds* bounds);
 void cat_draw(Cat* cat, SDL_Renderer* renderer);
 void cat_spawn(Cat* cats, ResourceFactory* factory, int x, int y);
@@ -34,5 +38,8 @@ bool cat_collidesball(Cat* cats, Ball* ball, ResourceFactory* factory);
 bool cat_collidesbat(Cat* cats, Bounds* bounds, ResourceFactory* factory);
 void cat_afterdie(void* sender, void* data);
 void cat_afterspawn(void* sender, void* data);
+
+Cat* cat_addcat(Cattery* cattery, ResourceFactory* f);
+void cat_removecat(Cattery* cattery);
 
 #endif // _CAT_H_

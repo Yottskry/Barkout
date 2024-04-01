@@ -100,10 +100,11 @@ int a_freeanimation(Animation* anim)
   return 0;
 }
 
-int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y, int frameno)
+int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y, int frameno, Uint8 alpha)
 {
   SDL_Rect src = {anim->framewidth * frameno, 0, anim->framewidth, anim->frameheight};
   SDL_Rect dst = {x, y, anim->framewidth, anim->frameheight};
+  SDL_SetTextureAlphaMod(anim->sheet, alpha);
   SDL_RenderCopy(renderer, anim->sheet, &src, &dst);
   return 0;
 }

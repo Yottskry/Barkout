@@ -4,8 +4,10 @@
 #define MAXBRICKPARTICLES 255
 #define BRICKDECAY 25
 #define RESURRECTTIMER 600
+#define EXPLOSIONPARTICLES 400
 
 #include "resourcefactory.h"
+#include <stdbool.h>
 
 typedef enum { bsStatic, bsHit } Brickstate;
 // Not sure if having these as flags is really beenficial as you'll never be in the position
@@ -26,6 +28,17 @@ typedef struct
 
 typedef struct
 {
+  Uint32 startdelay;
+  Uint32 starttime;
+  bool isdead;
+  Sparkle particles[EXPLOSIONPARTICLES];
+  int x;
+  int y;
+  SDL_Color color;
+} Explosion;
+
+typedef struct
+{
   Sprite* sprite;
   int left;
   int top;
@@ -34,6 +47,7 @@ typedef struct
   int hitcount;
   int starthitcount;
   int frame;
+  bool isdead;
   Bricktype type;
   Uint32 lastticks;
   Edge solidedges;

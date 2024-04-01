@@ -166,11 +166,11 @@ void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factor
   }
 
   // Draw the background
-  a_drawstaticframe(arena->bg, app->renderer, 0, 0, 0);
-  a_drawstaticframe(arena->mg, app->renderer, ofs, 0, 0);
-  a_drawstaticframe(arena->fg, app->renderer, ofs2 - 30, 0, 0);
-  a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0);
-  a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0);
+  a_drawstaticframe(arena->bg, app->renderer, 0, 0, 0, arena->alpha);
+  a_drawstaticframe(arena->mg, app->renderer, ofs, 0, 0, arena->alpha);
+  a_drawstaticframe(arena->fg, app->renderer, ofs2 - 30, 0, 0, arena->alpha);
+  a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0, 255);
+  a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0, 255);
 }
 
 void drawarenatext(App* app, Arena* arena, int hi)
@@ -234,25 +234,25 @@ void drawhowtoplace(ResourceFactory* factory, App* app)
   top += 40;
   text_drawtext(app, "Bonuses", left, top, white, 0);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-c"), app->renderer, left, top, 0);
+  a_drawstaticframe(af_getanimation(factory, "bonus-c"), app->renderer, left, top, 0, 255);
   text_drawtext(app, "The ball sticks to the Maus", left + 100, top - 2, white, 0);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-l"), app->renderer, left, top, 0);
+  a_drawstaticframe(af_getanimation(factory, "bonus-l"), app->renderer, left, top, 0, 255);
   text_drawtext(app, "Enable the Maus's laser guns", left + 100, top - 2, white, 0);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-d"), app->renderer, left, top, 0);
+  a_drawstaticframe(af_getanimation(factory, "bonus-d"), app->renderer, left, top, 0, 255);
   text_drawtext(app, "Enhance the energy ball", left + 100, top - 2, white, 0);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-e"), app->renderer, left, top, 0);
+  a_drawstaticframe(af_getanimation(factory, "bonus-e"), app->renderer, left, top, 0, 255);
   text_drawtext(app, "Extend the Maus!", left + 100, top - 2, white, 0);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-s"), app->renderer, left, top, 0);
+  a_drawstaticframe(af_getanimation(factory, "bonus-s"), app->renderer, left, top, 0, 255);
   text_drawtext(app, "Shrink the Maus. Avoid this one.", left + 100, top - 2, white, 0);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-p"), app->renderer, left, top, 0);
+  a_drawstaticframe(af_getanimation(factory, "bonus-p"), app->renderer, left, top, 0, 255);
   text_drawtext(app, "Extra player!", left + 100, top - 2, white, 0);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-w"), app->renderer, left, top, 0);
+  a_drawstaticframe(af_getanimation(factory, "bonus-w"), app->renderer, left, top, 0, 255);
   text_drawtext(app, "Warp to the next round", left + 100, top - 2, white, 0);
 }
 
@@ -385,7 +385,8 @@ int main(int argc, char** argv)
                   .bullets = NULL,
                   .bg = NULL,
                   .numlevels = 0,
-                  .levels = NULL
+                  .levels = NULL,
+                  .alpha = 255
                 };
 
   Config* config = config_load();
@@ -402,10 +403,7 @@ int main(int argc, char** argv)
   menu_additem(&menu, "Credits", NULL, menu_creditsclick, NULL);
   menu_additem(&menu, "Quit", NULL, menu_quitclick, NULL);
 
-
-
 	SDL_ShowCursor(SDL_DISABLE);
-
 
   arena_loadlevels(&arena, &f);
 
@@ -590,6 +588,7 @@ int main(int argc, char** argv)
               arena.lives = STARTLIVES;
               arena.level = startlevel;
               arena.score = 0;
+              arena.alpha = 255;
               arena_loadbricks(&arena, arena.level);
             }
           break;
@@ -725,7 +724,8 @@ int main(int argc, char** argv)
       // In the event of losing the ball, reset the level
       // Check if it was already set (by keypress)
       if(currentlywarping == 0)
-        islostball = ball_moveball(&ball, &arena, &player) || islostball;
+        if(arena.remaining > 0)
+          islostball = ball_moveball(&ball, &arena, &player) || islostball;
 
       if(1 == islostball)
       {
@@ -777,8 +777,17 @@ int main(int argc, char** argv)
 
       if(arena.remaining == 0)
       {
-        arena.level++;
-        app.gamestate = gsNewLevel;
+        // We rely on the onlevelend event at the point remaining is decremented in order to set up the explosions
+        if(arena.level == arena.numlevels)
+        {
+          arena_drawexplosions(&arena, app.renderer);
+          arena.alpha -= arena.alpha < 4 ? arena.alpha : 4;
+        }
+        else
+        {
+          arena.level++;
+          app.gamestate = gsNewLevel;
+        }
         // See the note above SDL_RenderPresent (below)
         //continue;
       }

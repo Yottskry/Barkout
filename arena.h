@@ -18,6 +18,7 @@
 #define MAXBULLETS 10
 #define MAXSPEED 12
 #define BRICKSCORE 10
+#define NUMEXPLOSIONS 40
 
 typedef unsigned char byte;
 
@@ -32,6 +33,7 @@ typedef struct
 {
   int level;
   int brickcount;
+  int catterycount;
   int spawnx;
   int spawny;
   int maxbonuslevel;
@@ -39,6 +41,7 @@ typedef struct
   Animation* mg;
   Animation* fg;
   Brick** bricks;
+  Cattery** catteries;
   void (*onlevelend)(void*, void*);
 } Level;
 
@@ -66,6 +69,8 @@ typedef struct
   Bullet** bullets;
   int numlevels;
   Level* levels;
+  Explosion explosions[NUMEXPLOSIONS];
+  Uint8 alpha;
 } Arena;
 
 // Level related functions
@@ -100,5 +105,9 @@ void arena_checkbulletcollisions(Arena* arena);
 void arena_drawlives(Arena* arena, App* app);
 void arena_brickfinished(void* sender, void* data);
 void arena_brickrepaired(void* sender, void* data);
+
+void arena_finallevelend(void* sender, void* data);
+void arena_resetexplosions(Arena* arena);
+bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer);
 
 #endif

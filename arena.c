@@ -88,6 +88,9 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     level->bricks = NULL;
     level->onlevelend = NULL;
 
+    if(i == arena->numlevels-1)
+      level->onlevelend = arena_finallevelend;
+
     char fname[255] = "";
 
     sprintf(fname, "./Levels/level%d.lvl", level->level);
@@ -131,6 +134,9 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 
     level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
     level->spawny = arena->bounds.top;
+
+    level->catterycount = 0;
+    level->catteries = NULL;
     // Read each line. This is the row position.
     while(fscanf(f, "%s", rowdata) > 0)
   //rowdata = strtok(NULL, "\r\n");
@@ -155,6 +161,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
         level->bricks[brickno] = malloc(sizeof(Brick));
 
         brick = level->bricks[brickno];
+        brick->isdead = false;
         brick->left = arena->bounds.left + (col * BRICKW);
         brick->right = arena->bounds.left + (col * BRICKW) + BRICKW;
         brick->top = arena->bounds.top + (row * BRICKH);
@@ -231,7 +238,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
           break;
           case '%':
             // The boss brick!
-            brick->starthitcount = 32;
+            brick->starthitcount = 1;
             brick->right = arena->bounds.left + (col * BRICKW) + (BRICKW * 3);
             brick->bottom = arena->bounds.top + (row * BRICKH) + (BRICKH * 4);
             brickanim = af_getanimation(factory, "boss");
@@ -278,13 +285,14 @@ void arena_loadbricks(Arena* arena, int level)
     }
 
     brick->hitcount = brick->starthitcount;
+    brick->isdead = false;
 
     for(int j = 0; j < MAXBRICKPARTICLES; j++)
     {
       brick->particles[j].alpha = (rand() % 55) + 201;
       brick->particles[j].gdiff = 0;
-      brick->particles[j].x = rand() % BRICKW;
-      brick->particles[j].y = rand() % BRICKH;
+      brick->particles[j].x = rand() % (brick->right - brick->left);
+      brick->particles[j].y = rand() % (brick->bottom - brick->top);
       brick->particles[j].yv = ((rand() % 6) + 1) * -1;
       if(brick->particles[j].x < 10)
         brick->particles[j].xv = ((rand() % 3) * -1) - 3; // -6 to -3
@@ -330,12 +338,14 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
       if(brick->counter == 0)
         af_playsample(arena->factory, "wormhole-out");
     }
-    else
+    else if(!brick->isdead)
     {
+      brick->isdead = true;
       for(int j = 0; j < config_getbrickparticles(); j++)
       {
         if(brick->particles[j].alpha > 0)
         {
+          brick->isdead = false;
           int w = (rand() % 4) + 1;
           SDL_SetRenderDrawColor(renderer, anim->keycolorr, anim->keycolorg, anim->keycolorb, (Uint8)brick->particles[j].alpha);
           SDL_RenderFillRect(renderer, &(SDL_Rect){.x = brick->particles[j].x, .y = brick->particles[j].y, .w = w, .h = w});
@@ -350,6 +360,16 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
             brick->particles[j].alpha -= rand() % BRICKDECAY;
         }
       }
+      if(brick->isdead)
+      {
+        arena->remaining--;
+        if(arena->remaining == 0)
+          if(arena->levels[arena->level-1].onlevelend != NULL)
+          {
+            arena->levels[arena->level-1].onlevelend(arena, NULL);
+            return;
+          }
+      }
     }
   }
 }
@@ -360,6 +380,7 @@ void arena_resetbricks(Arena* arena)
   {
     arena->bricks[brickno]->counter = 0;
     arena->bricks[brickno]->hitcount = arena->bricks[brickno]->starthitcount;
+    arena->bricks[brickno]->isdead = false;
 
     if(arena->bricks[brickno]->type == btResurrecting)
     {
@@ -584,7 +605,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           // ensure it's in the middle section, not an edge, but
           // if it is an edge we don't yet treat that as no collision.
 
-          Bounds wbound = { .left = b->left + 18, .width = 50, .height = 50, .top = b->top };
+          Bounds wbound = { .left = b->left + 27, .width = 25, .height = 25, .top = b->top + 12 };
 
           if(ball_collidesbounds(ball, &wbound, &hitedge))
           {
@@ -655,10 +676,10 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
           arena->score += BRICKSCORE;
 
-          if((b->type != btIndestructible) && (b->type != btWormhole) && (b->type != btResurrecting) && (b->hitcount == 0))
+          //if((b->type != btIndestructible) && (b->type != btWormhole) && (b->type != btResurrecting) && (b->hitcount == 0))
             // The hit edge is not solid (i.e. it can be destroyed on that edge)
-            if(!(b->solidedges & hitedge))
-              arena->remaining--;
+            //if(!(b->solidedges & hitedge))
+            //  arena->remaining--;
 
           b->sprite->state = asPlayAndReset;
 
@@ -688,7 +709,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
             // We can limit the maximum bonus on each level if we want
             // e.g. to prevent laser or warp on the boss level
-            if((botype != boNone) && (botype >= arena->levels[arena->level - 1].maxbonuslevel))
+            if((botype != boNone) && (botype <= arena->levels[arena->level - 1].maxbonuslevel))
               arena_addbonus(arena, b->left, b->bottom, botype);
 
             af_playsample(arena->factory, "brick");
@@ -982,7 +1003,7 @@ void arena_checkbulletcollisions(Arena* arena)
       if(b->hitcount == 0)
       {
         arena->score += BRICKSCORE;
-        arena->remaining--;
+        //arena->remaining--;
       }
       af_playsample(arena->factory, "brick-laser");
     }
@@ -992,7 +1013,7 @@ void arena_checkbulletcollisions(Arena* arena)
 void arena_drawlives(Arena* arena, App* app)
 {
   for(int i = 0; i < arena->lives; i++)
-    a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 40+(40*i), 560, 0);
+    a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 40+(40*i), 560, 0, 255);
 }
 
 void arena_brickfinished(void* sender, void* data)
@@ -1016,4 +1037,66 @@ void arena_brickrepaired(void* sender, void* data)
   af_setanimation(factory, brick->sprite, "grey-broken", 0, arena_brickfinished, (void*)brick, (void*)factory);
   // We need to set this to prevent these two routines just calling each other forever
   brick->sprite->state = asStatic;
+}
+
+void arena_finallevelend(void* sender, void* data)
+{
+  Arena* arena = (Arena*)(sender);
+  arena_resetexplosions(arena);
+}
+
+void arena_resetexplosions(Arena* arena)
+{
+  Uint32 startticks = SDL_GetTicks();
+  for(int i = 0; i < NUMEXPLOSIONS; i++)
+  {
+    arena->explosions[i].isdead = false;
+    arena->explosions[i].x = rand() % arena->width;
+    arena->explosions[i].y = rand() % 600;
+    arena->explosions[i].startdelay = (rand() % 300) * 100;
+    arena->explosions[i].color = (SDL_Color){rand() % 100 + 155, rand() % 100 + 155, rand() % 100 + 155, 255};
+    arena->explosions[i].starttime = startticks;
+    for(int j = 0; j < EXPLOSIONPARTICLES; j++)
+    {
+      arena->explosions[i].particles[j].alpha = 255;
+      arena->explosions[i].particles[j].gdiff = 0;
+      arena->explosions[i].particles[j].x = (rand() % 20) + arena->explosions[i].x;
+      arena->explosions[i].particles[j].y = (rand() % 20) + arena->explosions[i].y;
+      arena->explosions[i].particles[j].xv =(rand() % 15) - 8;
+      arena->explosions[i].particles[j].yv =(rand() % 15) - 8;
+    }
+  }
+}
+
+bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer)
+{
+  bool alldead = true;
+  for(int i = 0; i < NUMEXPLOSIONS; i++)
+  {
+    Explosion* e = &arena->explosions[i];
+    // If we've not yet reached the start time for this explosion, skip it
+    if((SDL_GetTicks() - e->starttime) < e->startdelay)
+    {
+      // Can't be dead if not yet started
+      alldead = false;
+      continue;
+    }
+
+    for(int j = 0; j < EXPLOSIONPARTICLES; j++)
+    {
+      Sparkle* s = &e->particles[j];
+      if(s->alpha > 0)
+      {
+        // if not yet invisible then not dead
+        alldead = false;
+        SDL_SetRenderDrawColor(renderer, e->color.r, e->color.g, e->color.b, (Uint8)s->alpha);
+        SDL_Rect r = { .x = s->x, .y = s->y, .w = 2 , .h = 2 };
+        SDL_RenderDrawRect(renderer, &r);
+        s->x = s->x + s->xv;
+        s->y = s->y + s->yv;
+        s->alpha--;
+      }
+    }
+  }
+  return alldead;
 }
