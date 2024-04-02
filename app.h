@@ -8,6 +8,7 @@
 
 #define SCREENW 800
 #define SCREENH 600
+#define ARENAW 520
 
 typedef enum { gsTitle, gsMenu, gsStory, gsCredits, gsHelp, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused, gsQuit } Gamestate;
 

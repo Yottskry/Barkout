@@ -232,6 +232,21 @@ int af_playsample(ResourceFactory* factory, const char* name)
   return 0;
 }
 
+int af_playsampleforced(ResourceFactory* factory, const char* name, const int channel)
+{
+  for(int i = 0; i < factory->samplecount; i++)
+  {
+    if(strcmp(factory->samples[i]->name,name) == 0)
+    {
+      // Force channel 1
+      int ret = Mix_PlayChannel(channel, factory->samples[i]->sample, 0);
+      if(ret == -1)
+        printf("Unable to play sample %s\n", name);
+    }
+  }
+  return 0;
+}
+
 int af_freesamples(ResourceFactory* factory)
 {
   for(int i = 0; i < factory->samplecount; i++)

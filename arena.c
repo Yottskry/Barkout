@@ -238,7 +238,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
           break;
           case '%':
             // The boss brick!
-            brick->starthitcount = 1;
+            brick->starthitcount = 32;
             brick->right = arena->bounds.left + (col * BRICKW) + (BRICKW * 3);
             brick->bottom = arena->bounds.top + (row * BRICKH) + (BRICKH * 4);
             brickanim = af_getanimation(factory, "boss");
@@ -284,7 +284,7 @@ void arena_loadbricks(Arena* arena, int level)
       arena->remaining++;
     }
 
-    brick->hitcount = brick->starthitcount;
+    brick->hitcount = brick->starthitcount * arena->multiplier;
     brick->isdead = false;
 
     for(int j = 0; j < MAXBRICKPARTICLES; j++)
@@ -341,6 +341,7 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
     else if(!brick->isdead)
     {
       brick->isdead = true;
+      SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
       for(int j = 0; j < config_getbrickparticles(); j++)
       {
         if(brick->particles[j].alpha > 0)
@@ -360,13 +361,15 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
             brick->particles[j].alpha -= rand() % BRICKDECAY;
         }
       }
+      SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
       if(brick->isdead)
       {
         arena->remaining--;
         if(arena->remaining == 0)
           if(arena->levels[arena->level-1].onlevelend != NULL)
           {
-            arena->levels[arena->level-1].onlevelend(arena, NULL);
+            arena->levels[arena->level-1].onlevelend(arena);
             return;
           }
       }
@@ -709,7 +712,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
             // We can limit the maximum bonus on each level if we want
             // e.g. to prevent laser or warp on the boss level
-            if((botype != boNone) && (botype <= arena->levels[arena->level - 1].maxbonuslevel))
+            if((botype != boNone) && ((int)botype <= arena->levels[arena->level - 1].maxbonuslevel))
               arena_addbonus(arena, b->left, b->bottom, botype);
 
             af_playsample(arena->factory, "brick");
@@ -1039,9 +1042,10 @@ void arena_brickrepaired(void* sender, void* data)
   brick->sprite->state = asStatic;
 }
 
-void arena_finallevelend(void* sender, void* data)
+void arena_finallevelend(void* sender)
 {
   Arena* arena = (Arena*)(sender);
+  af_playsampleforced(arena->factory, "victory", 1);
   arena_resetexplosions(arena);
 }
 
@@ -1053,7 +1057,7 @@ void arena_resetexplosions(Arena* arena)
     arena->explosions[i].isdead = false;
     arena->explosions[i].x = rand() % arena->width;
     arena->explosions[i].y = rand() % 600;
-    arena->explosions[i].startdelay = (rand() % 300) * 100;
+    arena->explosions[i].startdelay = (rand() % 200) * 40;
     arena->explosions[i].color = (SDL_Color){rand() % 100 + 155, rand() % 100 + 155, rand() % 100 + 155, 255};
     arena->explosions[i].starttime = startticks;
     for(int j = 0; j < EXPLOSIONPARTICLES; j++)
@@ -1070,6 +1074,7 @@ void arena_resetexplosions(Arena* arena)
 
 bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer)
 {
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   bool alldead = true;
   for(int i = 0; i < NUMEXPLOSIONS; i++)
   {
@@ -1082,6 +1087,10 @@ bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer)
       continue;
     }
 
+    // Play explosion only on first particle - after this, alldead will be false
+      if(e->particles[0].alpha == 255)
+        af_playsampleforced(arena->factory, "explosion", 2);
+
     for(int j = 0; j < EXPLOSIONPARTICLES; j++)
     {
       Sparkle* s = &e->particles[j];
@@ -1089,14 +1098,16 @@ bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer)
       {
         // if not yet invisible then not dead
         alldead = false;
-        SDL_SetRenderDrawColor(renderer, e->color.r, e->color.g, e->color.b, (Uint8)s->alpha);
+        Uint16 a = s->alpha;
+        SDL_SetRenderDrawColor(renderer, e->color.r, e->color.g, e->color.b, (Uint8)(a));
         SDL_Rect r = { .x = s->x, .y = s->y, .w = 2 , .h = 2 };
         SDL_RenderDrawRect(renderer, &r);
         s->x = s->x + s->xv;
         s->y = s->y + s->yv;
-        s->alpha--;
+        s->alpha -= s->alpha < 2 ? s->alpha : 2;
       }
     }
   }
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
   return alldead;
 }

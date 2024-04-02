@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
-typedef enum { TEXT_CENTRED = 1 } TextFlags;
+typedef enum { TEXT_CENTRED = 1, TEXT_ARENA_CENTRED = 2 } TextFlags;
 
 typedef struct
 {

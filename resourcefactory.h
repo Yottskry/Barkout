@@ -71,6 +71,8 @@ Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char na
 
 int af_playsample(ResourceFactory* factory, const char* name);
 
+int af_playsampleforced(ResourceFactory* factory, const char* name, const int channel);
+
 int af_freesamples(ResourceFactory* factory);
 
 #endif

@@ -17,6 +17,8 @@ void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, in
 
   if((flags & TEXT_CENTRED) == TEXT_CENTRED)
     xpos = (int)((SCREENW - txt->w) / 2);
+  else if ((flags & TEXT_ARENA_CENTRED) == TEXT_ARENA_CENTRED)
+    xpos = (int)((ARENAW - txt->w) / 2) + 40;
 
   SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
   SDL_SetTextureAlphaMod(tex, color.a);

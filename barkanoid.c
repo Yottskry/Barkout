@@ -83,13 +83,21 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-laser.wav", "laser");
   af_loadsample(f, "barkanoid-wormhole-in.wav", "wormhole-in");
   af_loadsample(f, "barkanoid-wormhole-out.wav", "wormhole-out");
+  af_loadsample(f, "barkanoid-victory.wav", "victory");
+  af_loadsample(f, "barkanoid-explosion.wav", "explosion");
 }
 
-void gameover(App* app, Gamestate* gamestate)
+int gameover(App* app, Arena* arena, Gamestate* gamestate, int* hi)
 {
   *gamestate = gsDying;
   text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0);
   text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0);
+  if(arena->score > *hi)
+  {
+    savehighscore(((int*)&arena->score));
+    *hi = arena->score;
+  }
+  return *hi;
 }
 
 // Draw "Get Ready!" text and wait for three seconds
@@ -372,7 +380,7 @@ int main(int argc, char** argv)
 
   // Set up the level
   Arena arena = { .bounds = { .top = 40, .bottom = 550, .left = 40, .right = 560 },
-                  .width = 520,
+                  .width = ARENAW,
                   .bonuscounter = 0,
                   .bonuscount = 0,
                   .factory = &f,
@@ -386,7 +394,8 @@ int main(int argc, char** argv)
                   .bg = NULL,
                   .numlevels = 0,
                   .levels = NULL,
-                  .alpha = 255
+                  .alpha = 255,
+                  .multiplier = 1
                 };
 
   Config* config = config_load();
@@ -745,12 +754,7 @@ int main(int argc, char** argv)
         }
         else
         {
-          gameover(&app, &app.gamestate);
-          if(arena.score > hi)
-          {
-            savehighscore(((int*)&arena.score));
-            hi = arena.score;
-          }
+          gameover(&app, &arena, &app.gamestate, &hi);
           arena_resetbricks(&arena);
         }
       }
@@ -780,8 +784,14 @@ int main(int argc, char** argv)
         // We rely on the onlevelend event at the point remaining is decremented in order to set up the explosions
         if(arena.level == arena.numlevels)
         {
-          arena_drawexplosions(&arena, app.renderer);
-          arena.alpha -= arena.alpha < 4 ? arena.alpha : 4;
+          bool allfinished = arena_drawexplosions(&arena, app.renderer);
+          arena.alpha -= arena.alpha < 3 ? arena.alpha : 3;
+          text_drawtext(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED);
+          if(allfinished)
+          {
+            gameover(&app, &arena, &app.gamestate, &hi);
+            arena_resetbricks(&arena);
+          }
         }
         else
         {

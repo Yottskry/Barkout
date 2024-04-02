@@ -4,7 +4,7 @@
 #define MAXBRICKPARTICLES 255
 #define BRICKDECAY 25
 #define RESURRECTTIMER 600
-#define EXPLOSIONPARTICLES 400
+#define EXPLOSIONPARTICLES 200
 
 #include "resourcefactory.h"
 #include <stdbool.h>

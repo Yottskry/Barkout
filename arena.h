@@ -42,7 +42,7 @@ typedef struct
   Animation* fg;
   Brick** bricks;
   Cattery** catteries;
-  void (*onlevelend)(void*, void*);
+  void (*onlevelend)(void*);
 } Level;
 
 typedef struct
@@ -71,6 +71,7 @@ typedef struct
   Level* levels;
   Explosion explosions[NUMEXPLOSIONS];
   Uint8 alpha;
+  int multiplier;
 } Arena;
 
 // Level related functions
@@ -106,7 +107,7 @@ void arena_drawlives(Arena* arena, App* app);
 void arena_brickfinished(void* sender, void* data);
 void arena_brickrepaired(void* sender, void* data);
 
-void arena_finallevelend(void* sender, void* data);
+void arena_finallevelend(void* sender);
 void arena_resetexplosions(Arena* arena);
 bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer);
 
