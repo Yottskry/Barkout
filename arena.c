@@ -44,10 +44,17 @@ char* arena_loadbinary(char* fname)
 int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 {
   arena->numlevels = 0;
+
+  #ifdef INSTALLDIR
+  char apath[255] = "INSTALLDIR/Levels/";
+  #else
+  char apath[255] = "./Levels/";
+  #endif
+
   #ifndef _WIN32
   DIR* d;
   struct dirent* dir;
-  d = opendir("./Levels/");
+  d = opendir(apath);
   if(d)
   {
     while((dir = readdir(d))!=NULL)
@@ -66,6 +73,9 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
   #else
   HANDLE hFind;
   WIN32_FIND_DATA fd;
+
+  strcpy(apath, "*.lvl");
+
   hFind = FindFirstFile("./Levels/*.lvl", &fd);
   if(hFind != INVALID_HANDLE_VALUE)
   {

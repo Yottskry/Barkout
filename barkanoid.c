@@ -90,8 +90,8 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
 int gameover(App* app, Arena* arena, Gamestate* gamestate, int* hi)
 {
   *gamestate = gsDying;
-  text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0);
-  text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0);
+  text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
   if(arena->score > *hi)
   {
     savehighscore(((int*)&arena->score));
@@ -115,8 +115,8 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->speed = 6;
   ball->warpdest = NULL;
   *gamestate = gsGetReady;
-  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0);
-  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0);
+  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
   return 0;
 }
 
@@ -183,85 +183,87 @@ void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factor
 
 void drawarenatext(App* app, Arena* arena, int hi)
 {
-  text_drawtext(app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255}, 0);
-  text_drawtext(app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255}, 0);
+  text_drawtext(app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawtext(app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 
   char highs[10] = "";
 
   sprintf(highs, "%08d", hi);
 
-  text_drawtext(app, "Hi Score", 612, 82, (SDL_Color){0,0,0,255}, 0);
-  text_drawtext(app, "Hi Score", 610, 80, (SDL_Color){255,255,255,255}, 0);
+  text_drawtext(app, "Hi Score", 612, 82, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawtext(app, "Hi Score", 610, 80, (SDL_Color){255,255,255,255}, 0, fnTitle);
 
-  text_drawtext(app, highs, 612, 122, (SDL_Color){0, 0, 0, 255}, 0);
-  text_drawtext(app, highs, 610, 120, (SDL_Color){255, 255, 255, 255}, 0);
+  text_drawtext(app, highs, 612, 122, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawtext(app, highs, 610, 120, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 
   char scores[10] = "";
 
   sprintf(scores, "%08d", arena->score);
 
-  text_drawtext(app, "Score", 612, 202, (SDL_Color){0,0,0,255}, 0);
-  text_drawtext(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, 0);
+  text_drawtext(app, "Score", 612, 202, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawtext(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, 0, fnTitle);
 
-  text_drawtext(app, scores, 612, 242, (SDL_Color){0, 0, 0, 255}, 0);
-  text_drawtext(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, 0);
+  text_drawtext(app, scores, 612, 242, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawtext(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 
   char level[4] = "";
 
   sprintf(level, "%02d", arena->level);
 
-  text_drawtext(app, "Round", 612, 322, (SDL_Color){0,0,0,255}, 0);
-  text_drawtext(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, 0);
+  text_drawtext(app, "Round", 612, 322, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawtext(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, 0, fnTitle);
 
-  text_drawtext(app, level, 742, 322, (SDL_Color){0, 0, 0, 255}, 0);
-  text_drawtext(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0);
+  text_drawtext(app, level, 742, 322, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawtext(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 }
 
 void drawhowtoplace(ResourceFactory* factory, App* app)
 {
   int left = 40;
-  int top = 50;
+  int top = 30;
 
   SDL_Color white = {255,255,255,255};
 
-  text_drawtext(app, "How to Play", left, top, white, 0);
-  top += 25;
-  text_drawtext(app, "Use your craft, Maus, to direct", left, top, white, 0);
-  top += 25;
-  text_drawtext(app, "the energy ball and destroy the", left, top, white, 0);
-  top += 25;
-  text_drawtext(app, "infrastructure of the evil", left, top, white, 0);
-  top += 25;
-  text_drawtext(app, "Cat Empire!", left, top, white, 0);
-  top += 25;
-  text_drawtext(app, "Some of the structure may reveal", left, top, white, 0);
-  top += 25;
-  text_drawtext(app, "powerful bonuses when destroyed.", left, top, white, 0);
-  top += 25;
-  text_drawtext(app, "Use them wisely!", left, top, white, 0);
-  top += 40;
-  text_drawtext(app, "Bonuses", left, top, white, 0);
-  top += 35;
+  text_drawtext(app, "How to Play", left, top, white, 0, fnStory);
+
+  char* howtotext = "Use your craft, Maus, to direct "
+                    "the energy ball and destroy the "
+                    "infrastructure of the evil Cat Empire!";
+  top = 75;
+  text_drawwrappedtext(app, howtotext, left, top, white, 0, 700, fnStory);
+
+  char* bonustext = "Some of the structure may reveal "
+                    "powerful bonuses when destroyed. "
+                    "Use them wisely!";
+
+  top = 185;
+  text_drawwrappedtext(app, bonustext, left, top, white, 0, 700, fnStory);
+
+  top = 300;
+  //text_drawtext(app, "Use them wisely!", left, top, white, 0);
+  //top += 40;
+  //text_drawtext(app, "Bonuses", left, top, white, 0);
+  //top += 50;
   a_drawstaticframe(af_getanimation(factory, "bonus-c"), app->renderer, left, top, 0, 255);
-  text_drawtext(app, "The ball sticks to the Maus", left + 100, top - 2, white, 0);
+  text_drawwrappedtext(app, "The ball sticks to the Maus", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
   a_drawstaticframe(af_getanimation(factory, "bonus-l"), app->renderer, left, top, 0, 255);
-  text_drawtext(app, "Enable the Maus's laser guns", left + 100, top - 2, white, 0);
+  text_drawwrappedtext(app, "Enable the Maus's laser guns", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
   a_drawstaticframe(af_getanimation(factory, "bonus-d"), app->renderer, left, top, 0, 255);
-  text_drawtext(app, "Enhance the energy ball", left + 100, top - 2, white, 0);
+  text_drawwrappedtext(app, "Enhance the energy ball", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
   a_drawstaticframe(af_getanimation(factory, "bonus-e"), app->renderer, left, top, 0, 255);
-  text_drawtext(app, "Extend the Maus!", left + 100, top - 2, white, 0);
+  text_drawwrappedtext(app, "Extend the Maus!", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
   a_drawstaticframe(af_getanimation(factory, "bonus-s"), app->renderer, left, top, 0, 255);
-  text_drawtext(app, "Shrink the Maus. Avoid this one.", left + 100, top - 2, white, 0);
+  text_drawwrappedtext(app, "Shrink the Maus. Avoid this one.", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
   a_drawstaticframe(af_getanimation(factory, "bonus-p"), app->renderer, left, top, 0, 255);
-  text_drawtext(app, "Extra player!", left + 100, top - 2, white, 0);
+  text_drawwrappedtext(app, "Extra player!", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
   a_drawstaticframe(af_getanimation(factory, "bonus-w"), app->renderer, left, top, 0, 255);
-  text_drawtext(app, "Warp to the next round", left + 100, top - 2, white, 0);
+  text_drawwrappedtext(app, "Warp to the next round", left + 80, top - 5, white, 0, 600, fnBody);
 }
 
 void drawcredits(App* app)
@@ -270,17 +272,17 @@ void drawcredits(App* app)
 
   SDL_Color white = {255,255,255,255};
 
-  text_drawtext(app, "Credits", left, 110, white, 0);
-  text_drawtext(app, "_____________________________________", left, 120, white, 0);
-  text_drawtext(app, "Programming", left, 160, white, 0);
-  text_drawtext(app, "Graphics", left, 200, white, 0);
-  text_drawtext(app, "Sound FX", left, 240, white, 0);
-  text_drawtext(app, "Music", left, 280, white, 0);
+  text_drawtext(app, "Credits", left, 110, white, 0, fnTitle);
+  text_drawtext(app, "_____________________________________", left, 120, white, 0, fnTitle);
+  text_drawtext(app, "Programming", left, 160, white, 0, fnTitle);
+  text_drawtext(app, "Graphics", left, 200, white, 0, fnTitle);
+  text_drawtext(app, "Sound FX", left, 240, white, 0, fnTitle);
+  text_drawtext(app, "Music", left, 280, white, 0, fnTitle);
 
-  text_drawtext(app, "Go team!", left, 360, white, 0);
+  text_drawtext(app, "Go team!", left, 360, white, 0, fnTitle);
 
   for(int i = 0; i < 4; i++)
-    text_drawtext(app, "Fat Harry", left + 260, 160 + (i*40), white, 0);
+    text_drawtext(app, "Fat Harry", left + 260, 160 + (i*40), white, 0, fnTitle);
 }
 
 int main(int argc, char** argv)
@@ -327,7 +329,8 @@ int main(int argc, char** argv)
     }
 	}
 
-  app.font = TTF_OpenFont("Nordine.ttf", 32);
+  text_loadfonts(&app);
+
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
 	app.music = Mix_LoadMUS("./Sounds/barkanoidiii.mp3");
@@ -422,7 +425,7 @@ int main(int argc, char** argv)
   intro_init(stars);
   //Gamestate gamestate = gsTitle;
 
-  FlashText pressstart = { .text = "Press 1P Start", .alpha = 0, .targetalpha = 255, .duration = 0 };
+  FlashText pressstart = { .text = "Press 1P Start", .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnTitle };
 
   FlashStory story1 = {
     .current = 0,
@@ -439,7 +442,7 @@ int main(int argc, char** argv)
     .current = 0,
     .count = 4,
     .texts = {
-      "only one craft and ace pilot",
+      "only pilot Willow \"Twiglet\" Twiglington",
       "trapped on the unforgiving surface",
       "Take off every Twig!",
       " "
@@ -450,7 +453,7 @@ int main(int argc, char** argv)
     .current = 0,
     .count = 4,
     .texts = {
-      "Willow \"Twiglet\" Rubington III survived,",
+      "and her spacecraft The Maus survived",
       "of a hitherto unknown planet...",
       " ",
       " "
@@ -463,10 +466,10 @@ int main(int argc, char** argv)
 
   cats[0].state = csAlive;
 
-  FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
-  FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
-  FlashText txt3 = { .alpha = 0, .targetalpha = 255, .duration = 0 };
-  FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration = 0, .text = "Fat Horse Games presents" };
+  FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
+  FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
+  FlashText txt3 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
+  FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration = 0, .text = "Fat Horse Games presents", .font = fnTitle };
 
   bool titlefinished = false;
   int currentlywarping = 0;
@@ -786,7 +789,7 @@ int main(int argc, char** argv)
         {
           bool allfinished = arena_drawexplosions(&arena, app.renderer);
           arena.alpha -= arena.alpha < 3 ? arena.alpha : 3;
-          text_drawtext(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED);
+          text_drawtext(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED, fnTitle);
           if(allfinished)
           {
             gameover(&app, &arena, &app.gamestate, &hi);
@@ -899,7 +902,9 @@ int main(int argc, char** argv)
 
 	Mix_FreeMusic(app.music);
 	Mix_CloseAudio();
-	TTF_CloseFont(app.font);
+
+	text_freefonts(&app);
+
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();

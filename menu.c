@@ -41,15 +41,15 @@ void menu_drawmenu(Menu* menu, App* app)
   {
     MenuItem* item = menu->items[i];
     if(i==menu->selectedindex)
-      text_drawtext(app, item->text, menu->x, 40*i + menu->y, (SDL_Color){200, 200, 255, 255}, 0);
+      text_drawtext(app, item->text, menu->x, 40*i + menu->y, (SDL_Color){200, 200, 255, 255}, 0, fnTitle);
     else
-      text_drawtext(app, item->text, menu->x, 40*i + menu->y, (SDL_Color){255, 255, 255, 100}, 0);
+      text_drawtext(app, item->text, menu->x, 40*i + menu->y, (SDL_Color){255, 255, 255, 100}, 0, fnTitle);
 
     if(item->optioncount > 0)
     {
-      text_drawtext(app, item->options[item->selectedindex]->text, menu->optionx, 40*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0);
+      text_drawtext(app, item->options[item->selectedindex]->text, menu->optionx, 40*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
       if(i==menu->selectedindex)
-        text_drawwrappedtext(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600);
+        text_drawwrappedtext(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600, fnBody);
     }
   }
 }

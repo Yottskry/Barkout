@@ -7,7 +7,12 @@
 
 Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, char* filename, char name[50], int w, int h)
 {
+  #ifdef INSTALLDIR
+  char apath[255] = "INSTALLDIR/Sprites/";
+  #else
   char apath[255] = "./Sprites/";
+  #endif
+
   strcat(apath, filename);
 
   // Load an image into a temporary surface.
@@ -209,7 +214,11 @@ void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], in
 
 Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char name[50])
 {
+  #ifdef INSTALLDIR
+  char apath[255] = "INSTALLDIR/Sprites/";
+  #else
   char apath[255] = "./Sounds/";
+  #endif
   strcat(apath, filename);
 
   factory->samples = realloc(factory->samples, sizeof(Sample*) * (factory->samplecount + 1));
