@@ -46,7 +46,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
   arena->numlevels = 0;
 
   #ifdef INSTALLDIR
-  char apath[255] = "INSTALLDIR/Levels/";
+  char apath[255] = INSTALLDIR "/Levels/";
   #else
   char apath[255] = "./Levels/";
   #endif
@@ -74,7 +74,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
   HANDLE hFind;
   WIN32_FIND_DATA fd;
 
-  strcpy(apath, "*.lvl");
+  strcat(apath, "*.lvl");
 
   hFind = FindFirstFile("./Levels/*.lvl", &fd);
   if(hFind != INVALID_HANDLE_VALUE)

@@ -8,7 +8,7 @@
 Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, char* filename, char name[50], int w, int h)
 {
   #ifdef INSTALLDIR
-  char apath[255] = "INSTALLDIR/Sprites/";
+  char apath[255] = INSTALLDIR "/Sprites/";
   #else
   char apath[255] = "./Sprites/";
   #endif
@@ -215,7 +215,7 @@ void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], in
 Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char name[50])
 {
   #ifdef INSTALLDIR
-  char apath[255] = "INSTALLDIR/Sprites/";
+  char apath[255] = INSTALLDIR "/Sprites/";
   #else
   char apath[255] = "./Sounds/";
   #endif
@@ -266,4 +266,17 @@ int af_freesamples(ResourceFactory* factory)
   free(factory->samples);
   factory->samples = NULL;
   return 0;
+}
+
+Mix_Music* af_loadmusic(const char* filename)
+{
+  #ifdef INSTALLDIR
+  char apath[255] = INSTALLDIR "/Sounds/"
+  #else
+  char apath[255] = "./Sounds/";
+  #endif
+  strcat(apath, filename);
+  Mix_Music* mus = Mix_LoadMUS(apath);
+  assert(mus != NULL);
+  return mus;
 }

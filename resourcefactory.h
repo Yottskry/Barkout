@@ -75,4 +75,6 @@ int af_playsampleforced(ResourceFactory* factory, const char* name, const int ch
 
 int af_freesamples(ResourceFactory* factory);
 
+Mix_Music* af_loadmusic(const char* filename);
+
 #endif

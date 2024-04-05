@@ -102,7 +102,7 @@ bool text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y)
 TTF_Font* text_loadfont(const char* filename, int ptsize)
 {
   #ifdef INSTALLDIR
-  char apath[255] = "INSTALLDIR/";
+  char apath[255] = INSTALLDIR "/";
   #else
   char apath[255] = "./";
   #endif

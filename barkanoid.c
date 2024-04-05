@@ -333,7 +333,9 @@ int main(int argc, char** argv)
 
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
-	app.music = Mix_LoadMUS("./Sounds/barkanoidiii.mp3");
+
+	app.music = af_loadmusic("barkanoidiii.mp3");
+
   app.gamestate = gsTitle;
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
