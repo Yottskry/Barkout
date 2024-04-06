@@ -1,0 +1,47 @@
+#INSTALLDIR = \"/home/pi/Projects/BarkanoidResources\"
+INSTALLDIR = \".\"
+
+CC = gcc
+WCC = x86_64-w64-mingw32-gcc 
+
+LIBS = -lm -lSDL2 -lSDL2_mixer -lSDL2_ttf -lSDL2_image
+
+CFLAGS = -I/usr/include
+SDL-CFLAGS = `sdl2-config --cflags`
+SDL-LIBS = `sdl2-config --libs`
+
+WCFLAGS = -I/usr/x86_64-w64-mingw32/include 
+WSDL-CFLAGS = `/home/pi/SDL/x86_64-w64-mingw32/bin/sdl2-config --cflags` 
+WSDL-LIBS = `/home/pi/SDL/x86_64-w64-mingw32/bin/sdl2-config --libs`
+
+OUTFILE = bark
+WOUTFILE = bark.exe
+
+OBFILES = $(patsubst *.c, *.o, $(wildcard *.c))
+
+# To build linux / all, we have a prerequisite of bark binary
+all:	bark
+
+# To build windows, we have a prerequisite of bark.exe...
+windows:	bark.exe
+	if [ -d Windows ]; then rm -rf Windows; fi
+	mkdir Windows
+	cp -r bark.exe Levels Sounds Sprites Windows
+	tar cvf Windows.tar.gz Windows
+
+bark.exe:	$(wildcard src/*.c)
+	$(WCC) $(WCFLAGS) $(WSDL-CFLAGS) $(WSDL-LIBS) -o $(WOUTFILE) $(wildcard src/*.c) $(LIBS)
+
+bark:	$(wildcard src/*.c)
+	$(CC) -DINSTALLDIR=$(INSTALLDIR) $(CFLAGS) $(SDL-CFLAGS) $(SDL-LIBS) -o $(OUTFILE) $(wildcard src/*.c) $(LIBS)
+
+# But in order to build bark.exe we need object files...
+#bark.exe:	OBS $(OBFILES)
+#	$(CC) $(CFLAGS) $(SDL-CFLAGS) $(SDL-LIBS) -o $(OUTFILE) $(wildcard *.o) $(LIBS) 
+
+# So build the object files, which have a prerequisite of the .c files
+#OBS:	$(wildcard *.c)
+#	$(CC) $(CFLAGS) $(SDL-CFLAGS) -c $(wildcard *.c)
+
+clean:
+	rm *.o
