@@ -1,0 +1,7 @@
+The stages of using autotools are:
+
+Create a configure.ac - this will be used by autoreconf --install to create the Makefile based on the contents of Makefile.am.
+
+Those two files are all that's needed.
+
+Run ./configure. This creates the makefile(s).
