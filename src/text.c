@@ -1,6 +1,6 @@
 #include "text.h"
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, int flags, FontType fonttype)
 {

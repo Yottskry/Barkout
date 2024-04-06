@@ -9,7 +9,7 @@
 #include "app.h"
 #include "brick.h"
 #include "cat.h"
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <math.h>
 

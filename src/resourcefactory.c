@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL.h>
 #include <assert.h>
 #include "resourcefactory.h"
 //#include "vector.h"

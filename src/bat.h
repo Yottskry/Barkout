@@ -5,7 +5,7 @@
 #include "bounds.h"
 #include "bonus.h"
 #include <stdbool.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 typedef enum { psNormal = 79, psLong = 120, psShort = 60 } Playersize;
 typedef enum { plNormal, plShort, plLong, plSticky, plLaser } Playerstate;
