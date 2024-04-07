@@ -329,6 +329,8 @@ int main(int argc, char** argv)
     }
 	}
 
+	Config* config = config_load();
+
   text_loadfonts(&app);
 
 	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
@@ -402,8 +404,6 @@ int main(int argc, char** argv)
                   .alpha = 255,
                   .multiplier = 1
                 };
-
-  Config* config = config_load();
 
   Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 240, .app=&app };
   MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick, NULL);

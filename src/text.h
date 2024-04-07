@@ -2,6 +2,7 @@
 #define _TEXT_H_
 
 #include "app.h"
+#include "config.h"
 #include <assert.h>
 #include <stdbool.h>
 

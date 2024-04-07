@@ -1,0 +1,704 @@
+# depslib dependency file v1.0
+1701389518 source:/home/pi/Projects/Barkanoid/animation.c
+	"animation.h"
+
+1701389492 /home/pi/Projects/Barkanoid/animation.h
+	<SDL.h>
+
+1655759121 /usr/include/SDL2/SDL.h
+	"SDL_main.h"
+	"SDL_stdinc.h"
+	"SDL_assert.h"
+	"SDL_atomic.h"
+	"SDL_audio.h"
+	"SDL_clipboard.h"
+	"SDL_cpuinfo.h"
+	"SDL_endian.h"
+	"SDL_error.h"
+	"SDL_events.h"
+	"SDL_filesystem.h"
+	"SDL_gamecontroller.h"
+	"SDL_haptic.h"
+	"SDL_hints.h"
+	"SDL_joystick.h"
+	"SDL_loadso.h"
+	"SDL_log.h"
+	"SDL_messagebox.h"
+	"SDL_metal.h"
+	"SDL_mutex.h"
+	"SDL_power.h"
+	"SDL_render.h"
+	"SDL_rwops.h"
+	"SDL_sensor.h"
+	"SDL_shape.h"
+	"SDL_system.h"
+	"SDL_thread.h"
+	"SDL_timer.h"
+	"SDL_version.h"
+	"SDL_video.h"
+	"SDL_locale.h"
+	"SDL_misc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_main.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_stdinc.h
+	"SDL_config.h"
+	<sys/types.h>
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<stdarg.h>
+	<stdlib.h>
+	<malloc.h>
+	<stddef.h>
+	<stdarg.h>
+	<memory.h>
+	<string.h>
+	<strings.h>
+	<wchar.h>
+	<inttypes.h>
+	<stdint.h>
+	<ctype.h>
+	<math.h>
+	<float.h>
+	<alloca.h>
+	<malloc.h>
+	<malloc.h>
+	<malloc.h>
+	<stdlib.h>
+	<sal.h>
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_config.h
+	<SDL2/_real_SDL_config.h>
+
+1655759121 /usr/include/SDL2/begin_code.h
+
+1655759121 /usr/include/SDL2/close_code.h
+
+1655759121 /usr/include/SDL2/SDL_assert.h
+	"SDL_config.h"
+	"begin_code.h"
+	<signal.h>
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_atomic.h
+	"SDL_stdinc.h"
+	"SDL_platform.h"
+	"begin_code.h"
+	<sys/cpuinline.h>
+	<mbarrier.h>
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_platform.h
+	"AvailabilityMacros.h"
+	"TargetConditionals.h"
+	<winapifamily.h>
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_audio.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_endian.h"
+	"SDL_mutex.h"
+	"SDL_thread.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_error.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_endian.h
+	"SDL_stdinc.h"
+	<endian.h>
+	<endian.h>
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_mutex.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_thread.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_atomic.h"
+	"SDL_mutex.h"
+	"begin_code.h"
+	<process.h>
+	<process.h>
+	<stdlib.h>
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_rwops.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_clipboard.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_cpuinfo.h
+	"SDL_stdinc.h"
+	<intrin.h>
+	<intrin.h>
+	<altivec.h>
+	<arm_neon.h>
+	<armintr.h>
+	<arm_neon.h>
+	<arm64intr.h>
+	<arm64_neon.h>
+	<mm3dnow.h>
+	<immintrin.h>
+	<mmintrin.h>
+	<xmmintrin.h>
+	<emmintrin.h>
+	<pmmintrin.h>
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_events.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"SDL_keyboard.h"
+	"SDL_mouse.h"
+	"SDL_joystick.h"
+	"SDL_gamecontroller.h"
+	"SDL_quit.h"
+	"SDL_gesture.h"
+	"SDL_touch.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_video.h
+	"SDL_stdinc.h"
+	"SDL_pixels.h"
+	"SDL_rect.h"
+	"SDL_surface.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_pixels.h
+	"SDL_stdinc.h"
+	"SDL_endian.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_rect.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_pixels.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_surface.h
+	"SDL_stdinc.h"
+	"SDL_pixels.h"
+	"SDL_rect.h"
+	"SDL_blendmode.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_blendmode.h
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_keyboard.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_keycode.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_keycode.h
+	"SDL_stdinc.h"
+	"SDL_scancode.h"
+
+1655759121 /usr/include/SDL2/SDL_scancode.h
+	"SDL_stdinc.h"
+
+1655759121 /usr/include/SDL2/SDL_mouse.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_joystick.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_gamecontroller.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_rwops.h"
+	"SDL_sensor.h"
+	"SDL_joystick.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_sensor.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_quit.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+
+1655759121 /usr/include/SDL2/SDL_gesture.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"SDL_touch.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_touch.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_filesystem.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_haptic.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_joystick.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_hints.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_loadso.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_log.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_messagebox.h
+	"SDL_stdinc.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_metal.h
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_power.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_render.h
+	"SDL_stdinc.h"
+	"SDL_rect.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_shape.h
+	"SDL_stdinc.h"
+	"SDL_pixels.h"
+	"SDL_rect.h"
+	"SDL_surface.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_system.h
+	"SDL_stdinc.h"
+	"SDL_keyboard.h"
+	"SDL_render.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_timer.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_version.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_locale.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1655759121 /usr/include/SDL2/SDL_misc.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1700504928 source:/home/pi/Projects/Barkanoid/animationfactory.c
+	<stdio.h>
+	<stdlib.h>
+	<SDL.h>
+	<assert.h>
+	"animationfactory.h"
+	"animation.h"
+
+1699552341 /home/pi/Projects/Barkanoid/animationfactory.h
+	<SDL.h>
+	<SDL_image.h>
+	"animation.h"
+
+1580767326 /usr/include/SDL2/SDL_image.h
+	"SDL.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1712317227 source:/home/pi/Projects/Barkanoid/barkanoid.c
+	"resourcefactory.h"
+	"arena.h"
+	"app.h"
+	"text.h"
+	"intro.h"
+	"cat.h"
+	"scores.h"
+	"config.h"
+	"menu.h"
+	<time.h>
+	<stdio.h>
+	<SDL.h>
+	<SDL_ttf.h>
+	<stdbool.h>
+
+1706867864 /home/pi/Projects/Barkanoid/ball.h
+	"brick.h"
+	"bounds.h"
+	<stdbool.h>
+
+1709996603 source:/home/pi/Projects/Barkanoid/ball.c
+	"ball.h"
+	"config.h"
+
+1712080296 /home/pi/Projects/Barkanoid/arena.h
+	"resourcefactory.h"
+	"bounds.h"
+	"bonus.h"
+	"bat.h"
+	"ball.h"
+	"app.h"
+	"brick.h"
+	"cat.h"
+	<SDL_mixer.h>
+	<stdio.h>
+	<math.h>
+
+1712048085 /home/pi/Projects/Barkanoid/brick.h
+	"resourcefactory.h"
+	<stdbool.h>
+
+1712316203 source:/home/pi/Projects/Barkanoid/arena.c
+	"arena.h"
+	"config.h"
+	<dirent.h>
+	<windows.h>
+
+1709118099 source:/home/pi/Projects/Barkanoid/bat.c
+	"bat.h"
+
+1705915364 /home/pi/Projects/Barkanoid/bat.h
+	"resourcefactory.h"
+	"bounds.h"
+	"bonus.h"
+	<stdbool.h>
+	<SDL.h>
+
+1666977570 /usr/include/SDL2/SDL_ttf.h
+	"SDL.h"
+	"begin_code.h"
+	"close_code.h"
+
+1712317677 source:/home/pi/Projects/Barkanoid/text.c
+	"text.h"
+	<SDL.h>
+	<SDL_ttf.h>
+
+1712271817 /home/pi/Projects/Barkanoid/text.h
+	"app.h"
+	<assert.h>
+	<stdbool.h>
+
+1712226898 /home/pi/Projects/Barkanoid/app.h
+	<SDL.h>
+	<SDL_ttf.h>
+	<SDL_mixer.h>
+	<stdbool.h>
+
+1712317324 /home/pi/Projects/Barkanoid/resourcefactory.h
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+
+1611309578 /usr/include/SDL2/SDL_mixer.h
+	"SDL_stdinc.h"
+	"SDL_rwops.h"
+	"SDL_audio.h"
+	"SDL_endian.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1712067625 source:/home/pi/Projects/Barkanoid/resourcefactory.c
+	<stdio.h>
+	<stdlib.h>
+	<SDL.h>
+	<assert.h>
+	"resourcefactory.h"
+
+1704565464 /home/pi/Projects/Barkanoid/bounds.h
+	<stdbool.h>
+
+1711120807 /home/pi/Projects/Barkanoid/bonus.h
+	"resourcefactory.h"
+	"bounds.h"
+
+1702058853 /home/pi/Projects/Barkanoid/intro.h
+	"resourcefactory.h"
+
+1702229797 source:/home/pi/Projects/Barkanoid/intro.c
+	"intro.h"
+	<math.h>
+
+1711540730 /home/pi/Projects/Barkanoid/cat.h
+	"bounds.h"
+	"brick.h"
+	"ball.h"
+	"resourcefactory.h"
+
+1704878062 source:/home/pi/Projects/Barkanoid/bounds.c
+	"bounds.h"
+
+1711299206 source:/home/pi/Projects/Barkanoid/cat.c
+	"cat.h"
+
+1704563062 source:/home/pi/Projects/Barkanoid/scores.c
+	"scores.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<windows.h>
+	<winreg.h>
+	<sys/stat.h>
+
+1704562763 /home/pi/Projects/Barkanoid/scores.h
+
+1711378174 /home/pi/Projects/Barkanoid/config.h
+	<stdio.h>
+	<stdbool.h>
+
+1711378143 source:/home/pi/Projects/Barkanoid/config.c
+	"config.h"
+	<stdlib.h>
+	<string.h>
+	<windows.h>
+	<winreg.h>
+	<sys/stat.h>
+
+1712221742 source:/home/pi/Projects/Barkanoid/menu.c
+	"menu.h"
+	"config.h"
+
+1711388678 /home/pi/Projects/Barkanoid/menu.h
+	"app.h"
+	"text.h"
+	<stdbool.h>
+
+1709029088 source:/home/pi/Projects/Barkanoid/bonus.c
+	"bonus.h"
+
+1712508678 source:/home/pi/Projects/Barkanoid/src/arena.c
+	"arena.h"
+	"config.h"
+	<assert.h>
+	<dirent.h>
+	<windows.h>
+
+1712508405 /home/pi/Projects/Barkanoid/src/arena.h
+	"resourcefactory.h"
+	"bounds.h"
+	"bonus.h"
+	"bat.h"
+	"ball.h"
+	"app.h"
+	"brick.h"
+	"cat.h"
+	<SDL2/SDL_mixer.h>
+	<stdio.h>
+	<math.h>
+
+1712508001 /home/pi/Projects/Barkanoid/src/resourcefactory.h
+	"config.h"
+	<SDL2/SDL.h>
+	<SDL2/SDL_image.h>
+	<SDL2/SDL_mixer.h>
+
+1704565464 /home/pi/Projects/Barkanoid/src/bounds.h
+	<stdbool.h>
+
+1711120807 /home/pi/Projects/Barkanoid/src/bonus.h
+	"resourcefactory.h"
+	"bounds.h"
+
+1712349613 /home/pi/Projects/Barkanoid/src/bat.h
+	"resourcefactory.h"
+	"bounds.h"
+	"bonus.h"
+	<stdbool.h>
+	<SDL2/SDL.h>
+
+1706867864 /home/pi/Projects/Barkanoid/src/ball.h
+	"brick.h"
+	"bounds.h"
+	<stdbool.h>
+
+1712048085 /home/pi/Projects/Barkanoid/src/brick.h
+	"resourcefactory.h"
+	<stdbool.h>
+
+1712349572 /home/pi/Projects/Barkanoid/src/app.h
+	<SDL2/SDL.h>
+	<SDL2/SDL_ttf.h>
+	<SDL2/SDL_mixer.h>
+	<stdbool.h>
+
+1711540730 /home/pi/Projects/Barkanoid/src/cat.h
+	"bounds.h"
+	"brick.h"
+	"ball.h"
+	"resourcefactory.h"
+
+1712508525 /home/pi/Projects/Barkanoid/src/config.h
+	<stdio.h>
+	<stdbool.h>
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/ball.c
+	"ball.h"
+	"config.h"
+
+1712349578 source:/home/pi/Projects/Barkanoid/src/barkanoid.c
+	"resourcefactory.h"
+	"arena.h"
+	"app.h"
+	"text.h"
+	"intro.h"
+	"cat.h"
+	"scores.h"
+	"config.h"
+	"menu.h"
+	<time.h>
+	<stdio.h>
+	<SDL2/SDL.h>
+	<SDL2/SDL_ttf.h>
+	<stdbool.h>
+
+1712508090 /home/pi/Projects/Barkanoid/src/text.h
+	"app.h"
+	"config.h"
+	<assert.h>
+	<stdbool.h>
+
+1702058853 /home/pi/Projects/Barkanoid/src/intro.h
+	"resourcefactory.h"
+
+1704562763 /home/pi/Projects/Barkanoid/src/scores.h
+
+1711388678 /home/pi/Projects/Barkanoid/src/menu.h
+	"app.h"
+	"text.h"
+	<stdbool.h>
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/bat.c
+	"bat.h"
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/bonus.c
+	"bonus.h"
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/bounds.c
+	"bounds.h"
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/cat.c
+	"cat.h"
+
+1712508511 source:/home/pi/Projects/Barkanoid/src/config.c
+	"config.h"
+	<stdlib.h>
+	<string.h>
+	<windows.h>
+	<winreg.h>
+	<sys/stat.h>
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/intro.c
+	"intro.h"
+	<math.h>
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/menu.c
+	"menu.h"
+	"config.h"
+
+1712349756 source:/home/pi/Projects/Barkanoid/src/resourcefactory.c
+	<stdio.h>
+	<stdlib.h>
+	<assert.h>
+	"resourcefactory.h"
+
+1712333413 source:/home/pi/Projects/Barkanoid/src/scores.c
+	"scores.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<windows.h>
+	<winreg.h>
+	<sys/stat.h>
+
+1712349810 source:/home/pi/Projects/Barkanoid/src/text.c
+	"text.h"
+	<SDL2/SDL.h>
+	<SDL2/SDL_ttf.h>
+

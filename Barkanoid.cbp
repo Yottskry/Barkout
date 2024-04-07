@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Barkanoid" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Barkanoid" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-fsanitize=address" />
+				</Compiler>
+				<Linker>
+					<Add library="asan" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Barkanoid" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add option="`sdl2-config --cflags`" />
+			<Add option="-Wstringop-overflow" />
+		</Compiler>
+		<Linker>
+			<Add library="SDL2" />
+			<Add library="SDL2_ttf" />
+			<Add library="SDL2_mixer" />
+			<Add library="SDL2_image" />
+			<Add library="m" />
+		</Linker>
+		<Unit filename="src/app.h" />
+		<Unit filename="src/arena.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/arena.h" />
+		<Unit filename="src/ball.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/ball.h" />
+		<Unit filename="src/barkanoid.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/bat.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/bat.h" />
+		<Unit filename="src/bonus.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/bonus.h" />
+		<Unit filename="src/bounds.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/bounds.h" />
+		<Unit filename="src/brick.h" />
+		<Unit filename="src/cat.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/cat.h" />
+		<Unit filename="src/config.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/config.h" />
+		<Unit filename="src/intro.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/intro.h" />
+		<Unit filename="src/menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/menu.h" />
+		<Unit filename="src/resourcefactory.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/resourcefactory.h" />
+		<Unit filename="src/scores.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/scores.h" />
+		<Unit filename="src/text.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/text.h" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>

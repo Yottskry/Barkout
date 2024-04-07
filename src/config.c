@@ -16,6 +16,7 @@ Config* config_load()
   config.brickparticles = 15;
   config.trailparticles = 20;
   config.controlmethod = cmClassic;
+  config.installed = false;
 
   #ifdef _WIN32
   HKEY newKey;
@@ -53,7 +54,22 @@ Config* config_load()
     //fscanf(datafile, "BRICKPARTICLES:%d", &config.brickparticles);
     fclose(datafile);
   }
+
+  // Test for installed resource file
+
+  #ifdef INSTALLDIR
+  FILE *testfile = fopen(INSTALLDIR "/Sprites/ball.png", "r");
+  if(testfile != NULL)
+  {
+    config.installed = true;
+    fclose(testfile);
+  }
+  #endif // INSTALLDIR
+
   #endif
+
+
+
   return &config;
 }
 
@@ -70,6 +86,11 @@ int config_gettrailparticles()
 ControlMethod config_getcontrolmethod()
 {
   return config.controlmethod;
+}
+
+bool config_getinstalled()
+{
+  return config.installed;
 }
 
 void config_setbrickparticles(int brickparticles)

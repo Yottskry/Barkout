@@ -1,10 +1,12 @@
 # Autoconf file to generate ./configure script
+# Call autoreconf --install to generate ./configure, then ./configure uses Makefile.am to create a Makefile
 
 # Init autoconf and specify package name, version, email, gnu name and URL
 AC_INIT([barkout], [1.0], [fathorsegames@retrojunkies.co.uk], [barkout], [https://www.retrojunkies.co.uk])
 AM_INIT_AUTOMAKE(foreign)
 # Specify the compiler CXX for C++, CC for C
 AC_PROG_CC
+# Check certain libraries exist.
 PKG_CHECK_MODULES([SDL2], [sdl2 >= 2.0.14])
 PKG_CHECK_MODULES([SDL2_image], [SDL2_image]) 
 PKG_CHECK_MODULES([SDL2_mixer], [SDL2_mixer])

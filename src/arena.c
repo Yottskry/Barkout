@@ -45,11 +45,11 @@ char* arena_loadbinary(char* fname)
 int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 {
   arena->numlevels = 0;
+  char apath[255] = "./Levels/";
 
   #ifdef INSTALLDIR
-  char apath[255] = INSTALLDIR "/Levels/";
-  #else
-  char apath[255] = "./Levels/";
+  if(config_getinstalled())
+    strcpy(apath, INSTALLDIR "/Levels/");
   #endif
 
   #ifndef _WIN32
@@ -67,7 +67,8 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
         continue;
       int len = strlen(dir->d_name);
       char* cpy = calloc(sizeof(char), len+1);
-      strncpy(cpy, dir->d_name, len);
+      //strncpy(cpy, dir->d_name, len+1);
+      strcpy(cpy, dir->d_name);
       if(strcmp(cpy+(len-4), ".lvl")==0)
         arena->numlevels++;
       free(cpy);
@@ -105,11 +106,13 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     if(i == arena->numlevels-1)
       level->onlevelend = arena_finallevelend;
 
-    #ifdef INSTALLDIR
-    char apath[255] = INSTALLDIR "/Levels/";
-    #else
     char apath[255] = "./Levels/";
-    #endif
+
+    #ifdef INSTALLDIR
+    if(config_getinstalled())
+      strcpy(apath, INSTALLDIR "/Levels/");
+    #endif // INSTALLDIR
+
 
     char fname[20] = "";
     sprintf(fname, "/level%d.lvl", level->level);

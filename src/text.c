@@ -101,11 +101,13 @@ bool text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y)
 // private - not in header
 TTF_Font* text_loadfont(const char* filename, int ptsize)
 {
-  #ifdef INSTALLDIR
-  char apath[255] = INSTALLDIR "/Fonts/";
-  #else
   char apath[255] = "./Fonts/";
-  #endif
+  #ifdef INSTALLDIR
+  if(config_getinstalled())
+    strcpy(apath, INSTALLDIR "/Fonts/");
+  #endif // INSTALLDIR
+
+
   strcat(apath, filename);
 
   printf("Loading %s \n", apath);

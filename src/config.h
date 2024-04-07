@@ -11,12 +11,14 @@ typedef struct {
   int brickparticles;
   int trailparticles;
   bool fullscreen;
+  bool installed;
 } Config;
 
 Config* config_load();
 int config_getbrickparticles();
 int config_gettrailparticles();
 ControlMethod config_getcontrolmethod();
+bool config_getinstalled();
 void config_setbrickparticles(int brickparticles);
 void config_settrailparticles(int brickparticles);
 void config_setcontrolmethod(ControlMethod method);
