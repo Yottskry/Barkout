@@ -68,6 +68,7 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "grey_broken.png", "grey-broken", 44, 29);
   af_loadanimation(f, renderer, "grey_repair.png", "grey-repair", 44, 29);
   af_loadanimation(f, renderer, "boss.png", "boss", 124, 104);
+  af_loadanimation(f, renderer, "FatHorseGames.png", "logo", 100, 100);
 
 
   // And some sound
@@ -646,6 +647,7 @@ int main(int argc, char** argv)
       if(titlefinished){
         a_drawsprite(&intro, app.renderer, 200, 160);
         text_drawflashtext(&app, &pressstart, 260, 220, 2);
+        //a_drawstaticframe(af_getanimation(&f, "logo"), app.renderer, 700, 500, 0, 255);
       }
 
       intro_movestars(stars);
@@ -664,6 +666,7 @@ int main(int argc, char** argv)
       // problem is that on our next loop, if we've changed
       // to gsNewLevel we draw one single frame of the previous
       // level layout
+      a_drawstaticframe(af_getanimation(&f, "logo"), app.renderer, 700, 500, 0, 255);
     }
 
     if((app.gamestate == gsCredits) || (app.gamestate == gsHelp))

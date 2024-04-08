@@ -113,7 +113,8 @@ SPRITES = 	Sprites/ball-deadly.png \
 		Sprites/white_top.png \
 		Sprites/wormhole2.png \
 		Sprites/wormhole.png \
-		Sprites/yellow.png
+		Sprites/yellow.png \
+		Sprites/FatHorseGames.png
 
 # nobase tells it to include the prefixing directory names in the destination (i.e. not just dump the files into the single data folder)
 nobase_dist_pkgdata_DATA = $(FONTS) $(LEVELS) $(SOUNDS) $(SPRITES)
