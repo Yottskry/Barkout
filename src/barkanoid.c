@@ -7,6 +7,7 @@
 #include "scores.h"
 #include "config.h"
 #include "menu.h"
+#include "levels.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
@@ -289,6 +290,51 @@ void drawcredits(App* app)
 int main(int argc, char** argv)
 {
   srand(time(0));
+  Uint32 flags = SDL_WINDOW_OPENGL;
+  int startlevel = 1;
+  bool binarylevels = true;
+  char customlevelfile[255] = "";
+  bool customlevels = false;
+  // Test parameters here before initialising anything
+  // as we may only be compiling a level file
+  for(int i = 0; i < argc; i++)
+	{
+    // Play fullscreen
+    if(strcmp(argv[i], "-f") == 0)
+    {
+      flags |= SDL_WINDOW_FULLSCREEN;
+    }
+    // Select starting level
+    if(strcmp(argv[i], "-l") == 0)
+    {
+      if(i+1 < argc)
+        sscanf(argv[i+1], "%d", &startlevel);
+    }
+    // Compile a level file
+    if(strcmp(argv[i], "-c") == 0)
+    {
+      char folder[255];
+      if(i+1 < argc)
+        sscanf(argv[i+1], "%s", folder);
+      levels_compile(folder, ".");
+      // Compile level file and quit
+      return 0;
+    }
+    // Load uncompressed level files
+    if(strcmp(argv[i], "-u") == 0)
+    {
+      binarylevels = false;
+    }
+    // Load custom compressed level file
+    if(strcmp(argv[i], "-f") == 0)
+    {
+      binarylevels = true;
+      customlevels = true;
+      if(i+1 < argc)
+        sscanf(argv[i+1], "%s", customlevelfile);
+    }
+
+	}
 
 	App app;
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -312,23 +358,10 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	int startlevel = 1;
-	Uint32 flags = SDL_WINDOW_OPENGL;
   config_setfullscreen(false);
 
-	for(int i = 0; i < argc; i++)
-	{
-    if(strcmp(argv[i], "-f") == 0)
-    {
-      flags |= SDL_WINDOW_FULLSCREEN;
-      config_setfullscreen(true);
-    }
-    if(strcmp(argv[i], "-l") == 0)
-    {
-      if(i+1 < argc)
-        sscanf(argv[i+1], "%d", &startlevel);
-    }
-	}
+	if((flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
+    config_setfullscreen(true);
 
 	Config* config = config_load();
 
@@ -420,7 +453,23 @@ int main(int argc, char** argv)
 
 	SDL_ShowCursor(SDL_DISABLE);
 
-  arena_loadlevels(&arena, &f);
+  if(binarylevels)
+  {
+    char* levelfile = "levels.dat";
+    char apath[255] = "./Levels/";
+
+    #ifdef INSTALLDIR
+    if(config_getinstalled())
+      strcpy(apath, INSTALLDIR "/Levels/");
+    #endif
+    strcat(apath, levelfile);
+    if(customlevels)
+      arena_loadbinary(&f, &arena, customlevelfile);
+    else
+      arena_loadbinary(&f, &arena, apath);
+  }
+  else
+    arena_loadlevels(&arena, &f);
 
   int hi = loadhighscore();
 

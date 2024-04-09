@@ -17,6 +17,7 @@ barkout_SOURCES = src/barkanoid.c src/app.h src/brick.h \
 		src/cat.c src/cat.h \
 		src/config.c src/config.h \
 		src/intro.c src/intro.h \
+		src/levels.c src.levels.h \
 		src/menu.c src/menu.h \
 		src/resourcefactory.c src/resourcefactory.h \
 		src/scores.c src/scores.h \
@@ -25,31 +26,31 @@ barkout_SOURCES = src/barkanoid.c src/app.h src/brick.h \
 FONTS = 	Fonts/Nordine.ttf \
 		Fonts/Vectroid.otf \
 		Fonts/Oxanium-Light.ttf
-LEVELS = 	Levels/level1.lvl \
-		Levels/level2.lvl \
-		Levels/level3.lvl \
-		Levels/level4.lvl \
-		Levels/level5.lvl \
-		Levels/level6.lvl \
-		Levels/level7.lvl \
-		Levels/level8.lvl \
-		Levels/level9.lvl \
-		Levels/level10.lvl \
-		Levels/level11.lvl \
-		Levels/level12.lvl \
-		Levels/level13.lvl \
-		Levels/level14.lvl \
-		Levels/level15.lvl \
-		Levels/level16.lvl \
-		Levels/level17.lvl \
-		Levels/level18.lvl \
-		Levels/level19.lvl \
-		Levels/level20.lvl \
-		Levels/level21.lvl \
-		Levels/level22.lvl \
-		Levels/level23.lvl \
-		Levels/level24.lvl \
-		Levels/level25.lvl
+#LEVELS = 	Levels/level1.lvl \
+#		Levels/level2.lvl \
+#		Levels/level3.lvl \
+#		Levels/level4.lvl \
+#		Levels/level5.lvl \
+#		Levels/level6.lvl \
+#		Levels/level7.lvl \
+#		Levels/level8.lvl \
+#		Levels/level9.lvl \
+#		Levels/level10.lvl \
+#		Levels/level11.lvl \
+#		Levels/level12.lvl \
+#		Levels/level13.lvl \
+#		Levels/level14.lvl \
+#		Levels/level15.lvl \
+#		Levels/level16.lvl \
+#		Levels/level17.lvl \
+#		Levels/level18.lvl \
+#		Levels/level19.lvl \
+#		Levels/level20.lvl \
+#		Levels/level21.lvl \
+#		Levels/level22.lvl \
+#		Levels/level23.lvl \
+#		Levels/level24.lvl \
+#		Levels/level25.lvl
 SOUNDS = 	Sounds/barkanoid-1up.wav \
 		Sounds/barkanoid-bat.wav \
 		Sounds/barkanoid-brick.wav \
@@ -117,7 +118,7 @@ SPRITES = 	Sprites/ball-deadly.png \
 		Sprites/FatHorseGames.png
 
 # nobase tells it to include the prefixing directory names in the destination (i.e. not just dump the files into the single data folder)
-nobase_dist_pkgdata_DATA = $(FONTS) $(LEVELS) $(SOUNDS) $(SPRITES)
+nobase_dist_pkgdata_DATA = $(FONTS) $(SOUNDS) $(SPRITES) Levels/levels.dat
 
 # Flags passed to the C Preprocessor; in this case the install directory
 # The game tests if an installed file exists and then sets a variable (see config.c)

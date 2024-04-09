@@ -9,12 +9,11 @@
 #include "app.h"
 #include "brick.h"
 #include "cat.h"
+#include "levels.h"
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <math.h>
 
-#define BRICKW 40
-#define BRICKH 25
 #define MAXBULLETS 10
 #define MAXSPEED 12
 #define BRICKSCORE 10
@@ -28,22 +27,6 @@ typedef struct
   int y;
   int speed;
 } Bullet;
-
-typedef struct
-{
-  int level;
-  int brickcount;
-  int catterycount;
-  int spawnx;
-  int spawny;
-  int maxbonuslevel;
-  Animation* bg;
-  Animation* mg;
-  Animation* fg;
-  Brick** bricks;
-  Cattery** catteries;
-  void (*onlevelend)(void*);
-} Level;
 
 typedef struct
 {
@@ -75,6 +58,7 @@ typedef struct
 } Arena;
 
 // Level related functions
+int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname);
 int arena_loadlevels(Arena* arena, ResourceFactory* factory);
 
 void arena_loadbricks(Arena* arena, int level);
@@ -104,8 +88,6 @@ void arena_freebullets(Arena* arena);
 void arena_checkbulletcollisions(Arena* arena);
 
 void arena_drawlives(Arena* arena, App* app);
-void arena_brickfinished(void* sender, void* data);
-void arena_brickrepaired(void* sender, void* data);
 
 void arena_finallevelend(void* sender);
 void arena_resetexplosions(Arena* arena);

@@ -16,30 +16,87 @@
 
 */
 
-char* arena_loadbinary(char* fname)
+int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname)
 {
-  Uint32 i;
+  int count = 0;
 
   FILE* f = fopen(fname, "rb");
-  fread(&i, sizeof(Uint32), 1, f);
-  Uint32 fsize = i;
-  char* rowdata = calloc(i + 1, sizeof(Uint32));
-  int j = 0;
-  for(Uint32 x = 0; x < fsize; x++)
+
+  assert(f != NULL);
+  // Read number of levels
+  fread(&count, sizeof(int), 1, f);
+
+  arena->numlevels = count;
+  arena->levels = malloc(arena->numlevels * sizeof(Level));
+
+  // Loop through levels
+  for(int i = 0; i < count; i++)
   {
-    fread(&i, sizeof(Uint32), 1, f);
-    i = i ^ 0xFFFFFFFF;
-    // Got four characters.
-    if ((i & 0x000000FF) != 0)
-      rowdata[j++] = i & 0x000000FF;
-    if (((i & 0x0000FF00) >> (1 * 8)) != 0)
-      rowdata[j++] = ((i & 0x0000FF00) >> (1 * 8));
-    if (((i & 0x00FF0000) >> (1 * 8)) != 0)
-      rowdata[j++] = ((i & 0x00FF0000) >> (2 * 8));
-    if (((i & 0xFF000000) >> (1 * 8)) != 0)
-      rowdata[j++] = ((i & 0xFF000000) >> (3 * 8));
-  }
-  return rowdata;
+    int levelsize = 0;
+    // How many bytes for this level?
+    fread(&levelsize, sizeof(int), 1, f);
+
+    // We know levels are going to be small, so read the whole level in one go
+    char buffer[levelsize + 1]; // Allow space for a LF
+    memset(buffer, 0, levelsize + 1);
+    size_t bytesread = fread(buffer, sizeof(char), levelsize, f);
+
+    for(int j = 0; j < levelsize; j++)
+    {
+      // Flip the bits (input file obfuscated slightly)
+      buffer[j] = buffer[j] ^ 0xFF;
+    }
+
+    // Now what? Buffer is basically the level file.
+    // Could just build the level data from this point.
+    Level* level = &(arena->levels[i]);
+    level->bricks = NULL;
+    level->onlevelend = NULL;
+    level->maxbonuslevel = 8;
+    level->brickcount = 0;
+
+    if(i == arena->numlevels-1)
+      level->onlevelend = arena_finallevelend;
+
+    int brickno = 0;
+    int row = 0;
+
+    // strtok treats contiguous delimiters as a single delimiter, so whether we end in \n oe \r\n it will work
+    char* rowdata = strtok(buffer, "\r\n");
+    // First row is the background
+    char bgname[4] = "";
+    char mgname[8] = "";
+    char fgname[8] = "";
+    strcpy(bgname, buffer);
+    strcpy(mgname, bgname);
+    strcpy(fgname, bgname);
+    strcat(mgname, "-mg");
+    strcat(fgname, "-fg");
+    level->bg = af_getanimation(factory, bgname);
+    level->mg = af_getanimation(factory, mgname);
+    level->fg = af_getanimation(factory, fgname);
+    level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
+    level->spawny = arena->bounds.top;
+    level->catterycount = 0;
+    level->catteries = NULL;
+
+    rowdata = strtok(NULL, "\r\n");
+    // If there was no max bonus level specified in the file, don't get another token
+    if(sscanf(rowdata, "%d", &level->maxbonuslevel) == 1)
+      rowdata = strtok(NULL, "\r\n");
+    // Read each line. This is the row position.
+    // Next token should be the level data itself
+
+    while(rowdata != NULL)
+    {
+      levels_processrow(factory, level, &(arena->bounds), rowdata, row, &brickno);
+      rowdata = strtok(NULL, "\r\n");
+      row++;
+    }
+  } // end level
+
+  fclose(f);
+  return 0;
 }
 
 int arena_loadlevels(Arena* arena, ResourceFactory* factory)
@@ -67,7 +124,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
         continue;
       int len = strlen(dir->d_name);
       char* cpy = calloc(sizeof(char), len+1);
-      //strncpy(cpy, dir->d_name, len+1);
+
       strcpy(cpy, dir->d_name);
       if(strcmp(cpy+(len-4), ".lvl")==0)
         arena->numlevels++;
@@ -116,7 +173,6 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
 
     char fname[20] = "";
     sprintf(fname, "/level%d.lvl", level->level);
-
     strcat(apath, fname);
 
 
@@ -132,8 +188,6 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     level->brickcount = 0;
     int brickno = 0;
     int row = 0;
-    //arena->remaining = 0;
-
     //char* rowdata = strtok(rows, "\r\n");
 
     char bgname[4] = "bg1";
@@ -166,117 +220,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
   //rowdata = strtok(NULL, "\r\n");
     //while(rowdata != NULL)
     {
-      // Read each character. This is the column.
-      for(size_t col = 0; col < strlen(rowdata); col++)
-      {
-        if(rowdata[col] == '.')
-          continue;
-
-        if(rowdata[col] == '@')
-        {
-          level->spawnx = arena->bounds.left + (col * BRICKW);
-          level->spawny = arena->bounds.top + (row * BRICKH);
-          continue;
-        }
-
-        Brick* brick;
-
-        level->bricks = realloc(level->bricks, sizeof(Brick*) * ++level->brickcount);
-        level->bricks[brickno] = malloc(sizeof(Brick));
-
-        brick = level->bricks[brickno];
-        brick->isdead = false;
-        brick->left = arena->bounds.left + (col * BRICKW);
-        brick->right = arena->bounds.left + (col * BRICKW) + BRICKW;
-        brick->top = arena->bounds.top + (row * BRICKH);
-        brick->bottom = arena->bounds.top + (row * BRICKH) + BRICKH;
-        brick->starthitcount = 1;
-        brick->sprite = malloc(sizeof(Sprite));
-        brick->type = btNormal;
-        brick->solidedges = eNone;
-        brick->counter = 0;
-        brick->sprite->onanimfinished = NULL;
-        brick->sprite->data = NULL;
-        brick->sprite->sender = NULL;
-        Animation* brickanim;
-        char c = rowdata[col];
-        switch(c){
-          case 'r':
-            brickanim = af_getanimation(factory, "red");
-          break;
-          case 'b':
-            brickanim = af_getanimation(factory, "blue");
-          break;
-          case 'g':
-            brickanim = af_getanimation(factory, "green");
-          break;
-          case 'p':
-            brickanim = af_getanimation(factory, "purple");
-          break;
-          case 'w':
-            brickanim = af_getanimation(factory, "yellow");
-          break;
-          case 'y':
-            brickanim = af_getanimation(factory, "grey");
-          break;
-          case 't':
-            brickanim = af_getanimation(factory, "white");
-          break;
-          case 'v':
-            brick->solidedges = eLeft | eRight | eBottom;
-            brickanim = af_getanimation(factory, "white-top");
-          break;
-          case '^':
-            brick->solidedges = eLeft | eRight | eTop;
-            brickanim = af_getanimation(factory, "green-bottom");
-          break;
-          case '#':
-            // Resurrecting bricks
-            brick->starthitcount = -1;
-            brickanim = af_getanimation(factory, "grey-broken");
-            brick->type = btResurrecting;
-            brick->sprite->sender = (void*)(brick);
-            brick->sprite->data = (void*)(factory);
-            brick->sprite->onanimfinished = arena_brickfinished;
-          break;
-          case 'G':
-            brick->starthitcount = 2;
-            brick->type = btHard;
-            brickanim = af_getanimation(factory, "darkgrey");
-          break;
-          case 'O':
-            brick->starthitcount = -1;
-            brick->type = btIndestructible;
-            // Not really necessary as we never test for this type of brick
-            brick->solidedges = eLeft | eRight | eTop | eBottom;
-            brickanim = af_getanimation(factory, "orange");
-          break;
-          case '*':
-            brick->starthitcount = -1;
-            brick->type = btWormhole;
-            brick->left = arena->bounds.left + (col * BRICKW) - (BRICKW / 2);
-            brick->right = arena->bounds.left + (col * BRICKW) + (BRICKW * 2);
-            brick->top = arena->bounds.top + (row * BRICKH) - (BRICKH / 2);
-            brick->bottom = arena->bounds.top + (row * BRICKH) + (BRICKH * 2);
-            brickanim = af_getanimation(factory, "wormhole");
-          break;
-          case '%':
-            // The boss brick!
-            brick->starthitcount = 32;
-            brick->right = arena->bounds.left + (col * BRICKW) + (BRICKW * 3);
-            brick->bottom = arena->bounds.top + (row * BRICKH) + (BRICKH * 4);
-            brickanim = af_getanimation(factory, "boss");
-          break;
-        }
-        brick->hitcount = brick->starthitcount;
-        brick->sprite->anim = brickanim;
-        brick->sprite->state = brick->type == btWormhole ? asLooping : asStatic;
-        brick->sprite->currentframe = 0;
-        brick->sprite->loop = brick->type == btWormhole ? 1 : 0;
-        brick->sprite->lastticks = 0;
-
-        brickno++;
-      }
+      levels_processrow(factory, level, &arena->bounds, rowdata, row, &brickno);
       row++;
       //rowdata = strtok(NULL, "\r\n");
     } // _WHERE_
@@ -1041,29 +985,6 @@ void arena_drawlives(Arena* arena, App* app)
 {
   for(int i = 0; i < arena->lives; i++)
     a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 40+(40*i), 560, 0, 255);
-}
-
-void arena_brickfinished(void* sender, void* data)
-{
-  Brick* brick = (Brick*)sender;
-  brick->counter = RESURRECTTIMER;
-  brick->sprite->currentframe = 0;
-  ResourceFactory* factory = (ResourceFactory*)data;
-  af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickrepaired, (void*)brick, (void*)factory);
-  // Set the animation to the reappearing animation here
-  // as the frame doesn't increase unless the sprite as
-  // drawn, and it won't draw while the counter > 0
-}
-
-void arena_brickrepaired(void* sender, void* data)
-{
-  // Repair animation has finished. Set it back to standard brick animation.
-  Brick* brick = (Brick*)sender;
-  brick->sprite->currentframe = 0;
-  ResourceFactory* factory = (ResourceFactory*)data;
-  af_setanimation(factory, brick->sprite, "grey-broken", 0, arena_brickfinished, (void*)brick, (void*)factory);
-  // We need to set this to prevent these two routines just calling each other forever
-  brick->sprite->state = asStatic;
 }
 
 void arena_finallevelend(void* sender)

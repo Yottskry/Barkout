@@ -33,7 +33,6 @@ void text_drawwrappedtext(App* app, const char* text, int x, int y, SDL_Color co
 {
   SDL_Color cWhite = {255,255,255,255};
   SDL_Surface* txt = TTF_RenderUTF8_Solid_Wrapped(app->font[fonttype], text, cWhite, len);
-  //SDL_Surface* txt = TTF_RenderUTF8_Solid(app->font, text, cWhite);
 
   assert(txt != NULL);
 
@@ -107,11 +106,7 @@ TTF_Font* text_loadfont(const char* filename, int ptsize)
     strcpy(apath, INSTALLDIR "/Fonts/");
   #endif // INSTALLDIR
 
-
   strcat(apath, filename);
-
-  printf("Loading %s \n", apath);
-
   return TTF_OpenFont(apath, ptsize);
 }
 
