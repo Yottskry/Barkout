@@ -56,7 +56,8 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "bat_small.png", "bat-s", 51, 27);
   af_loadanimation(f, renderer, "bat_long.png", "bat-l", 122, 27);
   af_loadanimation(f, renderer, "ball-deadly.png", "ball-deadly", 17, 17);
-  af_loadanimation(f, renderer, "barkanoid-intro.png", "intro", 400, 75);
+  //af_loadanimation(f, renderer, "barkanoid-intro.png", "intro", 400, 75);
+  af_loadanimation(f, renderer, "barkout-intro.png", "intro", 400, 75);
   af_loadanimation(f, renderer, "life.png", "life", 38, 16);
   af_loadanimation(f, renderer, "warp.png", "warp", 40, 80);
   af_loadanimation(f, renderer, "border.png", "border", 600, 600);
@@ -185,8 +186,8 @@ void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factor
 
 void drawarenatext(App* app, Arena* arena, int hi)
 {
-  text_drawtext(app, "BARKANOID", 612, 22, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawtext(app, "BARKANOID", 610, 20, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+  text_drawtext(app, "BARKOUT", 612, 22, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawtext(app, "BARKOUT", 610, 20, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 
   char highs[10] = "";
 
@@ -367,7 +368,7 @@ int main(int argc, char** argv)
 
   text_loadfonts(&app);
 
-	app.window = SDL_CreateWindow("Barkanoid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
+	app.window = SDL_CreateWindow("Barkout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
 
 	app.music = af_loadmusic("barkanoidiii.mp3");
@@ -442,7 +443,7 @@ int main(int argc, char** argv)
   Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 240, .app=&app };
   MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick, NULL);
   item = menu_additem(&menu, "Control method", (int*)&(config->controlmethod), NULL, NULL);
-  menu_additemoption(item, "Barkanoid", OPT2, (int)cmBarkanoid);
+  menu_additemoption(item, "Barkout", OPT2, (int)cmBarkanoid);
   menu_additemoption(item, "Classic", OPT1, (int)cmClassic);
   item = menu_additem(&menu, "Full screen", (int*)&(config->fullscreen), NULL, menu_fullscreentoggle);
   menu_additemoption(item, "Yes", "Stretch to full screen", 1);
