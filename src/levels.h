@@ -4,6 +4,7 @@
 #include "bounds.h"
 #include "brick.h"
 #include "cat.h"
+#include "app.h"
 #include "resourcefactory.h"
 #ifndef _WIN32
 #include <dirent.h>

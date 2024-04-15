@@ -156,11 +156,16 @@ void ball_drawball(Ball* ball, SDL_Renderer* renderer)
       if(a > 255)
         a = 255 - (a - 255);
 
+      SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
       if(ball->state == bsDeadly)
         SDL_SetRenderDrawColor(renderer, 255 - (ball->sparkles[i].gdiff * 2),255 - (ball->sparkles[i].gdiff),255,(Uint8)a);
       else
         SDL_SetRenderDrawColor(renderer, 255 - (ball->sparkles[i].gdiff * 2),255, 255 - (ball->sparkles[i].gdiff),(Uint8)a);
       SDL_RenderFillRect(renderer, &(SDL_Rect){.x = ball->sparkles[i].x, .y = ball->sparkles[i].y, .w = 2, .h = 2});
+
+      SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
       if(ball->sparkles[i].alpha < 12)
         ball->sparkles[i].alpha = 0;
       else

@@ -11,6 +11,17 @@
 #define ARENAW 520
 #define FONTCOUNT 3
 
+#define TEST_ALLOC(V) if(V == 0) \
+        { \
+          printf("Memory allocation failed\n"); \
+          exit(1); \
+        }
+#define TEST_LOADED(V) if(V == 0) \
+        { \
+          printf("File load failed\n"); \
+          exit(1); \
+        }
+
 typedef enum { gsTitle, gsMenu, gsStory, gsCredits, gsHelp, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused, gsQuit } Gamestate;
 
 typedef struct

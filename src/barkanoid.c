@@ -889,6 +889,7 @@ int main(int argc, char** argv)
       }
       arena_checkbulletcollisions(&arena);
       arena_batcollidesbonus(&arena, &player, &ball);
+      arena_movebricks(&arena);
     } // This one is an else because we need one loop between
       // change of app.gamestate for the Get Ready text to render.
 

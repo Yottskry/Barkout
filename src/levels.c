@@ -4,7 +4,7 @@ void levels_compile(const char* folder, const char* ofolder)
 {
   //loop through specified folder and find level files
   #ifndef _WIN32
-  int count = 0;
+  Uint32 count = 0;
   DIR* d;
   struct dirent* dir;
   d = opendir(folder);
@@ -19,7 +19,7 @@ void levels_compile(const char* folder, const char* ofolder)
         continue;
       int len = strlen(dir->d_name);
       char* cpy = calloc(sizeof(char), len+1);
-
+      TEST_ALLOC(cpy)
       strcpy(cpy, dir->d_name);
       if(strcmp(cpy+(len-4), ".lvl")==0)
         count++;
@@ -38,9 +38,9 @@ void levels_compile(const char* folder, const char* ofolder)
 
   FILE* outfile = fopen(ofilename, "wb");
 
-  fwrite(&count, sizeof(int), 1, outfile);
+  fwrite(&count, sizeof(Uint32), 1, outfile);
 
-  for(int i = 1; i <= count; i++)
+  for(Uint32 i = 1; i <= count; i++)
   {
     // Open the file and read the data, flip the bits, and concatenate to dat file
     char fname[20] = "";
@@ -55,15 +55,15 @@ void levels_compile(const char* folder, const char* ofolder)
     // File if the file could not be opened
     assert(levelfile != NULL);
 
-    int levelsize = 0;
-    fwrite(&levelsize, sizeof(int), 1, outfile);
+    Uint32 levelsize = 0;
+    fwrite(&levelsize, sizeof(Uint32), 1, outfile);
 
     char buffer[100];
-    size_t totalbytes = 0;
+    Uint32 totalbytes = 0;
     size_t readbytes = fread(buffer, sizeof(char), 100, levelfile);
     while((readbytes > 0))
     {
-      totalbytes += readbytes;
+      totalbytes += (Uint32)readbytes;
 
       for(size_t j = 0; j < readbytes; j++)
       {
@@ -72,8 +72,8 @@ void levels_compile(const char* folder, const char* ofolder)
       fwrite(buffer, sizeof(char), readbytes, outfile);
       readbytes = fread(buffer, sizeof(char), 100, levelfile);
     }
-    fseek(outfile, -1 * (totalbytes + sizeof(int)), SEEK_CUR);
-    fwrite(&totalbytes, sizeof(int), 1, outfile);
+    fseek(outfile, -1 * (totalbytes + sizeof(Uint32)), SEEK_CUR);
+    fwrite(&totalbytes, sizeof(Uint32), 1, outfile);
     fseek(outfile, 0, SEEK_END);
     fclose(levelfile);
   }
@@ -101,7 +101,12 @@ void levels_processrow(ResourceFactory* factory, Level* level, Bounds* bounds, c
     Brick* brick;
 
     level->bricks = realloc(level->bricks, sizeof(Brick*) * ++level->brickcount);
+
+    TEST_ALLOC(level->bricks)
+
     level->bricks[*brickno] = malloc(sizeof(Brick));
+
+    TEST_ALLOC(level->bricks[*brickno])
 
     brick = level->bricks[*brickno];
     brick->isdead = false;
@@ -111,6 +116,10 @@ void levels_processrow(ResourceFactory* factory, Level* level, Bounds* bounds, c
     brick->bottom = bounds->top + (row * BRICKH) + BRICKH;
     brick->starthitcount = 1;
     brick->sprite = malloc(sizeof(Sprite));
+    brick->speed = 0;
+
+    TEST_ALLOC(brick->sprite)
+
     brick->type = btNormal;
     brick->solidedges = eNone;
     brick->counter = 0;
@@ -185,6 +194,20 @@ void levels_processrow(ResourceFactory* factory, Level* level, Bounds* bounds, c
         brick->right = bounds->left + (col * BRICKW) + (BRICKW * 3);
         brick->bottom = bounds->top + (row * BRICKH) + (BRICKH * 4);
         brickanim = af_getanimation(factory, "boss");
+      break;
+      case 'M':
+        // Moving brick
+        brick->starthitcount = -1;
+        brick->speed = BRICKSPEED;
+        brick->type = btIndestructible | btMoving;
+        brickanim = af_getanimation(factory, "orange");
+      break;
+      case 'N':
+        // Moving brick
+        brick->starthitcount = -1;
+        brick->speed = BRICKSPEED * -1;
+        brick->type = btIndestructible | btMoving;
+        brickanim = af_getanimation(factory, "orange");
       break;
     }
     brick->hitcount = brick->starthitcount;

@@ -18,7 +18,7 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
   // Load an image into a temporary surface.
 	SDL_Surface* tmpImage = IMG_Load(apath);
 
-	assert(tmpImage != NULL);
+	TEST_LOADED(tmpImage)
 
 	// Literally can't remember why I do this. Transparency? Can't remember...
 	SDL_SetSurfaceAlphaMod(tmpImage, 255);
@@ -46,7 +46,11 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
 	int nframes = (int)(sfc->w / w);
 
 	// Throw an error if there are no frames in the animation/sprite
-	assert(nframes > 0);
+	if(nframes <= 0)
+	{
+    printf("Animation %s contains no frames (or dimensions incorrectly specified)\n", filename);
+    exit(1);
+	}
 
 	// Surfaces can only be used with slow software rendering, so convert
 	// to a texture for hardware (accelerated) rendering
@@ -63,8 +67,12 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
   // for the structures themselves - that comes later
   factory->anims = realloc(factory->anims, sizeof(Animation*) * c);
 
+  TEST_ALLOC(factory->anims)
+
   // NOW allocate memory for the structure itself.
   factory->anims[c - 1] = malloc(sizeof(Animation));
+
+  TEST_ALLOC(factory->anims[c - 1])
 
   Animation* anim = (Animation*)(factory->anims[c - 1]);
   anim->sheet = tex;
@@ -200,7 +208,11 @@ void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], in
 {
   Animation* anim = af_getanimation(factory, name);
 
-  assert(anim != NULL);
+  if(anim == NULL)
+  {
+    printf("Requested animation %s not found\n", name);
+    exit(1);
+  }
 
   sprite->anim = anim;
   sprite->currentframe = 0;
@@ -225,6 +237,9 @@ Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char na
   strcat(apath, filename);
 
   factory->samples = realloc(factory->samples, sizeof(Sample*) * (factory->samplecount + 1));
+
+  TEST_ALLOC(factory->samples)
+
   factory->samples[factory->samplecount] = malloc(sizeof(Sample));
   factory->samples[factory->samplecount]->sample = Mix_LoadWAV(apath);
   strcpy(factory->samples[factory->samplecount]->name, name);
@@ -282,6 +297,8 @@ Mix_Music* af_loadmusic(const char* filename)
 
   strcat(apath, filename);
   Mix_Music* mus = Mix_LoadMUS(apath);
-  assert(mus != NULL);
+
+  TEST_LOADED(mus)
+
   return mus;
 }

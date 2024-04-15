@@ -5,14 +5,14 @@
 #define BRICKDECAY 25
 #define RESURRECTTIMER 600
 #define EXPLOSIONPARTICLES 200
+#define BRICKSPEED 3
 
 #include "resourcefactory.h"
 #include <stdbool.h>
 
 typedef enum { bsStatic, bsHit } Brickstate;
-// Not sure if having these as flags is really beenficial as you'll never be in the position
-// of something being both normal and indestructible, for example.
-typedef enum { btNormal = 1, btHard = 2, btIndestructible = 4, btWormhole = 8, btResurrecting = 16 } Bricktype;
+// Despite these being mostly mutually exclusive, it's possible for any type of brick to be moving
+typedef enum { btNormal = 1, btHard = 2, btIndestructible = 4, btWormhole = 8, btResurrecting = 16, btMoving = 32 } Bricktype;
 typedef enum { eNone = 0, eLeft = 1, eRight = 2, eTop = 4, eBottom = 8, eTopLeft = 16, eTopRight = 32, eBottomLeft = 64, eBottomRight = 128 } Edge;
 
 // Used by Bricks and the Ball.
@@ -52,6 +52,7 @@ typedef struct
   Uint32 lastticks;
   Edge solidedges;
   int counter;
+  int speed;
   Sparkle particles[MAXBRICKPARTICLES];
 } Brick;
 

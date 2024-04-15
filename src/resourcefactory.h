@@ -2,6 +2,7 @@
 #define _RESOURCE_FACTORY_H_
 
 #include "config.h"
+#include "app.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>

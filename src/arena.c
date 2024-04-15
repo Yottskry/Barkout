@@ -18,30 +18,32 @@
 
 int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname)
 {
-  int count = 0;
+  Uint32 count = 0;
 
   FILE* f = fopen(fname, "rb");
 
   assert(f != NULL);
   // Read number of levels
-  fread(&count, sizeof(int), 1, f);
+  fread(&count, sizeof(Uint32), 1, f);
 
   arena->numlevels = count;
   arena->levels = malloc(arena->numlevels * sizeof(Level));
 
+  TEST_ALLOC(arena->levels)
+
   // Loop through levels
-  for(int i = 0; i < count; i++)
+  for(unsigned int i = 0; i < count; i++)
   {
-    int levelsize = 0;
+    Uint32 levelsize = 0;
     // How many bytes for this level?
-    fread(&levelsize, sizeof(int), 1, f);
+    fread(&levelsize, sizeof(Uint32), 1, f);
 
     // We know levels are going to be small, so read the whole level in one go
     char buffer[levelsize + 1]; // Allow space for a LF
     memset(buffer, 0, levelsize + 1);
-    size_t bytesread = fread(buffer, sizeof(char), levelsize, f);
+    fread(buffer, sizeof(char), levelsize, f);
 
-    for(int j = 0; j < levelsize; j++)
+    for(Uint32 j = 0; j < levelsize; j++)
     {
       // Flip the bits (input file obfuscated slightly)
       buffer[j] = buffer[j] ^ 0xFF;
@@ -124,7 +126,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
         continue;
       int len = strlen(dir->d_name);
       char* cpy = calloc(sizeof(char), len+1);
-
+      TEST_ALLOC(cpy)
       strcpy(cpy, dir->d_name);
       if(strcmp(cpy+(len-4), ".lvl")==0)
         arena->numlevels++;
@@ -151,6 +153,8 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
   #endif // _WIN32
 
   arena->levels = malloc(arena->numlevels * sizeof(Level));
+
+  TEST_ALLOC(arena->levels)
 
   for(int i = 0; i < arena->numlevels; i++)
   {
@@ -345,6 +349,59 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
   }
 }
 
+void arena_movebricks(Arena* arena)
+{
+  for(int brickno = 0; brickno < arena->brickcount; brickno++)
+  {
+    Brick* brick = arena->bricks[brickno];
+
+    if((brick->type & btMoving) == btMoving)
+    {
+      // Test this brick against all other bricks for a collision... shame we're not using a grid
+      // then we'd need test only those in the same row. Oh well.
+      // Only if a brick collides with no others can it move.
+      Bounds b1 = { .left = brick->left,
+                    .top = brick->top,
+                    .width = brick->right - brick->left,
+                    .height = brick->bottom - brick->top };
+      b1.left += brick->speed;
+
+
+      if((b1.left < arena->bounds.left) || ((b1.left + b1.width) > arena->bounds.right))
+      {
+        brick->speed *= -1;
+        return;
+      }
+
+      for(int brickno2 = 0; brickno2 < arena->brickcount; brickno2++)
+      {
+        // Test current brick against every brick except itself
+        if(brickno == brickno2)
+          continue;
+
+        Brick* brick2 = arena->bricks[brickno2];
+
+        if(brick2->hitcount == 0)
+          continue;
+
+        Bounds b2 = { .left = brick2->left,
+                      .top = brick2->top,
+                      .width = brick2->right - brick2->left,
+                      .height = brick2->bottom - brick2->top };
+        if(bounds_intersects(&b1, &b2))
+        {
+          brick->speed *= -1;
+          return;
+        }
+
+      }
+      // No collision, move brick
+      brick->left = b1.left;
+      brick->right = b1.left + b1.width;
+    }
+  }
+}
+
 void arena_resetbricks(Arena* arena)
 {
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
@@ -385,9 +442,18 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   // but actually the leak is because I hadn't yet freed
   // arena->bonuses (et al) before the program exits
   arena->bonuses = realloc(arena->bonuses, sizeof(Bonus*) * ++arena->bonuscount);
+
+  TEST_ALLOC(arena->bonuses)
+
   arena->bonuses[arena->bonuscount - 1] = malloc(sizeof(Bonus));
+
+  TEST_ALLOC(arena->bonuses[arena->bonuscount - 1])
+
   Bonus* bonus = arena->bonuses[arena->bonuscount - 1];
   bonus->sprite = malloc(sizeof(Sprite));
+
+  TEST_ALLOC(bonus->sprite)
+
   bonus->sprite->currentframe = 0;
   bonus->sprite->lastticks = 0;
   switch(type)
@@ -864,7 +930,9 @@ void arena_addbullet(Arena* arena, Bat* player)
 
   arena->bulletcount++;
   arena->bullets = realloc(arena->bullets, sizeof(Bullet*) * arena->bulletcount);
+  TEST_ALLOC(arena->bullets)
   arena->bullets[arena->bulletcount - 1] = malloc(sizeof(Bullet));
+  TEST_ALLOC(arena->bullets[arena->bulletcount - 1])
   arena->bullets[arena->bulletcount - 1]->speed = 5;
   arena->bullets[arena->bulletcount - 1]->x = player->x + 22;
   arena->bullets[arena->bulletcount - 1]->y = player->y;

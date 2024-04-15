@@ -4,6 +4,7 @@
 MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*), void (*ontoggle)(void*, void*))
 {
   MenuItem* item = malloc(sizeof(MenuItem));
+  TEST_ALLOC(item)
   item->options = NULL;
   item->text = text;
   if(controlvalue != NULL)
@@ -17,6 +18,7 @@ MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*o
   item->ontoggle = ontoggle;
   menu->itemcount++;
   menu->items = realloc(menu->items, sizeof(MenuItem*)*menu->itemcount);
+  TEST_ALLOC(menu->items)
   menu->items[menu->itemcount-1] = item;
   return item;
 }
@@ -24,11 +26,13 @@ MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*o
 MenuItemOption* menu_additemoption(MenuItem* menuitem, const char* optiontext, const char* optiondescription, int optionvalue)
 {
   MenuItemOption* option = malloc(sizeof(*option));
+  TEST_ALLOC(option)
   option->text = optiontext;
   option->description = optiondescription;
   option->value = optionvalue;
   menuitem->optioncount++;
   menuitem->options = realloc(menuitem->options, sizeof(MenuItemOption*)*menuitem->optioncount);
+  TEST_ALLOC(menuitem->options)
   menuitem->options[menuitem->optioncount-1] = option;
   if(option->value == menuitem->selectedvalue)
     menuitem->selectedindex = menuitem->optioncount-1;
