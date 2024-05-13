@@ -249,7 +249,7 @@ void arena_loadbricks(Arena* arena, int level)
   {
     Brick* brick = arena->levels[level-1].bricks[i];
 
-    if((brick->type != btIndestructible) &&
+    if(((brick->type & btIndestructible) != btIndestructible) &&
        (brick->type != btWormhole) &&
        (brick->type != btResurrecting))
     {
@@ -349,7 +349,7 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
   }
 }
 
-void arena_movebricks(Arena* arena)
+void arena_movebricks(Arena* arena, Ball* ball)
 {
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
@@ -364,6 +364,7 @@ void arena_movebricks(Arena* arena)
                     .top = brick->top,
                     .width = brick->right - brick->left,
                     .height = brick->bottom - brick->top };
+
       b1.left += brick->speed;
 
 
@@ -398,6 +399,24 @@ void arena_movebricks(Arena* arena)
       // No collision, move brick
       brick->left = b1.left;
       brick->right = b1.left + b1.width;
+      // Need to test if this causes a collision with the ball and to
+      // move the ball to the brick edge accordingly.
+      //Edge hitedge = eNone;
+/*
+      if(ball_collidesbounds(ball, &b1, &hitedge))
+      {
+        if(hitedge == eLeft)
+        {
+        }
+        else if(hitedge == eRight)
+        {
+        }
+        else if (hitedge == eBottom)
+        {
+        }
+        else if(hitedge == eTop)
+        {
+        } */
     }
   }
 }
@@ -599,18 +618,18 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
     // Check all the points on the path along which the
     // ball will move in this iteration.
-    for(int spd = 1; spd <= ball->speed; spd++)
+    for(int spd = 0; spd <= ball->speed; spd++)
     {
       int nextx = spd * sinl(rads);
       int nexty = spd * cosl(rads);
-
+/*
       if((nextx == 0) && (nexty == 0))
       {
         lastx = ball->cx;
         lasty = ball->cy;
         continue;
       }
-
+*/
       if(ball->bearing < 180)
       {
         ball->cy = bally - nexty;
@@ -758,19 +777,42 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           else
           {
             af_playsample(arena->factory, "brick-high");
+            // This is where we check for moving bricks and position the ball accordingly.
+            // If we hit a moving brick we should move the ball to the edge of that brick
+            // Should we ever have moving normal bricks we'll need to account for the deadly
+            // powerup and not reposition the ball at the brick's edge
+            if((b->type & btMoving) == btMoving)
+            {
+              switch(hitedge)
+              {
+                case eRight:
+                  lastx = b->right + b->speed + ball->radius + 1;
+                break;
+                case eLeft:
+                  lastx = b->left + b->speed - (ball->radius + 1);
+                break;
+                case eBottom:
+                  lasty = b->bottom + ball->radius + 1;
+                break;
+                case eTop:
+                  lasty = b->top - (ball->radius + 1);
+                break;
+                default:
+                break;
+              };
+            }
           }
 
-          if((b->type == btNormal) && (ball->state == bsDeadly) && (!(b->solidedges & hitedge)))
+          if(((b->type & btNormal) == btNormal) && (ball->state == bsDeadly) && (!(b->solidedges & hitedge)))
             hitedge = eNone;
 
           // Because we break here, lastx/y are not updated
           // so retain the last non-collision position
 
-          break;
+          break; // Go to EndLoop
         }
       }
-
-      if(b==NULL) // b == null
+      else // b == null
       {
         // No contact with any brick so we can say we're clear of the warp destination
         ball->warpdest = NULL;
@@ -824,7 +866,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       // If we haven't, these hold the correct position.
       lastx = ball->cx;
       lasty = ball->cy;
-    }
+    } // EndLoop
 
     if(b!=NULL)
     {
@@ -1018,7 +1060,7 @@ void arena_checkbulletcollisions(Arena* arena)
     Brick* b = arena->bricks[j];
     // Skip invincible bricks and those that
     // are already knocked out.
-    if((b->hitcount <= 0) && (b->type != btIndestructible) && (b->type != btResurrecting))
+    if((b->hitcount <= 0) && ((b->type & btIndestructible) != btIndestructible) && (b->type != btResurrecting))
       continue;
 
     if((b->type == btResurrecting) && (b->counter > 0))
@@ -1037,7 +1079,7 @@ void arena_checkbulletcollisions(Arena* arena)
       }
     }
 
-    if((hit) && (b->type != btIndestructible) && (b->type != btResurrecting)){
+    if((hit) && ((b->type & btIndestructible) != btIndestructible) && (b->type != btResurrecting)){
       b->hitcount--;
       if(b->hitcount == 0)
       {

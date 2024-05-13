@@ -114,7 +114,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
-  ball->cy = player->y - (ball->radius * 2) + 2;
+  ball->cy = player->y - (ball->radius);
   ball->speed = 6;
   ball->warpdest = NULL;
   *gamestate = gsGetReady;
@@ -781,6 +781,7 @@ int main(int argc, char** argv)
     {
       drawbackground(&app, &arena, &player, &f);
       drawarenatext(&app, &arena, hi);
+      arena_movebricks(&arena, &ball);
       arena_drawbricks(&arena, app.renderer);
 
       // draw the warp area on the right
@@ -889,7 +890,7 @@ int main(int argc, char** argv)
       }
       arena_checkbulletcollisions(&arena);
       arena_batcollidesbonus(&arena, &player, &ball);
-      arena_movebricks(&arena);
+
     } // This one is an else because we need one loop between
       // change of app.gamestate for the Get Ready text to render.
 

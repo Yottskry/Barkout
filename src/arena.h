@@ -63,7 +63,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory);
 
 void arena_loadbricks(Arena* arena, int level);
 void arena_drawbricks(Arena* arena, SDL_Renderer* renderer);
-void arena_movebricks(Arena* arena);
+void arena_movebricks(Arena* arena, Ball* ball);
 void arena_resetbricks(Arena* arena);
 void arena_freelevels(Arena* arena);
 
