@@ -4,7 +4,7 @@
 // Brought this out into its own function so we can use it
 // to test collisions with baddies too, and thus also
 // change the ball's angle based on the collision
-bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e)
+bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
 {
   if((ball->cy - (bounds->top + bounds->height) <= ball->radius) &&
        (bounds->left - ball->cx <= ball->radius) &&
@@ -27,6 +27,7 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e)
         // If one is closer than the other, pick that edge, if both are equal pick the corner
         //*e = (deltab < deltal) ? eBottom : (deltab > deltal) ? eLeft : eBottomLeft;
         *e = (deltab < deltal) ? eBottom : eLeft;
+        *delta = *e == eBottom ? deltab : deltal;
       }
       else
       {
@@ -34,6 +35,7 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e)
         // Check right edge
         //*e = (deltab < deltar) ? eBottom : (deltab > deltar) ? eRight : eBottomRight;
         *e = (deltab < deltar) ? eBottom : eRight;
+        *delta = *e == eBottom ? deltab : deltar;
       }
     }
     else
@@ -46,12 +48,14 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e)
         // Ball is travelling down and right
         // Check left edge
         *e = (deltat < deltal) ? eTop : eLeft;
+        *delta = *e == eTop ? deltat : deltal;
       }
       else
       {
         // Ball is travelling down and left
         // Check right edge
         *e = (deltat < deltar) ? eTop : eRight;
+        *delta = *e == eTop ? deltat : deltar;
       }
     }
 
@@ -63,6 +67,8 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e)
 
 Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
 {
+  int lastd = 0;
+  Brick* returnbrick = NULL;
   for(int brickno = brickcount-1; brickno >= 0; brickno--)
   {
     Brick* brick = bricks[brickno];
@@ -82,16 +88,25 @@ Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
       .height = brick->bottom - brick->top
     };
 
-    if(ball_collidesbounds(ball, &bounds, e))
+    // We don't want to stop on the first collision we find
+    // as it may hit two bricks at once and we want the closest one
+    int d = 0;
+    if(ball_collidesbounds(ball, &bounds, e, &d))
     {
       // Only destroy brick if it is vulnerable on that edge
       if(!(brick->solidedges & *e))
         brick->hitcount--;
-      return brick;
+
+      if((d < lastd) || (lastd == 0))
+      {
+        returnbrick = brick;
+        lastd = d;
+      }
     }
   }
 
-  return NULL;
+  // Will be null if no collision occurred
+  return returnbrick;
 }
 
 void ball_ricochet(Ball* ball, Edge hitedge)

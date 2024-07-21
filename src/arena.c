@@ -365,6 +365,8 @@ void arena_movebricks(Arena* arena, Ball* ball)
                     .width = brick->right - brick->left,
                     .height = brick->bottom - brick->top };
 
+      // Need to check the brick in each position until it reaches its final destination
+
       b1.left += brick->speed;
 
 
@@ -399,24 +401,6 @@ void arena_movebricks(Arena* arena, Ball* ball)
       // No collision, move brick
       brick->left = b1.left;
       brick->right = b1.left + b1.width;
-      // Need to test if this causes a collision with the ball and to
-      // move the ball to the brick edge accordingly.
-      //Edge hitedge = eNone;
-/*
-      if(ball_collidesbounds(ball, &b1, &hitedge))
-      {
-        if(hitedge == eLeft)
-        {
-        }
-        else if(hitedge == eRight)
-        {
-        }
-        else if (hitedge == eBottom)
-        {
-        }
-        else if(hitedge == eTop)
-        {
-        } */
     }
   }
 }
@@ -601,6 +585,9 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
   // Using the speed as the hypotenuse of the triangle,
   // use trig to work out the next X and Y coordinates.
 
+  if((ball->bearing > 360) || (ball->bearing < 0))
+    printf("Ball bearing is %f\n", ball->bearing);
+
   if (ball->state == bsNormal || ball->state == bsLoose || ball->state == bsDeadly)
     {
     // Convert degrees to radians
@@ -663,7 +650,8 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
 
           Bounds wbound = { .left = b->left + 27, .width = 25, .height = 25, .top = b->top + 12 };
 
-          if(ball_collidesbounds(ball, &wbound, &hitedge))
+          int delta = 0;
+          if(ball_collidesbounds(ball, &wbound, &hitedge, &delta))
           {
             // Prevent ricochet from the wormhole
             hitedge = eNone;
