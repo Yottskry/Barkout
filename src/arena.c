@@ -367,37 +367,69 @@ void arena_movebricks(Arena* arena, Ball* ball)
 
       // Need to check the brick in each position until it reaches its final destination
 
-      b1.left += brick->speed;
+      int targetx = b1.left + brick->speed;
 
-
-      if((b1.left < arena->bounds.left) || ((b1.left + b1.width) > arena->bounds.right))
+      do
       {
-        brick->speed *= -1;
-        return;
-      }
 
-      for(int brickno2 = 0; brickno2 < arena->brickcount; brickno2++)
-      {
-        // Test current brick against every brick except itself
-        if(brickno == brickno2)
-          continue;
+        b1.left += brick->speed < 0 ? -1 : 1;
+        Edge e = eNone;
+        int delta = 0;
+        // Check for collision with ball
+        if(ball_collidesbounds(ball, &b1, &e, &delta))
+        {
+          // Collision, so deflect the ball (but do nothing to the brick)
+          ball_ricochet(ball, e);
 
-        Brick* brick2 = arena->bricks[brickno2];
+          switch(e)
+          {
+            case eRight:
+              ball->cx = b1.left + b1.width + ball->radius + 1;
+            break;
+            case eLeft:
+              ball->cx = b1.left - (ball->radius + 1);
+            break;
+            case eBottom:
+              ball->cy = b1.top + b1.height + ball->radius + 1;
+            break;
+            case eTop:
+              ball->cy = b1.top - (ball->radius + 1);
+            break;
+            default:
+            break;
+          };
+        }
 
-        if(brick2->hitcount == 0)
-          continue;
-
-        Bounds b2 = { .left = brick2->left,
-                      .top = brick2->top,
-                      .width = brick2->right - brick2->left,
-                      .height = brick2->bottom - brick2->top };
-        if(bounds_intersects(&b1, &b2))
+        if((b1.left < arena->bounds.left) || ((b1.left + b1.width) > arena->bounds.right))
         {
           brick->speed *= -1;
           return;
         }
 
-      }
+        for(int brickno2 = 0; brickno2 < arena->brickcount; brickno2++)
+        {
+          // Test current brick against every brick except itself
+          if(brickno == brickno2)
+            continue;
+
+          Brick* brick2 = arena->bricks[brickno2];
+
+          if(brick2->hitcount == 0)
+            continue;
+
+          Bounds b2 = { .left = brick2->left,
+                        .top = brick2->top,
+                        .width = brick2->right - brick2->left,
+                        .height = brick2->bottom - brick2->top };
+          if(bounds_intersects(&b1, &b2))
+          {
+            brick->speed *= -1;
+            return;
+          }
+
+        }
+      } while(b1.left != targetx);
+
       // No collision, move brick
       brick->left = b1.left;
       brick->right = b1.left + b1.width;
@@ -769,6 +801,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             // If we hit a moving brick we should move the ball to the edge of that brick
             // Should we ever have moving normal bricks we'll need to account for the deadly
             // powerup and not reposition the ball at the brick's edge
+
             if((b->type & btMoving) == btMoving)
             {
               switch(hitedge)
@@ -789,6 +822,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
                 break;
               };
             }
+
           }
 
           if(((b->type & btNormal) == btNormal) && (ball->state == bsDeadly) && (!(b->solidedges & hitedge)))

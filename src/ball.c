@@ -18,10 +18,15 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
     int deltat = abs(ball->cy + ball->radius - bounds->top);
     int deltab = abs(ball->cy - ball->radius - (bounds->top + bounds->height));
 
+    // Bug: it's possible to be travelling upwards (bearing 290 - up and left)
+    // and still collide with the left edge of a moving brick if the brick
+    // moves into the ball. This needs to be accounted for.
+
     if((ball->bearing < 90) || (ball->bearing > 270))
     {
       // Ball is travelling vaguely up
       // Check bottom side of brick
+      /*
       if(ball->bearing < 90)
       {
         // If one is closer than the other, pick that edge, if both are equal pick the corner
@@ -36,14 +41,20 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
         //*e = (deltab < deltar) ? eBottom : (deltab > deltar) ? eRight : eBottomRight;
         *e = (deltab < deltar) ? eBottom : eRight;
         *delta = *e == eBottom ? deltab : deltar;
-      }
+      }*/
+      *e = (deltar < deltal) ? eRight : eLeft;
+      *delta = *e == eRight ? deltar : deltal;
+      // Now compare the bottom distance to whichever edge was hit
+      *e = (*delta < deltab) ? *e : eBottom;
+      // If the bottom delta is smaller, delta becomes that, otherwise it stays the same.
+      *delta = *e == eBottom ? deltab : *delta;
     }
     else
     {
       // Ball is travelling vaguely down
       // Check top side of brick
 
-      if(ball->bearing < 180)
+      /*if(ball->bearing < 180)
       {
         // Ball is travelling down and right
         // Check left edge
@@ -57,6 +68,13 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
         *e = (deltat < deltar) ? eTop : eRight;
         *delta = *e == eTop ? deltat : deltar;
       }
+      */
+      *e = (deltar < deltal) ? eRight : eLeft;
+      *delta = *e == eRight ? deltar : deltal;
+      // Now compare the top distance to whichever edge was hit
+      *e = (*delta < deltat) ? *e : eTop;
+      // If the bottom delta is smaller, delta becomes that, otherwise it stays the same.
+      *delta = *e == eTop ? deltat : *delta;
     }
 
     return true;
