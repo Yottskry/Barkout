@@ -45,14 +45,16 @@ typedef struct
   int right;
   int bottom;
   int hitcount;
+  int startleft;
+  int startright;
   int starthitcount;
   int frame;
+  int counter;
+  int speed;
   bool isdead;
   Bricktype type;
   Uint32 lastticks;
   Edge solidedges;
-  int counter;
-  int speed;
   Sparkle particles[MAXBRICKPARTICLES];
 } Brick;
 

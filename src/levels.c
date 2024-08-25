@@ -216,6 +216,8 @@ void levels_processrow(ResourceFactory* factory, Level* level, Bounds* bounds, c
     brick->sprite->currentframe = 0;
     brick->sprite->loop = brick->type == btWormhole ? 1 : 0;
     brick->sprite->lastticks = 0;
+    brick->startleft = brick->left;
+    brick->startright = brick->right;
 
     (*brickno)++;
   }

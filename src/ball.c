@@ -26,22 +26,7 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
     {
       // Ball is travelling vaguely up
       // Check bottom side of brick
-      /*
-      if(ball->bearing < 90)
-      {
-        // If one is closer than the other, pick that edge, if both are equal pick the corner
-        //*e = (deltab < deltal) ? eBottom : (deltab > deltal) ? eLeft : eBottomLeft;
-        *e = (deltab < deltal) ? eBottom : eLeft;
-        *delta = *e == eBottom ? deltab : deltal;
-      }
-      else
-      {
-        // Ball is travelling up and left
-        // Check right edge
-        //*e = (deltab < deltar) ? eBottom : (deltab > deltar) ? eRight : eBottomRight;
-        *e = (deltab < deltar) ? eBottom : eRight;
-        *delta = *e == eBottom ? deltab : deltar;
-      }*/
+
       *e = (deltar < deltal) ? eRight : eLeft;
       *delta = *e == eRight ? deltar : deltal;
       // Now compare the bottom distance to whichever edge was hit
@@ -54,21 +39,6 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
       // Ball is travelling vaguely down
       // Check top side of brick
 
-      /*if(ball->bearing < 180)
-      {
-        // Ball is travelling down and right
-        // Check left edge
-        *e = (deltat < deltal) ? eTop : eLeft;
-        *delta = *e == eTop ? deltat : deltal;
-      }
-      else
-      {
-        // Ball is travelling down and left
-        // Check right edge
-        *e = (deltat < deltar) ? eTop : eRight;
-        *delta = *e == eTop ? deltat : deltar;
-      }
-      */
       *e = (deltar < deltal) ? eRight : eLeft;
       *delta = *e == eRight ? deltar : deltal;
       // Now compare the top distance to whichever edge was hit
@@ -132,10 +102,12 @@ void ball_ricochet(Ball* ball, Edge hitedge)
   switch(hitedge)
   {
     case eLeft:
-      ball->bearing = 360 - ball->bearing;
+      if (ball->bearing < 180)
+        ball->bearing = 360 - ball->bearing;
     break;
     case eRight:
-      ball->bearing = 360 - ball->bearing;
+      if (ball->bearing > 180)
+        ball->bearing = 360 - ball->bearing;
     break;
     case eTop:
       if(ball->bearing < 180)

@@ -366,6 +366,7 @@ void arena_movebricks(Arena* arena, Ball* ball)
                     .height = brick->bottom - brick->top };
 
       // Need to check the brick in each position until it reaches its final destination
+      // to see if it's moving into the ball
 
       int targetx = b1.left + brick->speed;
 
@@ -379,6 +380,9 @@ void arena_movebricks(Arena* arena, Ball* ball)
         if(ball_collidesbounds(ball, &b1, &e, &delta))
         {
           // Collision, so deflect the ball (but do nothing to the brick)
+          // Actually....don't we only want to ricochet if the ball is travelling
+          // the opposite direction to the brick? If it's the same direction, the ball
+          // should not then change to moving towards the brick.
           ball_ricochet(ball, e);
 
           switch(e)
@@ -444,6 +448,8 @@ void arena_resetbricks(Arena* arena)
     arena->bricks[brickno]->counter = 0;
     arena->bricks[brickno]->hitcount = arena->bricks[brickno]->starthitcount;
     arena->bricks[brickno]->isdead = false;
+    arena->bricks[brickno]->left = arena->bricks[brickno]->startleft;
+    arena->bricks[brickno]->right = arena->bricks[brickno]->startright;
 
     if(arena->bricks[brickno]->type == btResurrecting)
     {
@@ -1003,7 +1009,9 @@ void arena_addbullet(Arena* arena, Bat* player)
 
   arena->bulletcount++;
   arena->bullets = realloc(arena->bullets, sizeof(Bullet*) * arena->bulletcount);
+  TEST_ALLOC(arena->bullets)
   arena->bullets[arena->bulletcount - 1] = malloc(sizeof(Bullet));
+  TEST_ALLOC(arena->bullets[arena->bulletcount - 1])
   arena->bullets[arena->bulletcount - 1]->speed = 5;
   arena->bullets[arena->bulletcount - 1]->x = player->x + player->w - 22 - 5; // 5 for bullet width
   arena->bullets[arena->bulletcount - 1]->y = player->y;
