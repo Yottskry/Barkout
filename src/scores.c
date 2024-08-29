@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #endif
 
-int loadhighscore()
+int loadHighScore()
 {
   int score = 0;
   #ifdef _WIN32
@@ -47,7 +47,7 @@ int loadhighscore()
   return score;
 }
 
-void savehighscore(int* score)
+void saveHighScore(int* score)
 {
   #ifdef _WIN32
   HKEY newKey;

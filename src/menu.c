@@ -1,7 +1,7 @@
 #include "menu.h"
 #include "config.h"
 
-MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*), void (*ontoggle)(void*, void*))
+MenuItem* menu_addItem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*), void (*ontoggle)(void*, void*))
 {
   MenuItem* item = malloc(sizeof(MenuItem));
   TEST_ALLOC(item)
@@ -23,7 +23,7 @@ MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*o
   return item;
 }
 
-MenuItemOption* menu_additemoption(MenuItem* menuitem, const char* optiontext, const char* optiondescription, int optionvalue)
+MenuItemOption* menu_addItemOption(MenuItem* menuitem, const char* optiontext, const char* optiondescription, int optionvalue)
 {
   MenuItemOption* option = malloc(sizeof(*option));
   TEST_ALLOC(option)
@@ -39,21 +39,21 @@ MenuItemOption* menu_additemoption(MenuItem* menuitem, const char* optiontext, c
   return option;
 }
 
-void menu_drawmenu(Menu* menu, App* app)
+void menu_drawMenu(Menu* menu, App* app)
 {
   for(int i = 0; i < menu->itemcount; i++)
   {
     MenuItem* item = menu->items[i];
     if(i==menu->selectedindex)
-      text_drawtext(app, item->text, menu->x, 40*i + menu->y, (SDL_Color){200, 200, 255, 255}, 0, fnTitle);
+      text_drawText(app, item->text, menu->x, 35*i + menu->y, (SDL_Color){200, 200, 255, 255}, 0, fnTitle);
     else
-      text_drawtext(app, item->text, menu->x, 40*i + menu->y, (SDL_Color){255, 255, 255, 100}, 0, fnTitle);
+      text_drawText(app, item->text, menu->x, 35*i + menu->y, (SDL_Color){255, 255, 255, 100}, 0, fnTitle);
 
     if(item->optioncount > 0)
     {
-      text_drawtext(app, item->options[item->selectedindex]->text, menu->optionx, 40*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+      text_drawText(app, item->options[item->selectedindex]->text, menu->optionx, 35*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
       if(i==menu->selectedindex)
-        text_drawwrappedtext(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600, fnBody);
+        text_drawWrappedText(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600, fnBody);
     }
   }
 }
@@ -72,7 +72,7 @@ void menu_previous(Menu* menu)
     menu->selectedindex = menu->itemcount-1;
 }
 
-void menu_nextoption(Menu* menu)
+void menu_nextOption(Menu* menu)
 {
   MenuItem* item = menu->items[menu->selectedindex];
   item->selectedindex++;
@@ -85,7 +85,7 @@ void menu_nextoption(Menu* menu)
     item->ontoggle((void*)menu->app, (void*)item);
 }
 
-void menu_previousoption(Menu* menu)
+void menu_previousOption(Menu* menu)
 {
   MenuItem* item = menu->items[menu->selectedindex];
   item->selectedindex--;

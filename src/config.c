@@ -13,6 +13,7 @@ static Config config;
 
 Config* config_load()
 {
+  config.fullscreen = false;
   config.brickparticles = 15;
   config.trailparticles = 20;
   config.controlmethod = cmClassic;
@@ -26,7 +27,9 @@ Config* config_load()
   {
     long unsigned int lpSize = sizeof(int);
     retval = RegQueryValueExA(newKey, "brickparticles", 0, NULL, (BYTE*)(&config.brickparticles), &lpSize);
-    retval = RegQueryValueExA(newKey, "trailparticles", 0, NULL, (BYTE*)(&config.brickparticles), &lpSize);
+    retval = RegQueryValueExA(newKey, "trailparticles", 0, NULL, (BYTE*)(&config.trailparticles), &lpSize);
+    retval = RegQueryValueExA(newKey, "fullscreen", 0, NULL, (BYTE*)(&config.fullscreen), &lpSize);
+    retval = RegQueryValueExA(newKey, "ctrlmethod", 0, NULL, (BYTE*)(&config.controlmethod), &lpSize);
   }
   else
   {
@@ -50,8 +53,12 @@ Config* config_load()
         config.brickparticles = val;
       if(strcmp("TRAILPARTICLES", key) == 0)
         config.trailparticles = val;
+      if(strcmp("FULLSCREEN", key) == 0)
+        config.fullscreen = (bool)val;
+      if(strcmp("CTRLMETHOD", key) == 0)
+        config.controlmethod = (ControlMethod)val;
     }
-    //fscanf(datafile, "BRICKPARTICLES:%d", &config.brickparticles);
+
     fclose(datafile);
   }
 
@@ -67,8 +74,6 @@ Config* config_load()
   #endif // INSTALLDIR
 
   #endif
-
-
 
   return &config;
 }
@@ -103,6 +108,7 @@ void config_settrailparticles(int brickparticles)
 
 void config_setcontrolmethod(ControlMethod method)
 {
+  config.controlmethod = method;
 }
 
 void config_setfullscreen(bool fullscreen)
@@ -110,6 +116,33 @@ void config_setfullscreen(bool fullscreen)
   config.fullscreen = fullscreen;
 }
 
-void config_save(Config* config)
+void config_save(void)
 {
+  #ifdef _WIN32
+  HKEY newKey;
+  long retval;
+  retval = RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, "", 0, KEY_WRITE, 0, &newKey, NULL);
+  if(retval == ERROR_SUCCESS)
+  {
+    RegSetValueExA(newKey, "fullscreen", 0, REG_DWORD, (BYTE*)(&config.fullscreen), sizeof(int));
+    RegSetValueExA(newKey, "ctrlmethod", 0, REG_DWORD, (BYTE*)(&config.controlmethod), sizeof(int));
+    RegCloseKey(newKey);
+  }
+  #else // Assume linux / BSD
+  char* homedir = getenv("HOME");
+  if(homedir == NULL)
+    return;
+  char barkdata[255] = "";
+  strcat(barkdata, homedir);
+  strcat(barkdata, "/.barkanoid");
+  mkdir(barkdata, 0777);
+  strcat(barkdata, "/options");
+  remove(barkdata);
+  FILE* optionsfile = fopen(barkdata, "w");
+  fprintf(optionsfile, "FULLSCREEN %d\n", config.fullscreen);
+  fprintf(optionsfile, "TRAILPARTICLES %d\n", config.trailparticles);
+  fprintf(optionsfile, "BRICKPARTICLES %d\n", config.brickparticles);
+  fprintf(optionsfile, "CTRLMETHOD %d\n", (int)config.controlmethod);
+  fclose(optionsfile);
+  #endif
 }

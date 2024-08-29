@@ -36,13 +36,13 @@ typedef struct
   App* app;
 } Menu;
 
-MenuItem* menu_additem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*), void (*ontoggle)(void*, void*));
-MenuItemOption* menu_additemoption(MenuItem* menuitem, const char* optiontext, const char* optiondescription, int optionvalue);
-void menu_drawmenu(Menu* menu, App* app);
+MenuItem* menu_addItem(Menu* menu, const char* text, int* controlvalue, void (*onexecute)(void*), void (*ontoggle)(void*, void*));
+MenuItemOption* menu_addItemOption(MenuItem* menuitem, const char* optiontext, const char* optiondescription, int optionvalue);
+void menu_drawMenu(Menu* menu, App* app);
 void menu_next(Menu* menu);
 void menu_previous(Menu* menu);
-void menu_nextoption(Menu* menu);
-void menu_previousoption(Menu* menu);
+void menu_nextOption(Menu* menu);
+void menu_previousOption(Menu* menu);
 void menu_free(Menu* menu);
 void menu_execute(Menu* menu);
 

@@ -4,7 +4,7 @@
 // Brought this out into its own function so we can use it
 // to test collisions with baddies too, and thus also
 // change the ball's angle based on the collision
-bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
+bool ball_collidesBounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
 {
   if((ball->cy - (bounds->top + bounds->height) <= ball->radius) &&
        (bounds->left - ball->cx <= ball->radius) &&
@@ -53,7 +53,7 @@ bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
 }
 
 
-Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
+Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
 {
   int lastd = 0;
   Brick* returnbrick = NULL;
@@ -79,7 +79,7 @@ Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
     // We don't want to stop on the first collision we find
     // as it may hit two bricks at once and we want the closest one
     int d = 0;
-    if(ball_collidesbounds(ball, &bounds, e, &d))
+    if(ball_collidesBounds(ball, &bounds, e, &d))
     {
       // Only destroy brick if it is vulnerable on that edge
       if(!(brick->solidedges & *e))
@@ -137,7 +137,7 @@ void ball_ricochet(Ball* ball, Edge hitedge)
   }
 }
 
-void ball_drawball(Ball* ball, SDL_Renderer* renderer)
+void ball_drawBall(Ball* ball, SDL_Renderer* renderer)
 {
   // Draw the sparkles...
   if((ball->state == bsDeadly) || (ball->state == bsStuck) || (ball->state == bsLoose))

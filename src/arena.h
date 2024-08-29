@@ -58,40 +58,40 @@ typedef struct
 } Arena;
 
 // Level related functions
-int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname);
-int arena_loadlevels(Arena* arena, ResourceFactory* factory);
+int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname);
+int arena_loadLevels(Arena* arena, ResourceFactory* factory);
 
-void arena_loadbricks(Arena* arena, int level);
-void arena_drawbricks(Arena* arena, SDL_Renderer* renderer);
-void arena_movebricks(Arena* arena, Ball* ball);
-void arena_resetbricks(Arena* arena);
-void arena_freelevels(Arena* arena);
+void arena_loadBricks(Arena* arena, int level);
+void arena_drawBricks(Arena* arena, SDL_Renderer* renderer);
+void arena_moveBricks(Arena* arena, Ball* ball);
+void arena_resetBricks(Arena* arena);
+void arena_freeLevels(Arena* arena);
 
 // Bonus related functions - mostly moved to bonus.h
-Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type);
-Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball);
+Bonus* arena_addBonus(Arena* arena, int x, int y, Bonustype type);
+Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball);
 
 // Events
-void bat_aftershrink(void* sender, void* data);
-void bat_aftergrow(void* sender, void* data);
-void bat_afterlaser(void* sender, void* data);
+void bat_afterShrink(void* sender, void* data);
+void bat_afterGrow(void* sender, void* data);
+void bat_afterLaser(void* sender, void* data);
 
 // Ball related functions
-int ball_moveball(Ball* ball, Arena* arena, Bat* player);
-int ball_collidesbat(Ball* ball, Bat* player, Edge* e);
+int ball_moveBall(Ball* ball, Arena* arena, Bat* player);
+int ball_collidesBat(Ball* ball, Bat* player, Edge* e);
 
 // Bullet related functions
-void arena_addbullet(Arena* arena, Bat* player);
-void arena_movebullets(Arena* arena);
-void arena_drawbullets(Arena* arena, SDL_Renderer* renderer);
-void arena_freebullet(Arena* arena, int index);
-void arena_freebullets(Arena* arena);
-void arena_checkbulletcollisions(Arena* arena);
+void arena_addBullet(Arena* arena, Bat* player);
+void arena_moveBullets(Arena* arena);
+void arena_drawBullets(Arena* arena, SDL_Renderer* renderer);
+void arena_freeBullet(Arena* arena, int index);
+void arena_freeBullets(Arena* arena);
+void arena_checkBulletCollisions(Arena* arena);
 
-void arena_drawlives(Arena* arena, App* app);
+void arena_drawLives(Arena* arena, App* app);
 
-void arena_finallevelend(void* sender);
-void arena_resetexplosions(Arena* arena);
-bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer);
+void arena_finalLevelEnd(void* sender);
+void arena_resetExplosions(Arena* arena);
+bool arena_drawExplosions(Arena* arena, SDL_Renderer* renderer);
 
 #endif

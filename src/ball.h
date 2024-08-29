@@ -33,9 +33,9 @@ typedef struct
   Brick* warpdest;
 } Ball;
 
-bool ball_collidesbounds(Ball* ball, Bounds* bounds, Edge* e, int* delta);
-Brick* ball_collidesbricks(Ball* ball, Brick** bricks, int brickcount, Edge* e);
+bool ball_collidesBounds(Ball* ball, Bounds* bounds, Edge* e, int* delta);
+Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e);
 void ball_ricochet(Ball* ball, Edge hitedge);
-void ball_drawball(Ball* ball, SDL_Renderer* renderer);
+void ball_drawBall(Ball* ball, SDL_Renderer* renderer);
 
 #endif

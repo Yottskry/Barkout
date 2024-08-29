@@ -16,7 +16,7 @@
 
 */
 
-int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname)
+int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
 {
   Uint32 count = 0;
 
@@ -58,7 +58,7 @@ int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname)
     level->brickcount = 0;
 
     if(i == arena->numlevels-1)
-      level->onlevelend = arena_finallevelend;
+      level->onlevelend = arena_finalLevelEnd;
 
     int brickno = 0;
     int row = 0;
@@ -91,7 +91,7 @@ int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname)
 
     while(rowdata != NULL)
     {
-      levels_processrow(factory, level, &(arena->bounds), rowdata, row, &brickno);
+      levels_processRow(factory, level, &(arena->bounds), rowdata, row, &brickno);
       rowdata = strtok(NULL, "\r\n");
       row++;
     }
@@ -101,7 +101,7 @@ int arena_loadbinary(ResourceFactory* factory, Arena* arena, char* fname)
   return 0;
 }
 
-int arena_loadlevels(Arena* arena, ResourceFactory* factory)
+int arena_loadLevels(Arena* arena, ResourceFactory* factory)
 {
   arena->numlevels = 0;
   char apath[255] = "./Levels/";
@@ -165,7 +165,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
     level->onlevelend = NULL;
 
     if(i == arena->numlevels-1)
-      level->onlevelend = arena_finallevelend;
+      level->onlevelend = arena_finalLevelEnd;
 
     char apath[255] = "./Levels/";
 
@@ -224,7 +224,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
   //rowdata = strtok(NULL, "\r\n");
     //while(rowdata != NULL)
     {
-      levels_processrow(factory, level, &arena->bounds, rowdata, row, &brickno);
+      levels_processRow(factory, level, &arena->bounds, rowdata, row, &brickno);
       row++;
       //rowdata = strtok(NULL, "\r\n");
     } // _WHERE_
@@ -234,7 +234,7 @@ int arena_loadlevels(Arena* arena, ResourceFactory* factory)
   return 0;
 }
 
-void arena_loadbricks(Arena* arena, int level)
+void arena_loadBricks(Arena* arena, int level)
 {
   arena->bricks = arena->levels[level-1].bricks;
   arena->brickcount = arena->levels[level-1].brickcount;
@@ -258,6 +258,8 @@ void arena_loadbricks(Arena* arena, int level)
 
     brick->hitcount = brick->starthitcount * arena->multiplier;
     brick->isdead = false;
+    brick->left = brick->startleft;
+    brick->right = brick->startright;
 
     for(int j = 0; j < MAXBRICKPARTICLES; j++)
     {
@@ -280,7 +282,7 @@ void arena_loadbricks(Arena* arena, int level)
   }
 }
 
-void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
+void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
 {
   // Draw wormholes first so they appear below other bricks in Z-order
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
@@ -349,7 +351,7 @@ void arena_drawbricks(Arena* arena, SDL_Renderer* renderer)
   }
 }
 
-void arena_movebricks(Arena* arena, Ball* ball)
+void arena_moveBricks(Arena* arena, Ball* ball)
 {
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
@@ -377,7 +379,7 @@ void arena_movebricks(Arena* arena, Ball* ball)
         Edge e = eNone;
         int delta = 0;
         // Check for collision with ball
-        if(ball_collidesbounds(ball, &b1, &e, &delta))
+        if(ball_collidesBounds(ball, &b1, &e, &delta))
         {
           // Collision, so deflect the ball (but do nothing to the brick)
           // Actually....don't we only want to ricochet if the ball is travelling
@@ -441,7 +443,7 @@ void arena_movebricks(Arena* arena, Ball* ball)
   }
 }
 
-void arena_resetbricks(Arena* arena)
+void arena_resetBricks(Arena* arena)
 {
   for(int brickno = 0; brickno < arena->brickcount; brickno++)
   {
@@ -454,13 +456,13 @@ void arena_resetbricks(Arena* arena)
     if(arena->bricks[brickno]->type == btResurrecting)
     {
       arena->bricks[brickno]->hitcount = -1;
-      af_setanimation(arena->factory, arena->bricks[brickno]->sprite, "grey-broken", 0, arena_brickfinished, (void*)arena->bricks[brickno], (void*)arena->factory);
+      af_setanimation(arena->factory, arena->bricks[brickno]->sprite, "grey-broken", 0, arena_brickFinished, (void*)arena->bricks[brickno], (void*)arena->factory);
       arena->bricks[brickno]->sprite->state = asStatic;
     }
   }
 }
 
-void arena_freelevels(Arena* arena)
+void arena_freeLevels(Arena* arena)
 {
   for(int levno = 0; levno < arena->numlevels; levno++)
   {
@@ -477,7 +479,7 @@ void arena_freelevels(Arena* arena)
   free(arena->levels);
 }
 
-Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
+Bonus* arena_addBonus(Arena* arena, int x, int y, Bonustype type)
 {
   // There was a memory leak reported by valgrind here...
   // but actually the leak is because I hadn't yet freed
@@ -523,7 +525,7 @@ Bonus* arena_addbonus(Arena* arena, int x, int y, Bonustype type)
   return bonus;
 }
 
-Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
+Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball)
 {
   for(int i = 0; i < arena->bonuscount; i++)
   {
@@ -547,9 +549,9 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
         case boShrink:
           // If the bat size is currently long, don't play the grow animation
           if(player->w != psShort)
-            af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_aftershrink, (void*)arena, (void*)player);
+            af_setanimation(arena->factory, &(player->sprite),"bat-shrink", 0, bat_afterShrink, (void*)arena, (void*)player);
           else
-            bat_aftershrink((void*)arena, (void*)player);
+            bat_afterShrink((void*)arena, (void*)player);
           ball->state = bsNormal;
           player->state = plShort;
         break;
@@ -565,14 +567,14 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
         case boGrow:
           // If the bat size is currently short, don't play the grow animation
           if(player->w != psLong)
-            af_setanimation(arena->factory, &(player->sprite),"bat-grow", 0, bat_aftergrow, (void*)arena, (void*)player);
+            af_setanimation(arena->factory, &(player->sprite),"bat-grow", 0, bat_afterGrow, (void*)arena, (void*)player);
           else
-            bat_aftergrow((void*)arena, (void*)player);
+            bat_afterGrow((void*)arena, (void*)player);
           ball->state = bsNormal;
           player->state = plLong;
         break;
         case boLaser:
-          af_setanimation(arena->factory, &(player->sprite),"bat-laserify", 0, bat_afterlaser, (void*)arena, (void*)player);
+          af_setanimation(arena->factory, &(player->sprite),"bat-laserify", 0, bat_afterLaser, (void*)arena, (void*)player);
           player->sprite.state = asPlayToEnd;
           player->state = plLaser;
         break;
@@ -592,7 +594,7 @@ Bonus* arena_batcollidesbonus(Arena* arena, Bat* player, Ball* ball)
   return NULL;
 }
 
-void bat_aftershrink(void* sender, void* data)
+void bat_afterShrink(void* sender, void* data)
 {
   Bat* player = (Bat*)data;
   Arena* arena = (Arena*)sender;
@@ -601,7 +603,7 @@ void bat_aftershrink(void* sender, void* data)
   player->w = psShort;
 }
 
-void bat_aftergrow(void* sender, void* data)
+void bat_afterGrow(void* sender, void* data)
 {
   Bat* player = (Bat*)data;
   Arena* arena = (Arena*)sender;
@@ -610,7 +612,7 @@ void bat_aftergrow(void* sender, void* data)
   player->w = psLong;
 }
 
-void bat_afterlaser(void* sender, void* data)
+void bat_afterLaser(void* sender, void* data)
 {
   Bat* player = (Bat*)data;
   Arena* arena = (Arena*)sender;
@@ -618,7 +620,7 @@ void bat_afterlaser(void* sender, void* data)
   player->sprite.state = asLooping;
 }
 
-int ball_moveball(Ball* ball, Arena* arena, Bat* player)
+int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
 {
   // Using the speed as the hypotenuse of the triangle,
   // use trig to work out the next X and Y coordinates.
@@ -674,7 +676,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
       ball->x = ball->cx - ball->radius;
       ball->y = ball->cy - ball->radius;
 
-      b = ball_collidesbricks(ball, arena->bricks, arena->brickcount, &hitedge);
+      b = ball_collidesBricks(ball, arena->bricks, arena->brickcount, &hitedge);
 
       // We've hit a brick. Ball will be positioned
       // on the brick edge
@@ -689,7 +691,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
           Bounds wbound = { .left = b->left + 27, .width = 25, .height = 25, .top = b->top + 12 };
 
           int delta = 0;
-          if(ball_collidesbounds(ball, &wbound, &hitedge, &delta))
+          if(ball_collidesBounds(ball, &wbound, &hitedge, &delta))
           {
             // Prevent ricochet from the wormhole
             hitedge = eNone;
@@ -792,7 +794,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
             // We can limit the maximum bonus on each level if we want
             // e.g. to prevent laser or warp on the boss level
             if((botype != boNone) && ((int)botype <= arena->levels[arena->level - 1].maxbonuslevel))
-              arena_addbonus(arena, b->left, b->bottom, botype);
+              arena_addBonus(arena, b->left, b->bottom, botype);
 
             af_playsample(arena->factory, "brick");
           }
@@ -846,7 +848,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
         ball->warpdest = NULL;
       }
 
-      if(1 == ball_collidesbat(ball, player, &hitedge))
+      if(1 == ball_collidesBat(ball, player, &hitedge))
       {
         af_playsample(arena->factory, "bat");
         if(ball->state == bsLoose)
@@ -921,7 +923,7 @@ int ball_moveball(Ball* ball, Arena* arena, Bat* player)
   return 0;
 }
 
-int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
+int ball_collidesBat(Ball* ball, Bat* player, Edge* e)
 {
   if ((ball->cy - (player->y + player->h) < ball->radius) &&
       (player->x - ball->cx < ball->radius) &&
@@ -993,7 +995,7 @@ int ball_collidesbat(Ball* ball, Bat* player, Edge* e)
   return 0;
 }
 
-void arena_addbullet(Arena* arena, Bat* player)
+void arena_addBullet(Arena* arena, Bat* player)
 {
   if(arena->bulletcount >= MAXBULLETS)
     return;
@@ -1017,7 +1019,7 @@ void arena_addbullet(Arena* arena, Bat* player)
   arena->bullets[arena->bulletcount - 1]->y = player->y;
 }
 
-void arena_movebullets(Arena* arena)
+void arena_moveBullets(Arena* arena)
 {
   for(int i = 0; i < arena->bulletcount; i++)
   {
@@ -1025,7 +1027,7 @@ void arena_movebullets(Arena* arena)
   }
 }
 
-void arena_drawbullets(Arena* arena, SDL_Renderer* renderer)
+void arena_drawBullets(Arena* arena, SDL_Renderer* renderer)
 {
   for(int i = 0; i < arena->bulletcount; i++)
   {
@@ -1039,7 +1041,7 @@ void arena_drawbullets(Arena* arena, SDL_Renderer* renderer)
   }
 }
 
-void arena_freebullet(Arena* arena, int index)
+void arena_freeBullet(Arena* arena, int index)
 {
   free(arena->bullets[index]);
   arena->bullets[index] = NULL;
@@ -1059,22 +1061,22 @@ void arena_freebullet(Arena* arena, int index)
   }
 }
 
-void arena_freebullets(Arena* arena)
+void arena_freeBullets(Arena* arena)
 {
   for(int i = arena->bulletcount-1; i >= 0; i--)
   {
-    arena_freebullet(arena, i);
+    arena_freeBullet(arena, i);
   }
 }
 
-void arena_checkbulletcollisions(Arena* arena)
+void arena_checkBulletCollisions(Arena* arena)
 {
   for(int i = arena->bulletcount - 1; i >= 0; i--)
   {
     Bullet* bullet = arena->bullets[i];
     if(bullet->y < arena->bounds.top)
     {
-      arena_freebullet(arena, i);
+      arena_freeBullet(arena, i);
       continue;
     }
   }
@@ -1103,7 +1105,7 @@ void arena_checkbulletcollisions(Arena* arena)
          (bullet->x + 5 > b->left) &&
          (bullet->x < b->right))
       {
-          arena_freebullet(arena, i);
+          arena_freeBullet(arena, i);
           hit = true;
           continue; // test next bullet
       }
@@ -1121,20 +1123,20 @@ void arena_checkbulletcollisions(Arena* arena)
   }
 }
 
-void arena_drawlives(Arena* arena, App* app)
+void arena_drawLives(Arena* arena, App* app)
 {
   for(int i = 0; i < arena->lives; i++)
     a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 40+(40*i), 560, 0, 255);
 }
 
-void arena_finallevelend(void* sender)
+void arena_finalLevelEnd(void* sender)
 {
   Arena* arena = (Arena*)(sender);
   af_playsampleforced(arena->factory, "victory", 1);
-  arena_resetexplosions(arena);
+  arena_resetExplosions(arena);
 }
 
-void arena_resetexplosions(Arena* arena)
+void arena_resetExplosions(Arena* arena)
 {
   Uint32 startticks = SDL_GetTicks();
   for(int i = 0; i < NUMEXPLOSIONS; i++)
@@ -1157,7 +1159,7 @@ void arena_resetexplosions(Arena* arena)
   }
 }
 
-bool arena_drawexplosions(Arena* arena, SDL_Renderer* renderer)
+bool arena_drawExplosions(Arena* arena, SDL_Renderer* renderer)
 {
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   bool alldead = true;

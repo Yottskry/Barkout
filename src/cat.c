@@ -196,7 +196,7 @@ bool cat_collidesball(Cat* cats, Ball* ball, ResourceFactory* factory)
     if(cats[i].state == csAlive)
     {
       int d = 0;
-      if(ball_collidesbounds(ball, &cats[i].bounds, &edge, &d))
+      if(ball_collidesBounds(ball, &cats[i].bounds, &edge, &d))
       {
         cats[i].state = csDying;
         ball_ricochet(ball, edge);

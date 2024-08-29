@@ -17,8 +17,11 @@
 #define STARTLIVES 3
 #define OPT1 "Ball angle is determined by segment of bat hit"
 #define OPT2 "Bat speed and direction influences ball spin and angle"
+#define DON1 "This game is a labour of love. All programming, graphics, music, and sound effects were produced by me."
+#define DON2 "If you enjoy playing it, please consider making a small donation by buying me a coffee through the link below."
+#define DON3 "https://buymeacoffee.com/retrojunkies"
 
-void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
+void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
 {
   // Load some sprites
   af_loadanimation(f, renderer, "red.png", "red", 44, 29);
@@ -90,14 +93,14 @@ void loadresources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-explosion.wav", "explosion");
 }
 
-int gameover(App* app, Arena* arena, Gamestate* gamestate, int* hi)
+int gameOver(App* app, Arena* arena, Gamestate* gamestate, int* hi)
 {
   *gamestate = gsDying;
-  text_drawtext(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawtext(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
+  text_drawText(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawText(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
   if(arena->score > *hi)
   {
-    savehighscore(((int*)&arena->score));
+    saveHighScore(((int*)&arena->score));
     *hi = arena->score;
   }
   return *hi;
@@ -109,7 +112,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   player->x = arena->width / 2;
   bat_reset(player, arena->factory);
   bonus_freebonuses(&arena->bonuses, &arena->bonuscount);
-  arena_freebullets(arena);
+  arena_freeBullets(arena);
   arena->counter = SDL_GetTicks();
   af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
   ball->state = bsSticky;
@@ -118,43 +121,43 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   ball->speed = 6;
   ball->warpdest = NULL;
   *gamestate = gsGetReady;
-  text_drawtext(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawtext(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
+  text_drawText(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawText(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
   return 0;
 }
-
-int getready(Gamestate* gamestate, Gamestate nextstate)
+/*
+int getReady(Gamestate* gamestate, Gamestate nextstate)
 {
   //SDL_Delay(3000);
   *gamestate = nextstate;
   return 0;
 }
-
-void menu_quitclick(void* data)
+*/
+void menu_quitClick(void* data)
 {
   App* app = (App*)data;
   app->gamestate = gsQuit;
 }
 
-void menu_startclick(void* data)
+void menu_startClick(void* data)
 {
   App* app = (App*)data;
   app->gamestate = gsStory;
 }
 
-void menu_creditsclick(void* data)
+void menu_creditsClick(void* data)
 {
   App* app = (App*)data;
   app->gamestate = gsCredits;
 }
 
-void menu_howtoplayclick(void* data)
+void menu_howToPlayClick(void* data)
 {
   App* app = (App*)data;
   app->gamestate = gsHelp;
 }
 
-void menu_fullscreentoggle(void* data, void* item)
+void menu_fullScreenToggle(void* data, void* item)
 {
   App* app = (App*)data;
   MenuItem* menuitem = (MenuItem*)item;
@@ -165,7 +168,13 @@ void menu_fullscreentoggle(void* data, void* item)
     SDL_SetWindowFullscreen(app->window, 0);
 }
 
-void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
+void menu_donateClick(void* data)
+{
+  App* app = (App*)data;
+  app->gamestate = gsDonate;
+}
+
+void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
 {
   int ofs = 0;
   int ofs2 = 0;
@@ -184,108 +193,126 @@ void drawbackground(App* app, Arena* arena, Bat* player, ResourceFactory* factor
   a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0, 255);
 }
 
-void drawarenatext(App* app, Arena* arena, int hi)
+void drawArenaText(App* app, Arena* arena, int hi)
 {
-  text_drawtext(app, "BARKOUT", 612, 22, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawtext(app, "BARKOUT", 610, 20, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+  text_drawText(app, "BARKOUT", 612, 22, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawText(app, "BARKOUT", 610, 20, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 
   char highs[10] = "";
 
   sprintf(highs, "%08d", hi);
 
-  text_drawtext(app, "Hi Score", 612, 82, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawtext(app, "Hi Score", 610, 80, (SDL_Color){255,255,255,255}, 0, fnTitle);
+  text_drawText(app, "Hi Score", 612, 82, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawText(app, "Hi Score", 610, 80, (SDL_Color){255,255,255,255}, 0, fnTitle);
 
-  text_drawtext(app, highs, 612, 122, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawtext(app, highs, 610, 120, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+  text_drawText(app, highs, 612, 122, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawText(app, highs, 610, 120, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 
   char scores[10] = "";
 
   sprintf(scores, "%08d", arena->score);
 
-  text_drawtext(app, "Score", 612, 202, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawtext(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, 0, fnTitle);
+  text_drawText(app, "Score", 612, 202, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawText(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, 0, fnTitle);
 
-  text_drawtext(app, scores, 612, 242, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawtext(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+  text_drawText(app, scores, 612, 242, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawText(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 
   char level[4] = "";
 
   sprintf(level, "%02d", arena->level);
 
-  text_drawtext(app, "Round", 612, 322, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawtext(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, 0, fnTitle);
+  text_drawText(app, "Round", 612, 322, (SDL_Color){0,0,0,255}, 0, fnTitle);
+  text_drawText(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, 0, fnTitle);
 
-  text_drawtext(app, level, 742, 322, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawtext(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+  text_drawText(app, level, 742, 322, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
+  text_drawText(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 }
 
-void drawhowtoplace(ResourceFactory* factory, App* app)
+void drawHowToPlay(App* app, Sprite* sprites)
 {
   int left = 40;
   int top = 30;
 
   SDL_Color white = {255,255,255,255};
 
-  text_drawtext(app, "How to Play", left, top, white, 0, fnStory);
+  text_drawText(app, "How to Play", left, top, white, 0, fnStory);
 
   char* howtotext = "Use your craft, Maus, to direct "
                     "the energy ball and destroy the "
                     "infrastructure of the evil Cat Empire!";
   top = 75;
-  text_drawwrappedtext(app, howtotext, left, top, white, 0, 700, fnStory);
+  text_drawWrappedText(app, howtotext, left, top, white, 0, 700, fnStory);
 
   char* bonustext = "Some of the structure may reveal "
                     "powerful bonuses when destroyed. "
                     "Use them wisely!";
 
   top = 185;
-  text_drawwrappedtext(app, bonustext, left, top, white, 0, 700, fnStory);
+  text_drawWrappedText(app, bonustext, left, top, white, 0, 700, fnStory);
 
   top = 300;
-  //text_drawtext(app, "Use them wisely!", left, top, white, 0);
-  //top += 40;
-  //text_drawtext(app, "Bonuses", left, top, white, 0);
-  //top += 50;
-  a_drawstaticframe(af_getanimation(factory, "bonus-c"), app->renderer, left, top, 0, 255);
-  text_drawwrappedtext(app, "The ball sticks to the Maus", left + 80, top - 5, white, 0, 600, fnBody);
+  int snum = 0;
+  //a_drawstaticframe(af_getanimation(factory, "bonus-c"), app->renderer, left, top, 0, 255);
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "The ball sticks to the Maus", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-l"), app->renderer, left, top, 0, 255);
-  text_drawwrappedtext(app, "Enable the Maus's laser guns", left + 80, top - 5, white, 0, 600, fnBody);
+  //a_drawstaticframe(af_getanimation(factory, "bonus-l"), app->renderer, left, top, 0, 255);
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "Enable the Maus's laser guns", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-d"), app->renderer, left, top, 0, 255);
-  text_drawwrappedtext(app, "Enhance the energy ball", left + 80, top - 5, white, 0, 600, fnBody);
+  //a_drawstaticframe(af_getanimation(factory, "bonus-d"), app->renderer, left, top, 0, 255);
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "Enhance the energy ball", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-e"), app->renderer, left, top, 0, 255);
-  text_drawwrappedtext(app, "Extend the Maus!", left + 80, top - 5, white, 0, 600, fnBody);
+  //a_drawstaticframe(af_getanimation(factory, "bonus-e"), app->renderer, left, top, 0, 255);
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "Extend the Maus!", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-s"), app->renderer, left, top, 0, 255);
-  text_drawwrappedtext(app, "Shrink the Maus. Avoid this one.", left + 80, top - 5, white, 0, 600, fnBody);
+  //a_drawstaticframe(af_getanimation(factory, "bonus-s"), app->renderer, left, top, 0, 255);
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "Shrink the Maus. Avoid this one.", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-p"), app->renderer, left, top, 0, 255);
-  text_drawwrappedtext(app, "Extra player!", left + 80, top - 5, white, 0, 600, fnBody);
+  //a_drawstaticframe(af_getanimation(factory, "bonus-p"), app->renderer, left, top, 0, 255);
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "Extra player!", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  a_drawstaticframe(af_getanimation(factory, "bonus-w"), app->renderer, left, top, 0, 255);
-  text_drawwrappedtext(app, "Warp to the next round", left + 80, top - 5, white, 0, 600, fnBody);
+  //a_drawstaticframe(af_getanimation(factory, "bonus-w"), app->renderer, left, top, 0, 255);
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "Warp to the next round", left + 80, top - 5, white, 0, 600, fnBody);
 }
 
-void drawcredits(App* app)
+void drawCredits(App* app)
 {
   int left = 150;
 
   SDL_Color white = {255,255,255,255};
 
-  text_drawtext(app, "Credits", left, 110, white, 0, fnTitle);
-  text_drawtext(app, "_____________________________________", left, 120, white, 0, fnTitle);
-  text_drawtext(app, "Programming", left, 160, white, 0, fnTitle);
-  text_drawtext(app, "Graphics", left, 200, white, 0, fnTitle);
-  text_drawtext(app, "Sound FX", left, 240, white, 0, fnTitle);
-  text_drawtext(app, "Music", left, 280, white, 0, fnTitle);
+  text_drawText(app, "Credits", left, 110, white, 0, fnTitle);
+  text_drawText(app, "_____________________________________", left, 120, white, 0, fnTitle);
+  text_drawText(app, "Programming", left, 160, white, 0, fnTitle);
+  text_drawText(app, "Graphics", left, 200, white, 0, fnTitle);
+  text_drawText(app, "Sound FX", left, 240, white, 0, fnTitle);
+  text_drawText(app, "Music", left, 280, white, 0, fnTitle);
 
-  text_drawtext(app, "Go team!", left, 360, white, 0, fnTitle);
+  text_drawText(app, "Go team!", left, 360, white, 0, fnTitle);
 
   for(int i = 0; i < 4; i++)
-    text_drawtext(app, "Fat Harry", left + 260, 160 + (i*40), white, 0, fnTitle);
+    text_drawText(app, "Fat Harry", left + 260, 160 + (i*40), white, 0, fnTitle);
+}
+
+void drawDonate(App* app)
+{
+  int left = 100;
+  int top = 50;
+
+  SDL_Color white = {255,255,255,255};
+
+  text_drawWrappedText(app, "Donate! (please)", left, 100, white, 0, 600, fnBody);
+  text_drawWrappedText(app, DON1, left, 160, white, 0, 500, fnBody);
+  text_drawWrappedText(app, DON2, left, 280, white, 0, 500, fnBody);
+  text_drawWrappedText(app, DON3, left, 400, white, 0, 500, fnBody);
+  text_drawWrappedText(app, "Thanks.", left, 480, white, 0, 500, fnBody);
 }
 
 int main(int argc, char** argv)
@@ -359,14 +386,17 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-  config_setfullscreen(false);
+	Config* config = config_load();
+
+  //config_setfullscreen(config.fullscreen);
 
 	if((flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
     config_setfullscreen(true);
 
-	Config* config = config_load();
+  if(config->fullscreen)
+    flags = flags | SDL_WINDOW_FULLSCREEN;
 
-  text_loadfonts(&app);
+  text_loadFonts(&app);
 
 	app.window = SDL_CreateWindow("Barkout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
@@ -381,7 +411,7 @@ int main(int argc, char** argv)
   ResourceFactory f = { .anims = NULL, .animationcount = 0, .samples = NULL, .samplecount = 0 };
 
   // Load animations and samples
-  loadresources(&f, app.renderer);
+  loadResources(&f, app.renderer);
 
   Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = 3 };
   player.sprite.anim = af_getanimation(&f, "bat");
@@ -440,17 +470,39 @@ int main(int argc, char** argv)
                   .multiplier = 1
                 };
 
+  int spritecount = 7;
+  Sprite bonussprites[spritecount];
+  // "dsecplw";
+  // Yes, 7. No \0.
+  char bonustypes[7] = "cldespw";
+  char bonusstring[8] = "bonus-x";
+  for(int i=0; i < spritecount; i++)
+  {
+    //Sprite* s = malloc(sizeof(Sprite));
+    // Change the last letter of the bonus sprite name
+    bonusstring[6] = bonustypes[i];
+    bonussprites[i].currentframe = 0;
+    bonussprites[i].lastticks = 0;
+    bonussprites[i].data = NULL;
+    bonussprites[i].sender = NULL;
+    bonussprites[i].onanimfinished = NULL;
+    bonussprites[i].loop = 1;
+    bonussprites[i].state = asLooping;
+    bonussprites[i].anim = af_getanimation(&f, bonusstring);
+  }
+
   Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 240, .app=&app };
-  MenuItem* item = menu_additem(&menu, "Start game", NULL, menu_startclick, NULL);
-  item = menu_additem(&menu, "Control method", (int*)&(config->controlmethod), NULL, NULL);
-  menu_additemoption(item, "Barkout", OPT2, (int)cmBarkanoid);
-  menu_additemoption(item, "Classic", OPT1, (int)cmClassic);
-  item = menu_additem(&menu, "Full screen", (int*)&(config->fullscreen), NULL, menu_fullscreentoggle);
-  menu_additemoption(item, "Yes", "Stretch to full screen", 1);
-  menu_additemoption(item, "No", "Play windowed", 0);
-  menu_additem(&menu, "How to Play", NULL, menu_howtoplayclick, NULL);
-  menu_additem(&menu, "Credits", NULL, menu_creditsclick, NULL);
-  menu_additem(&menu, "Quit", NULL, menu_quitclick, NULL);
+  MenuItem* item = menu_addItem(&menu, "Start game", NULL, menu_startClick, NULL);
+  item = menu_addItem(&menu, "Control method", (int*)&(config->controlmethod), NULL, NULL);
+  menu_addItemOption(item, "Barkout", OPT2, (int)cmBarkanoid);
+  menu_addItemOption(item, "Classic", OPT1, (int)cmClassic);
+  item = menu_addItem(&menu, "Full screen", (int*)&(config->fullscreen), NULL, menu_fullScreenToggle);
+  menu_addItemOption(item, "Yes", "Stretch to full screen", 1);
+  menu_addItemOption(item, "No", "Play windowed", 0);
+  menu_addItem(&menu, "How to Play", NULL, menu_howToPlayClick, NULL);
+  menu_addItem(&menu, "Credits", NULL, menu_creditsClick, NULL);
+  menu_addItem(&menu, "Donate!", NULL, menu_donateClick, NULL);
+  menu_addItem(&menu, "Quit", NULL, menu_quitClick, NULL);
 
 	SDL_ShowCursor(SDL_DISABLE);
 
@@ -465,14 +517,14 @@ int main(int argc, char** argv)
     #endif
     strcat(apath, levelfile);
     if(customlevels)
-      arena_loadbinary(&f, &arena, customlevelfile);
+      arena_loadBinary(&f, &arena, customlevelfile);
     else
-      arena_loadbinary(&f, &arena, apath);
+      arena_loadBinary(&f, &arena, apath);
   }
   else
-    arena_loadlevels(&arena, &f);
+    arena_loadLevels(&arena, &f);
 
-  int hi = loadhighscore();
+  int hi = loadHighScore();
 
   Star stars[STARS];
   intro_init(stars);
@@ -601,7 +653,7 @@ int main(int argc, char** argv)
         {
           case SDLK_1:
             if(app.gamestate == gsRunning)
-              arena_addbonus(&arena, 200, 300, boLaser);
+              arena_addBonus(&arena, 200, 300, boLaser);
           break;
 
           case SDLK_k:
@@ -619,7 +671,7 @@ int main(int argc, char** argv)
             }
             else if(app.gamestate==gsMenu)
             {
-              menu_previousoption(&menu);
+              menu_previousOption(&menu);
             }
           break;
           case SDLK_x:
@@ -631,7 +683,7 @@ int main(int argc, char** argv)
             }
             else if(app.gamestate==gsMenu)
             {
-              menu_nextoption(&menu);
+              menu_nextOption(&menu);
             }
           break;
           case SDLK_p: app.gamestate = app.gamestate == gsRunning ? gsPaused : gsRunning; break;
@@ -639,11 +691,11 @@ int main(int argc, char** argv)
             if((app.gamestate == gsRunning) && (player.state == plLaser))
             {
               af_playsample(&f, "laser");
-              arena_addbullet(&arena, &player);
+              arena_addBullet(&arena, &player);
             }
-
+          // fall through
           case SDLK_RETURN:
-            if((app.gamestate == gsTitle) || (app.gamestate == gsCredits) || (app.gamestate == gsHelp))
+            if((app.gamestate == gsTitle) || (app.gamestate == gsCredits) || (app.gamestate == gsHelp) || (app.gamestate == gsDonate))
               app.gamestate = gsMenu;
             else if(app.gamestate == gsMenu)
               menu_execute(&menu);
@@ -654,7 +706,7 @@ int main(int argc, char** argv)
               arena.level = startlevel;
               arena.score = 0;
               arena.alpha = 255;
-              arena_loadbricks(&arena, arena.level);
+              arena_loadBricks(&arena, arena.level);
             }
           break;
           case SDLK_DOWN:
@@ -691,12 +743,12 @@ int main(int argc, char** argv)
 
       if(!titlefinished){
         // Returns true when text has completed fade in and out
-        titlefinished = text_drawflashtext(&app, &fathorse, 200, 100, 2);
+        titlefinished = text_drawFlashText(&app, &fathorse, 200, 100, 2);
       }
       intro_drawstars(app.renderer, stars);
       if(titlefinished){
         a_drawsprite(&intro, app.renderer, 200, 160);
-        text_drawflashtext(&app, &pressstart, 260, 220, 2);
+        text_drawFlashText(&app, &pressstart, 260, 220, 2);
         //a_drawstaticframe(af_getanimation(&f, "logo"), app.renderer, 700, 500, 0, 255);
       }
 
@@ -710,7 +762,7 @@ int main(int argc, char** argv)
       intro_drawstars(app.renderer, stars);
       a_drawsprite(&intro, app.renderer, 200, 160);
 
-      menu_drawmenu(&menu, &app);
+      menu_drawMenu(&menu, &app);
 
       intro_movestars(stars);
       // problem is that on our next loop, if we've changed
@@ -719,15 +771,17 @@ int main(int argc, char** argv)
       a_drawstaticframe(af_getanimation(&f, "logo"), app.renderer, 700, 500, 0, 255);
     }
 
-    if((app.gamestate == gsCredits) || (app.gamestate == gsHelp))
+    if((app.gamestate == gsCredits) || (app.gamestate == gsHelp) || (app.gamestate == gsDonate))
     {
       titlefinished = true;
       intro_drawstars(app.renderer, stars);
 
       if(app.gamestate == gsCredits)
-        drawcredits(&app);
+        drawCredits(&app);
+      else if(app.gamestate == gsHelp)
+        drawHowToPlay(&app, bonussprites);
       else
-        drawhowtoplace(&f, &app);
+        drawDonate(&app);
 
       intro_movestars(stars);
     }
@@ -738,9 +792,9 @@ int main(int argc, char** argv)
       arena.level = startlevel;
       intro_drawstars(app.renderer, stars);
       a_drawsprite(&intro, app.renderer, 200, 220);
-      text_drawflashstory(&app, &story1, &txt1, 300);
-      text_drawflashstory(&app, &story2, &txt2, 340);
-      if(text_drawflashstory(&app, &story3, &txt3, 380))
+      text_drawFlashStory(&app, &story1, &txt1, 300);
+      text_drawFlashStory(&app, &story2, &txt2, 340);
+      if(text_drawFlashStory(&app, &story3, &txt3, 380))
         app.gamestate = gsNewLevel;
       intro_movestars(stars);
       // problem is that on our next loop, if we've changed
@@ -755,11 +809,11 @@ int main(int argc, char** argv)
     {
       if(Mix_PlayingMusic() != 0)
         Mix_HaltMusic();
-      arena_loadbricks(&arena, arena.level);
-      drawbackground(&app, &arena, NULL, &f);
-      drawarenatext(&app, &arena, hi);
-      arena_drawbricks(&arena, app.renderer);
-      arena_drawbricks(&arena, app.renderer);
+      arena_loadBricks(&arena, arena.level);
+      drawBackground(&app, &arena, NULL, &f);
+      drawArenaText(&app, &arena, hi);
+      arena_drawBricks(&arena, app.renderer);
+      arena_drawBricks(&arena, app.renderer);
       // Reset immediately changes the state to gsGetReady
       // So this block only executes once
       cats[0].state = csDead;
@@ -771,18 +825,18 @@ int main(int argc, char** argv)
 
     if(app.gamestate == gsPaused)
     {
-      drawbackground(&app, &arena, &player, &f);
-      drawarenatext(&app, &arena, hi);
-      arena_drawbricks(&arena, app.renderer);
+      drawBackground(&app, &arena, &player, &f);
+      drawArenaText(&app, &arena, hi);
+      arena_drawBricks(&arena, app.renderer);
       bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
     }
 
     if(app.gamestate == gsRunning)
     {
-      drawbackground(&app, &arena, &player, &f);
-      drawarenatext(&app, &arena, hi);
-      arena_movebricks(&arena, &ball);
-      arena_drawbricks(&arena, app.renderer);
+      drawBackground(&app, &arena, &player, &f);
+      drawArenaText(&app, &arena, hi);
+      arena_moveBricks(&arena, &ball);
+      arena_drawBricks(&arena, app.renderer);
 
       // draw the warp area on the right
       if(player.warpenabled == true)
@@ -793,7 +847,7 @@ int main(int argc, char** argv)
       // Check if it was already set (by keypress)
       if(currentlywarping == 0)
         if(arena.remaining > 0)
-          islostball = ball_moveball(&ball, &arena, &player) || islostball;
+          islostball = ball_moveBall(&ball, &arena, &player) || islostball;
 
       if(1 == islostball)
       {
@@ -813,8 +867,8 @@ int main(int argc, char** argv)
         }
         else
         {
-          gameover(&app, &arena, &app.gamestate, &hi);
-          arena_resetbricks(&arena);
+          gameOver(&app, &arena, &app.gamestate, &hi);
+          arena_resetBricks(&arena);
         }
       }
 
@@ -843,13 +897,13 @@ int main(int argc, char** argv)
         // We rely on the onlevelend event at the point remaining is decremented in order to set up the explosions
         if(arena.level == arena.numlevels)
         {
-          bool allfinished = arena_drawexplosions(&arena, app.renderer);
+          bool allfinished = arena_drawExplosions(&arena, app.renderer);
           arena.alpha -= arena.alpha < 3 ? arena.alpha : 3;
-          text_drawtext(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED, fnTitle);
+          text_drawText(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED, fnTitle);
           if(allfinished)
           {
-            gameover(&app, &arena, &app.gamestate, &hi);
-            arena_resetbricks(&arena);
+            gameOver(&app, &arena, &app.gamestate, &hi);
+            arena_resetBricks(&arena);
           }
         }
         else
@@ -866,7 +920,7 @@ int main(int argc, char** argv)
       if(currentlywarping == 0)
       {
         bonus_movebonuses(&arena.bonuses, &arena.bonuscount, arena.bounds);
-        arena_movebullets(&arena);
+        arena_moveBullets(&arena);
       }
       else
       {
@@ -888,8 +942,8 @@ int main(int argc, char** argv)
           player.targetspeed = 0;
         }
       }
-      arena_checkbulletcollisions(&arena);
-      arena_batcollidesbonus(&arena, &player, &ball);
+      arena_checkBulletCollisions(&arena);
+      arena_batCollidesBonus(&arena, &player, &ball);
 
     } // This one is an else because we need one loop between
       // change of app.gamestate for the Get Ready text to render.
@@ -913,18 +967,18 @@ int main(int argc, char** argv)
 	  if((app.gamestate == gsRunning) || (app.gamestate == gsPaused) || (app.gamestate == gsNewLevel) || (app.gamestate == gsGetReady))
 	  {
 
-      arena_drawlives(&arena, &app);
+      arena_drawLives(&arena, &app);
       // Draw the ball
       if((ball.cy - ball.radius) < (arena.bounds.bottom - 15))
       {
 
-        ball_drawball(&ball, app.renderer);
+        ball_drawBall(&ball, app.renderer);
       }
 
       // Draw the bat
       bat_drawbat(&player, app.renderer, arena.bounds);
 
-      arena_drawbullets(&arena, app.renderer);
+      arena_drawBullets(&arena, app.renderer);
     }
 
     // Display everything on the screen
@@ -945,11 +999,13 @@ int main(int argc, char** argv)
 
   // Exiting the program, so free all allocated memory
 
+  config_save();
+
   menu_free(&menu);
   //af_freeanimation(&f, "ball");
   bonus_freebonuses(&arena.bonuses, &arena.bonuscount);
-  arena_freelevels(&arena);
-  arena_freebullets(&arena);
+  arena_freeLevels(&arena);
+  arena_freeBullets(&arena);
 
   af_freesamples(&f);
   af_freeanimations(&f);
@@ -960,7 +1016,7 @@ int main(int argc, char** argv)
 	Mix_FreeMusic(app.music);
 	Mix_CloseAudio();
 
-	text_freefonts(&app);
+	text_freeFonts(&app);
 
 	TTF_Quit();
 	IMG_Quit();

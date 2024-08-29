@@ -83,7 +83,7 @@ void levels_compile(const char* folder, const char* ofolder)
   #endif // _WIN32
 }
 
-void levels_processrow(ResourceFactory* factory, Level* level, Bounds* bounds, const char* rowdata, int row, int* brickno)
+void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, const char* rowdata, int row, int* brickno)
 {
   // Read each character. This is the column.
   for(size_t col = 0; col < strlen(rowdata); col++)
@@ -165,7 +165,7 @@ void levels_processrow(ResourceFactory* factory, Level* level, Bounds* bounds, c
         brick->type = btResurrecting;
         brick->sprite->sender = (void*)(brick);
         brick->sprite->data = (void*)(factory);
-        brick->sprite->onanimfinished = arena_brickfinished;
+        brick->sprite->onanimfinished = arena_brickFinished;
       break;
       case 'G':
         brick->starthitcount = 2;
@@ -223,25 +223,25 @@ void levels_processrow(ResourceFactory* factory, Level* level, Bounds* bounds, c
   }
 }
 
-void arena_brickfinished(void* sender, void* data)
+void arena_brickFinished(void* sender, void* data)
 {
   Brick* brick = (Brick*)sender;
   brick->counter = RESURRECTTIMER;
   brick->sprite->currentframe = 0;
   ResourceFactory* factory = (ResourceFactory*)data;
-  af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickrepaired, (void*)brick, (void*)factory);
+  af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickRepaired, (void*)brick, (void*)factory);
   // Set the animation to the reappearing animation here
   // as the frame doesn't increase unless the sprite as
   // drawn, and it won't draw while the counter > 0
 }
 
-void arena_brickrepaired(void* sender, void* data)
+void arena_brickRepaired(void* sender, void* data)
 {
   // Repair animation has finished. Set it back to standard brick animation.
   Brick* brick = (Brick*)sender;
   brick->sprite->currentframe = 0;
   ResourceFactory* factory = (ResourceFactory*)data;
-  af_setanimation(factory, brick->sprite, "grey-broken", 0, arena_brickfinished, (void*)brick, (void*)factory);
+  af_setanimation(factory, brick->sprite, "grey-broken", 0, arena_brickFinished, (void*)brick, (void*)factory);
   // We need to set this to prevent these two routines just calling each other forever
   brick->sprite->state = asStatic;
 }

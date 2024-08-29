@@ -25,16 +25,16 @@ typedef struct
   int current;
 } FlashStory;
 
-void text_drawtext(App* app, const char* text, int x, int y, SDL_Color color, int flags, FontType fonttype);
+void text_drawText(App* app, const char* text, int x, int y, SDL_Color color, int flags, FontType fonttype);
 
-void text_drawwrappedtext(App* app, const char* text, int x, int y, SDL_Color color, int flags, int len, FontType fonttype);
+void text_drawWrappedText(App* app, const char* text, int x, int y, SDL_Color color, int flags, int len, FontType fonttype);
 
-bool text_drawflashtext(App* app, FlashText* text, int x, int y, int speed);
+bool text_drawFlashText(App* app, FlashText* text, int x, int y, int speed);
 
-bool text_drawflashstory(App* app, FlashStory* story, FlashText* text, int y);
+bool text_drawFlashStory(App* app, FlashStory* story, FlashText* text, int y);
 
-void text_loadfonts(App* app);
+void text_loadFonts(App* app);
 
-void text_freefonts(App* app);
+void text_freeFonts(App* app);
 
 #endif
