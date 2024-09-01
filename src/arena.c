@@ -16,6 +16,28 @@
 
 */
 
+static void arena_resetBrickParticles(Brick* brick, bool hide)
+{
+  for(int j = 0; j < MAXBRICKPARTICLES; j++)
+  {
+    brick->particles[j].alpha = hide ? 0 : (rand() % 55) + 201;
+    brick->particles[j].gdiff = 0;
+    brick->particles[j].x = rand() % (brick->right - brick->left);
+    brick->particles[j].y = rand() % (brick->bottom - brick->top);
+    brick->particles[j].yv = ((rand() % 6) + 1) * -1;
+    if(brick->particles[j].x < 10)
+      brick->particles[j].xv = ((rand() % 3) * -1) - 3; // -6 to -3
+    else if(brick->particles[j].x < 20)
+      brick->particles[j].xv = (rand() % 3) * -1; // -2 to 0
+    else if(brick->particles[j].x < 30)
+      brick->particles[j].xv = (rand() % 3); // 0 to 2
+    else
+      brick->particles[j].xv = (rand() % 3) + 3; // 3 to 6
+    brick->particles[j].x += brick->left;
+    brick->particles[j].y += brick->top;
+  }
+}
+
 int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
 {
   Uint32 count = 0;
@@ -261,6 +283,15 @@ void arena_loadBricks(Arena* arena, int level)
     brick->left = brick->startleft;
     brick->right = brick->startright;
 
+    if((brick->type & btSwitch) == btSwitch)
+    {
+      arena_resetBrickParticles(brick, true);
+    }
+    else
+    {
+      arena_resetBrickParticles(brick, false);
+    }
+    /*
     for(int j = 0; j < MAXBRICKPARTICLES; j++)
     {
       brick->particles[j].alpha = (rand() % 55) + 201;
@@ -279,6 +310,7 @@ void arena_loadBricks(Arena* arena, int level)
       brick->particles[j].x += brick->left;
       brick->particles[j].y += brick->top;
     }
+    */
   }
 }
 
@@ -337,7 +369,8 @@ void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
       }
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-      if(brick->isdead)
+      // Only reduce the brick count for non-switch type bricks.
+      if(((brick->type & btSwitch) != btSwitch) && (brick->isdead))
       {
         arena->remaining--;
         if(arena->remaining == 0)
@@ -737,6 +770,28 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
             hitedge = eNone;
           }
         }
+        else if((b->type & btSwitch) == btSwitch)
+        {
+          for(int j = 0; j < arena->brickcount; j++)
+          {
+            if(arena->bricks[j] != b)
+            {
+              if((arena->bricks[j]->type & btSwitch) == btSwitch)
+              {
+                if(arena->bricks[j]->hitcount == 0)
+                {
+                  arena->bricks[j]->hitcount = 1;
+                  arena->bricks[j]->isdead = false;
+                  arena_resetBrickParticles(arena->bricks[j], false);
+                }
+                else
+                {
+                  arena->bricks[j]->hitcount = 0;
+                }
+              }
+            }
+          }
+        }
         else if((b->type == btResurrecting))
         {
           // Collided with a resurrecting brick that is invisible. Do nothing.
@@ -770,8 +825,8 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
           // Chance of bonus no more frequently than every BONUSFREQUENCY bricks
           // and no more than two bonuses on screen at once
           if((arena->bonuscounter % BONUSFREQUENCY == 0) &&
-             (b->hitcount == 0) && (b->type == btNormal) &&
-             (arena->bonuscount < 2) && !(b->solidedges & hitedge))
+             (b->hitcount == 0) && ((b->type & btNormal) == btNormal) &&
+             (arena->bonuscount < 2) && ((b->solidedges & hitedge) != hitedge))
           {
             int bonusscore = rand() % 100;
             Bonustype botype = boNone;
@@ -798,7 +853,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
 
             af_playsample(arena->factory, "brick");
           }
-          else if(b->type == btNormal)
+          else if((b->type & btNormal) == btNormal)
           {
             af_playsample(arena->factory, "brick");
           }
@@ -810,8 +865,11 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
             // Should we ever have moving normal bricks we'll need to account for the deadly
             // powerup and not reposition the ball at the brick's edge
 
-            if((b->type & btMoving) == btMoving)
-            {
+            // Note: best to do this for all indestructible bricks, or we risk a moving
+            // brick pushing the ball into a static brick and it sticking there.
+
+            //if((b->type & btMoving) == btMoving)
+            //{
               switch(hitedge)
               {
                 case eRight:
@@ -829,7 +887,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
                 default:
                 break;
               };
-            }
+            //}
 
           }
 

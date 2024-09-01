@@ -33,6 +33,7 @@ void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "grey.png", "grey", 44, 29);
   af_loadanimation(f, renderer, "yellow.png", "yellow", 44, 29);
   af_loadanimation(f, renderer, "white.png", "white", 44, 29);
+  af_loadanimation(f, renderer, "switch.png", "switch", 44, 29);
   af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
   af_loadanimation(f, renderer, "bg1_mg.png", "bg1-mg", 600, 600);
   af_loadanimation(f, renderer, "bg1_fg.png", "bg1-fg", 660, 600);
@@ -727,6 +728,13 @@ int main(int argc, char** argv)
             printf("ball bearing: %f\n", ball.bearing);
             printf("remaining bricks: %d\n", arena.remaining);
             printf("current level: %d\n", arena.level);
+          break;
+          case SDLK_n:
+            if(app.gamestate == gsRunning)
+            {
+              // Skip to next level
+              arena.remaining = 0;
+            }
           break;
         }
       }

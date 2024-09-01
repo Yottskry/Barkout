@@ -209,6 +209,18 @@ void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, c
         brick->type = btIndestructible | btMoving;
         brickanim = af_getanimation(factory, "orange");
       break;
+      case '-':
+        // Closed switch
+        brick->starthitcount = 1;
+        brick->type = btIndestructible | btSwitch;
+        brickanim = af_getanimation(factory, "switch");
+      break;
+      case '_':
+        // Open switch
+        brick->starthitcount = 0;
+        brick->type = btIndestructible | btSwitch;
+        brickanim = af_getanimation(factory, "switch");
+      break;
     }
     brick->hitcount = brick->starthitcount;
     brick->sprite->anim = brickanim;
