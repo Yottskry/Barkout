@@ -82,8 +82,12 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
     if(ball_collidesBounds(ball, &bounds, e, &d))
     {
       // Only destroy brick if it is vulnerable on that edge
-      if(!(brick->solidedges & *e))
-        brick->hitcount--;
+      // and don't decrease hitcount for switch bricks as it
+      // can cause odd behaviour later when we try to swap
+      // the open/closed state of those bricks
+      if((brick->solidedges & *e) != *e)
+        if((brick->type & btSwitch) != btSwitch)
+          brick->hitcount--;
 
       if((d < lastd) || (lastd == 0))
       {

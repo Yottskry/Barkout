@@ -772,6 +772,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
         }
         else if((b->type & btSwitch) == btSwitch)
         {
+          b->hitcount--;
           for(int j = 0; j < arena->brickcount; j++)
           {
             if(arena->bricks[j] != b)
