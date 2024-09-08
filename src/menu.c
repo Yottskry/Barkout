@@ -75,6 +75,10 @@ void menu_previous(Menu* menu)
 void menu_nextOption(Menu* menu)
 {
   MenuItem* item = menu->items[menu->selectedindex];
+
+  if(item->optioncount == 0)
+    return;
+
   item->selectedindex++;
   if(item->selectedindex == item->optioncount)
     item->selectedindex = 0;
@@ -88,6 +92,10 @@ void menu_nextOption(Menu* menu)
 void menu_previousOption(Menu* menu)
 {
   MenuItem* item = menu->items[menu->selectedindex];
+
+  if(item->optioncount == 0)
+    return;
+
   item->selectedindex--;
   if(item->selectedindex < 0)
     item->selectedindex = item->optioncount - 1;

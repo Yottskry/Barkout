@@ -878,7 +878,7 @@ int main(int argc, char** argv)
         // renderpresent
         af_playsample(&f, "dead");
         while(Mix_Playing(-1));
-   //     arena.lives--;
+        arena.lives--;
         if(arena.lives >= 0)
         {
           // Lives already reset, but ideally we want to delay
