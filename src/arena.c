@@ -291,26 +291,6 @@ void arena_loadBricks(Arena* arena, int level)
     {
       arena_resetBrickParticles(brick, false);
     }
-    /*
-    for(int j = 0; j < MAXBRICKPARTICLES; j++)
-    {
-      brick->particles[j].alpha = (rand() % 55) + 201;
-      brick->particles[j].gdiff = 0;
-      brick->particles[j].x = rand() % (brick->right - brick->left);
-      brick->particles[j].y = rand() % (brick->bottom - brick->top);
-      brick->particles[j].yv = ((rand() % 6) + 1) * -1;
-      if(brick->particles[j].x < 10)
-        brick->particles[j].xv = ((rand() % 3) * -1) - 3; // -6 to -3
-      else if(brick->particles[j].x < 20)
-        brick->particles[j].xv = (rand() % 3) * -1; // -2 to 0
-      else if(brick->particles[j].x < 30)
-        brick->particles[j].xv = (rand() % 3); // 0 to 2
-      else
-        brick->particles[j].xv = (rand() % 3) + 3; // 3 to 6
-      brick->particles[j].x += brick->left;
-      brick->particles[j].y += brick->top;
-    }
-    */
   }
 }
 
@@ -334,15 +314,21 @@ void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
       continue;
 
     Animation* anim = brick->sprite->anim;
-    if((brick->hitcount != 0) && (brick->counter == 0))
-    {
-      a_drawsprite(brick->sprite, renderer, brick->left, brick->top);
-    }
-    else if(brick->counter > 0)
+
+    if(brick->counter > 0)
     {
       brick->counter--;
       if(brick->counter == 0)
+      {
         af_playsample(arena->factory, "wormhole-out");
+        brick->hitcount = 1;
+        //brick->isdead = true;
+      }
+    }
+
+    if((brick->hitcount != 0) /*&& (brick->counter == 0)*/)
+    {
+      a_drawsprite(brick->sprite, renderer, brick->left, brick->top);
     }
     else if(!brick->isdead)
     {
@@ -370,7 +356,7 @@ void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
       // Only reduce the brick count for non-switch type bricks.
-      if(((brick->type & btSwitch) != btSwitch) && (brick->isdead))
+      if(((brick->type & btSwitch) != btSwitch) && ((brick->type & btResurrecting) != btResurrecting) && (brick->isdead))
       {
         arena->remaining--;
         if(arena->remaining == 0)
@@ -404,10 +390,10 @@ void arena_moveBricks(Arena* arena, Ball* ball)
       // to see if it's moving into the ball
 
       int targetx = b1.left + brick->speed;
-
+      bool leave = false;
       do
       {
-
+        //leave = false;
         b1.left += brick->speed < 0 ? -1 : 1;
         Edge e = eNone;
         int delta = 0;
@@ -447,11 +433,10 @@ void arena_moveBricks(Arena* arena, Ball* ball)
 
         for(int brickno2 = 0; brickno2 < arena->brickcount; brickno2++)
         {
-          // Test current brick against every brick except itself
-          if(brickno == brickno2)
-            continue;
-
           Brick* brick2 = arena->bricks[brickno2];
+
+          if(brick == brick2)
+            continue;
 
           if(brick2->hitcount == 0)
             continue;
@@ -460,18 +445,27 @@ void arena_moveBricks(Arena* arena, Ball* ball)
                         .top = brick2->top,
                         .width = brick2->right - brick2->left,
                         .height = brick2->bottom - brick2->top };
+
           if(bounds_intersects(&b1, &b2))
           {
             brick->speed *= -1;
-            return;
+            leave = true;
+            break;
           }
 
         }
+
+        if(leave)
+          break;
+
       } while(b1.left != targetx);
 
       // No collision, move brick
-      brick->left = b1.left;
-      brick->right = b1.left + b1.width;
+      if(!leave)
+      {
+        brick->left = b1.left;
+        brick->right = b1.left + b1.width;
+      }
     }
   }
 }
@@ -795,20 +789,22 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
         }
         else if((b->type == btResurrecting))
         {
+          // What if we hit more than one resurrecting brick at once?
+
           // Collided with a resurrecting brick that is invisible. Do nothing.
-          if(b->sprite->currentframe > 0)
-          {
+          //if(b->sprite->currentframe > 0)
+          //{
             // vanish animation is playing, don't register another hit
-            b = NULL;
-            hitedge = eNone;
-          }
-          else
-          {
+          //  b = NULL;
+          //  hitedge = eNone;
+          //}
+          //else
+          //{
             // first hit before animation starts
-            b->sprite->state = asPlayToEnd;
+            //b->sprite->state = asPlayToEnd;
             arena->score += BRICKSCORE;
             af_playsample(arena->factory, "brick");
-          }
+          //}
 
         }
         else
@@ -1154,7 +1150,10 @@ void arena_checkBulletCollisions(Arena* arena)
     if((b->hitcount <= 0) && ((b->type & btIndestructible) != btIndestructible) && (b->type != btResurrecting))
       continue;
 
-    if((b->type == btResurrecting) && (b->counter > 0))
+    if(((b->type & btResurrecting) == btResurrecting) && (b->counter > 0))
+      continue;
+
+    if(((b->type & btSwitch) == btSwitch) && (b->hitcount == 0))
       continue;
 
     for(int i = arena->bulletcount - 1; i >= 0; i--)

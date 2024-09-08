@@ -21,7 +21,7 @@
 #define DON2 "If you enjoy playing it, please consider making a small donation by buying me a coffee through the link below."
 #define DON3 "https://buymeacoffee.com/retrojunkies"
 
-void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
+static void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
 {
   // Load some sprites
   af_loadanimation(f, renderer, "red.png", "red", 44, 29);
@@ -94,7 +94,27 @@ void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-explosion.wav", "explosion");
 }
 
-int gameOver(App* app, Arena* arena, Gamestate* gamestate, int* hi)
+static void printDiagnostics(Ball* ball, Arena* arena)
+{
+  printf("Diagnostics: \n");
+  printf("ball speed: %d\n", ball->speed);
+  printf("ball bearing: %f\n", ball->bearing);
+  printf("remaining bricks: %d\n", arena->remaining);
+  printf("current level: %d\n", arena->level);
+  printf("-------------------------------------------------\n\n");
+
+  for(int i = 0; i < arena->brickcount; i++)
+  {
+    Brick* brick = arena->bricks[i];
+    printf("Brick %d (%d)\n", i, brick->type);
+    printf("Counter:  %d\n", brick->counter);
+    printf("IsDead:   %d\n", brick->isdead);
+    printf("HitCount: %d\n", brick->hitcount);
+    printf("* * * * * * * * * * *\n");
+  }
+}
+
+static int gameOver(App* app, Arena* arena, Gamestate* gamestate, int* hi)
 {
   *gamestate = gsDying;
   text_drawText(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
@@ -108,7 +128,7 @@ int gameOver(App* app, Arena* arena, Gamestate* gamestate, int* hi)
 }
 
 // Draw "Get Ready!" text and wait for three seconds
-int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
+static int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
 {
   player->x = arena->width / 2;
   bat_reset(player, arena->factory);
@@ -126,14 +146,7 @@ int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gamestate)
   text_drawText(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
   return 0;
 }
-/*
-int getReady(Gamestate* gamestate, Gamestate nextstate)
-{
-  //SDL_Delay(3000);
-  *gamestate = nextstate;
-  return 0;
-}
-*/
+
 void menu_quitClick(void* data)
 {
   App* app = (App*)data;
@@ -723,11 +736,7 @@ int main(int argc, char** argv)
             }
           break;
           case SDLK_F1:
-            printf("Diagnostics: \n");
-            printf("ball speed: %d\n", ball.speed);
-            printf("ball bearing: %f\n", ball.bearing);
-            printf("remaining bricks: %d\n", arena.remaining);
-            printf("current level: %d\n", arena.level);
+            printDiagnostics(&ball, &arena);
           break;
           case SDLK_n:
             if(app.gamestate == gsRunning)
@@ -735,6 +744,10 @@ int main(int argc, char** argv)
               // Skip to next level
               arena.remaining = 0;
             }
+          break;
+          case SDLK_l:
+            if(app.gamestate == gsRunning)
+              player.state = plLaser;
           break;
         }
       }
@@ -865,7 +878,7 @@ int main(int argc, char** argv)
         // renderpresent
         af_playsample(&f, "dead");
         while(Mix_Playing(-1));
-        arena.lives--;
+   //     arena.lives--;
         if(arena.lives >= 0)
         {
           // Lives already reset, but ideally we want to delay

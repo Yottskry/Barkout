@@ -66,7 +66,7 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
 
     // Resurrecting brick is invisible BUT... counter is not
     // non-zero until animation has finished.
-    if((brick->type == btResurrecting) && (brick->counter > 0))
+    if(((brick->type & btResurrecting) == btResurrecting) && (brick->counter > 0))
       continue;
 
     Bounds bounds = {
@@ -86,8 +86,17 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
       // can cause odd behaviour later when we try to swap
       // the open/closed state of those bricks
       if((brick->solidedges & *e) != *e)
-        if((brick->type & btSwitch) != btSwitch)
+      {
+        if(((brick->type & btSwitch) != btSwitch) && ((brick->type & btResurrecting) != btResurrecting))
+        {
           brick->hitcount--;
+        }
+        else if((brick->type & btResurrecting) == btResurrecting)
+        {
+          brick->sprite->state = asPlayToEnd;
+          brick->counter = RESURRECTTIMER;
+        }
+      }
 
       if((d < lastd) || (lastd == 0))
       {

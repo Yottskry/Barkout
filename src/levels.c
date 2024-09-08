@@ -160,7 +160,7 @@ void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, c
       break;
       case '#':
         // Resurrecting bricks
-        brick->starthitcount = -1;
+        brick->starthitcount = 1;
         brickanim = af_getanimation(factory, "grey-broken");
         brick->type = btResurrecting;
         brick->sprite->sender = (void*)(brick);
@@ -238,8 +238,8 @@ void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, c
 void arena_brickFinished(void* sender, void* data)
 {
   Brick* brick = (Brick*)sender;
-  brick->counter = RESURRECTTIMER;
   brick->sprite->currentframe = 0;
+  brick->hitcount = 0;
   ResourceFactory* factory = (ResourceFactory*)data;
   af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickRepaired, (void*)brick, (void*)factory);
   // Set the animation to the reappearing animation here
@@ -253,6 +253,8 @@ void arena_brickRepaired(void* sender, void* data)
   Brick* brick = (Brick*)sender;
   brick->sprite->currentframe = 0;
   ResourceFactory* factory = (ResourceFactory*)data;
+  brick->isdead = false;
+  brick->hitcount = 1;
   af_setanimation(factory, brick->sprite, "grey-broken", 0, arena_brickFinished, (void*)brick, (void*)factory);
   // We need to set this to prevent these two routines just calling each other forever
   brick->sprite->state = asStatic;
