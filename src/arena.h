@@ -10,6 +10,7 @@
 #include "brick.h"
 #include "cat.h"
 #include "levels.h"
+#include "vector.h"
 #include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <math.h>

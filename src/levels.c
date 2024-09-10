@@ -1,4 +1,5 @@
 #include "levels.h"
+#include "cat.h"
 
 void levels_compile(const char* folder, const char* ofolder)
 {
@@ -95,6 +96,17 @@ void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, c
     {
       level->spawnx = bounds->left + (col * BRICKW);
       level->spawny = bounds->top + (row * BRICKH);
+      // Create three cats at this location
+     for(int c = 0; c < 3; c++)
+      {
+        Cat* cat = malloc(sizeof(Cat));
+        cat_init(cat, factory);
+        cat->bounds.top = bounds->top + (row * BRICKH);
+        cat->bounds.left = bounds->left + (col * BRICKW);
+        cat->spawnx = cat->bounds.left;
+        cat->spawny = cat->bounds.top;
+        vector_add(level->cats, (void*)cat);
+      }
       continue;
     }
 

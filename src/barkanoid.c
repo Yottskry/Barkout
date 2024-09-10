@@ -8,6 +8,7 @@
 #include "config.h"
 #include "menu.h"
 #include "levels.h"
+#include "vector.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
@@ -579,16 +580,24 @@ int main(int argc, char** argv)
     }
   };
 
-  Cat cats[3];
-  for(int i = 0; i < 3; i++)
-    cat_init(&cats[i], &f);
+  //Cat cats[3];
+  //for(int i = 0; i < 3; i++)
+  //  cat_init(&cats[i], &f);
 
-  cats[0].state = csAlive;
+  //cats[0].state = csAlive;
 
   FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
   FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
   FlashText txt3 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
   FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration = 0, .text = "Fat Horse Games presents", .font = fnTitle };
+
+  /*
+  Vector* v = vector_new();
+  int items = vector_add(v, (void*)(&txt1));
+  items = vector_add(v, (void*)(&txt2));
+  items = vector_add(v, (void*)(&txt3));
+  vector_free(v);
+  */
 
   bool titlefinished = false;
   int currentlywarping = 0;
@@ -837,9 +846,12 @@ int main(int argc, char** argv)
       arena_drawBricks(&arena, app.renderer);
       // Reset immediately changes the state to gsGetReady
       // So this block only executes once
-      cats[0].state = csDead;
-      cats[1].state = csDead;
-      cats[2].state = csDead;
+
+      Vector* cats = arena.levels[arena.level - 1].cats;
+
+      for(int cnum = 0; cnum < cats->size; cnum++)
+        ((Cat*)(cats->elements[cnum]))->state = csDead;
+
       //baddiecounter = SDL_GetTicks();
       reset(&app, &ball, &player, &arena, &app.gamestate);
     }
@@ -895,23 +907,15 @@ int main(int argc, char** argv)
 
       bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
 
-      //int alivecount = 0;
-      for(int i = 0; i < BADDIECOUNT; i++)
-      {
-        // Test collisions with bat / ball before testing state
-        // if(cat_collidesbat()...
 
-        if(cats[i].state != csDead)
-        {
-          //alivecount++;
-          cat_move(&cats[i], arena.bricks, arena.brickcount, &arena.bounds);
-          cat_draw(&cats[i], app.renderer);
-        }
-      }
+      Vector* cats = arena.levels[arena.level - 1].cats;
+      Cat** kittens = (Cat**)(cats->elements);
 
-      cat_spawn(cats, &f, arena.spawnx, arena.spawny);
-      cat_collidesball(cats, &ball, &f);
-      cat_collidesbat(cats, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
+      cat_move(kittens, cats->size, arena.bricks, arena.brickcount, &arena.bounds);
+      cat_draw(kittens, cats->size, app.renderer);
+      cat_spawn(kittens, cats->size, &f, arena.spawnx, arena.spawny);
+      cat_collidesball(kittens, cats->size, &ball, &f);
+      cat_collidesbat(kittens, cats->size, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
 
       if(arena.remaining == 0)
       {

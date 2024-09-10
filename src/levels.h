@@ -5,6 +5,7 @@
 #include "brick.h"
 #include "cat.h"
 #include "app.h"
+#include "vector.h"
 #include "resourcefactory.h"
 #ifndef _WIN32
 #include <dirent.h>
@@ -21,7 +22,6 @@ typedef struct
 {
   int level;
   int brickcount;
-  int catterycount;
   int spawnx;
   int spawny;
   int maxbonuslevel;
@@ -29,7 +29,7 @@ typedef struct
   Animation* mg;
   Animation* fg;
   Brick** bricks;
-  Cattery** catteries;
+  Vector* cats;
   void (*onlevelend)(void*);
 } Level;
 

@@ -101,8 +101,8 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
     level->fg = af_getanimation(factory, fgname);
     level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
     level->spawny = arena->bounds.top;
-    level->catterycount = 0;
-    level->catteries = NULL;
+    //level->catterycount = 0;
+    //level->catteries = NULL;
 
     rowdata = strtok(NULL, "\r\n");
     // If there was no max bonus level specified in the file, don't get another token
@@ -185,6 +185,7 @@ int arena_loadLevels(Arena* arena, ResourceFactory* factory)
     Level* level = &(arena->levels[i]);
     level->bricks = NULL;
     level->onlevelend = NULL;
+    level->cats = vector_new();
 
     if(i == arena->numlevels-1)
       level->onlevelend = arena_finalLevelEnd;
@@ -239,8 +240,8 @@ int arena_loadLevels(Arena* arena, ResourceFactory* factory)
     level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
     level->spawny = arena->bounds.top;
 
-    level->catterycount = 0;
-    level->catteries = NULL;
+    //level->catterycount = 0;
+    //level->catteries = NULL;
     // Read each line. This is the row position.
     while(fscanf(f, "%s", rowdata) > 0)
   //rowdata = strtok(NULL, "\r\n");
@@ -482,7 +483,7 @@ void arena_resetBricks(Arena* arena)
 
     if(arena->bricks[brickno]->type == btResurrecting)
     {
-      arena->bricks[brickno]->hitcount = -1;
+      arena->bricks[brickno]->hitcount = 1;
       af_setanimation(arena->factory, arena->bricks[brickno]->sprite, "grey-broken", 0, arena_brickFinished, (void*)arena->bricks[brickno], (void*)arena->factory);
       arena->bricks[brickno]->sprite->state = asStatic;
     }
@@ -502,7 +503,11 @@ void arena_freeLevels(Arena* arena)
     free(arena->levels[levno].bricks);
     arena->levels[levno].bricks = NULL;
     arena->levels[levno].brickcount = 0;
+    for(int cn = 0; cn < arena->levels[levno].cats->size; cn++)
+      free(arena->levels[levno].cats->elements[cn]);
+    vector_free(arena->levels[levno].cats);
   }
+
   free(arena->levels);
 }
 
