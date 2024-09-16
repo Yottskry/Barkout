@@ -66,7 +66,7 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
 
     // Resurrecting brick is invisible BUT... counter is not
     // non-zero until animation has finished.
-    if(((brick->type & btResurrecting) == btResurrecting) && (brick->counter > 0))
+    if(((brick->type & btResurrecting) == btResurrecting) && ((brick->counter > 0) || (brick->hitcount == 0)))
       continue;
 
     Bounds bounds = {
@@ -90,6 +90,8 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
         if(((brick->type & btSwitch) != btSwitch) && ((brick->type & btResurrecting) != btResurrecting))
         {
           brick->hitcount--;
+          if(brick->hitcount == -50)
+            brick->hitcount = 0;
         }
         else if((brick->type & btResurrecting) == btResurrecting)
         {

@@ -9,7 +9,7 @@ Vector* vector_new()
   return v;
 }
 
-int vector_add(Vector* v, void* element)
+bool vector_add(Vector* v, void* element)
 {
   v->size++;
 
@@ -17,15 +17,17 @@ int vector_add(Vector* v, void* element)
   {
     v->capacity = v->size * 2;
     v->elements = realloc(v->elements, v->capacity * sizeof(void*));
+    if(v->elements == NULL)
+      return false;
   }
 
   v->elements[v->size - 1] = element;
-  return v->size;
+  return true;
 }
 
-int vector_remove(Vector* v, void* element)
+bool vector_remove(Vector* v, void* element)
 {
-  return 0;
+  return true;
 }
 
 void* vector_item(Vector* v, const int index)

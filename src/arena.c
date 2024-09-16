@@ -99,10 +99,6 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
     level->bg = af_getanimation(factory, bgname);
     level->mg = af_getanimation(factory, mgname);
     level->fg = af_getanimation(factory, fgname);
-    level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
-    level->spawny = arena->bounds.top;
-    //level->catterycount = 0;
-    //level->catteries = NULL;
 
     rowdata = strtok(NULL, "\r\n");
     // If there was no max bonus level specified in the file, don't get another token
@@ -237,11 +233,6 @@ int arena_loadLevels(Arena* arena, ResourceFactory* factory)
     level->mg = af_getanimation(factory, mgname);
     level->fg = af_getanimation(factory, fgname);
 
-    level->spawnx = arena->bounds.left + (6 * BRICKW); // middle column by default
-    level->spawny = arena->bounds.top;
-
-    //level->catterycount = 0;
-    //level->catteries = NULL;
     // Read each line. This is the row position.
     while(fscanf(f, "%s", rowdata) > 0)
   //rowdata = strtok(NULL, "\r\n");
@@ -265,8 +256,8 @@ void arena_loadBricks(Arena* arena, int level)
   arena->mg = arena->levels[level-1].mg;
   arena->fg = arena->levels[level-1].fg;
   arena->remaining = 0;
-  arena->spawnx = arena->levels[level-1].spawnx;
-  arena->spawny = arena->levels[level-1].spawny;
+  //arena->spawnx = arena->levels[level-1].spawnx;
+  //arena->spawny = arena->levels[level-1].spawny;
 
   for(int i = 0; i < arena->levels[level-1].brickcount; i++)
   {
@@ -322,12 +313,13 @@ void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
       if(brick->counter == 0)
       {
         af_playsample(arena->factory, "wormhole-out");
-        brick->hitcount = 1;
-        //brick->isdead = true;
+        //brick->hitcount = 1;
+        //brick->isdead = false;
+        //continue;
       }
     }
 
-    if((brick->hitcount != 0) /*&& (brick->counter == 0)*/)
+    if((brick->hitcount != 0) || (((brick->type & btResurrecting) == btResurrecting) && (brick->counter == 0)))
     {
       a_drawsprite(brick->sprite, renderer, brick->left, brick->top);
     }

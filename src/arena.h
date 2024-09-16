@@ -41,8 +41,6 @@ typedef struct
   int bulletcount;
   int lives; // Signed because we will reduce to -1 before saying Game Over
   int level;
-  int spawnx;
-  int spawny;
   Animation* bg;
   Animation* mg;
   Animation* fg;

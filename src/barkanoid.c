@@ -9,6 +9,7 @@
 #include "menu.h"
 #include "levels.h"
 #include "vector.h"
+#include "resources.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
@@ -21,79 +22,6 @@
 #define DON1 "This game is a labour of love. All programming, graphics, music, and sound effects were produced by me."
 #define DON2 "If you enjoy playing it, please consider making a small donation by buying me a coffee through the link below."
 #define DON3 "https://buymeacoffee.com/retrojunkies"
-
-static void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
-{
-  // Load some sprites
-  af_loadanimation(f, renderer, "red.png", "red", 44, 29);
-  af_loadanimation(f, renderer, "blue.png", "blue", 44, 29);
-  af_loadanimation(f, renderer, "green.png", "green", 44, 29);
-  af_loadanimation(f, renderer, "darkgrey.png", "darkgrey", 44, 29);
-  af_loadanimation(f, renderer, "orange.png", "orange", 44, 29);
-  af_loadanimation(f, renderer, "purple.png", "purple", 44, 29);
-  af_loadanimation(f, renderer, "grey.png", "grey", 44, 29);
-  af_loadanimation(f, renderer, "yellow.png", "yellow", 44, 29);
-  af_loadanimation(f, renderer, "white.png", "white", 44, 29);
-  af_loadanimation(f, renderer, "switch.png", "switch", 44, 29);
-  af_loadanimation(f, renderer, "bg1.png", "bg1", 600, 600);
-  af_loadanimation(f, renderer, "bg1_mg.png", "bg1-mg", 600, 600);
-  af_loadanimation(f, renderer, "bg1_fg.png", "bg1-fg", 660, 600);
-  af_loadanimation(f, renderer, "bg2.png", "bg2", 600, 600);
-  af_loadanimation(f, renderer, "bg2_mg.png", "bg2-mg", 600, 600);
-  af_loadanimation(f, renderer, "bg2_fg.png", "bg2-fg", 660, 600);
-  af_loadanimation(f, renderer, "bg3.png", "bg3", 600, 600);
-  af_loadanimation(f, renderer, "bg3_mg.png", "bg3-mg", 600, 600);
-  af_loadanimation(f, renderer, "bg3_fg.png", "bg3-fg", 660, 600);
-  af_loadanimation(f, renderer, "scores.png", "scores", 200, 600);
-  af_loadanimation(f, renderer, "bat.png", "bat", 82, 29);
-  af_loadanimation(f, renderer, "ball.png", "ball", 17, 17);
-  af_loadanimation(f, renderer, "bat_shrink.png", "bat-shrink", 82, 29);
-  af_loadanimation(f, renderer, "bat_laser.png", "bat-laser", 82, 29);
-  af_loadanimation(f, renderer, "bat_laserify.png", "bat-laserify", 82, 29);
-  af_loadanimation(f, renderer, "bat_grow.png", "bat-grow", 122, 29);
-  af_loadanimation(f, renderer, "bonus.png", "bonus-d", 43, 25);
-  af_loadanimation(f, renderer, "bonus-s.png", "bonus-s", 43, 25);
-  af_loadanimation(f, renderer, "bonus-e.png", "bonus-e", 43, 25);
-  af_loadanimation(f, renderer, "bonus-c.png", "bonus-c", 43, 25);
-  af_loadanimation(f, renderer, "bonus-p.png", "bonus-p", 43, 25);
-  af_loadanimation(f, renderer, "bonus-l.png", "bonus-l", 43, 25);
-  af_loadanimation(f, renderer, "bonus-w.png", "bonus-w", 43, 25);
-  af_loadanimation(f, renderer, "bat_small.png", "bat-s", 51, 27);
-  af_loadanimation(f, renderer, "bat_long.png", "bat-l", 122, 27);
-  af_loadanimation(f, renderer, "ball-deadly.png", "ball-deadly", 17, 17);
-  //af_loadanimation(f, renderer, "barkanoid-intro.png", "intro", 400, 75);
-  af_loadanimation(f, renderer, "barkout-intro.png", "intro", 400, 75);
-  af_loadanimation(f, renderer, "life.png", "life", 38, 16);
-  af_loadanimation(f, renderer, "warp.png", "warp", 40, 80);
-  af_loadanimation(f, renderer, "border.png", "border", 600, 600);
-  af_loadanimation(f, renderer, "cat.png", "cat", 40, 40);
-  af_loadanimation(f, renderer, "cat-die.png", "cat-die", 40, 40);
-  af_loadanimation(f, renderer, "cat-spawn.png", "cat-spawn", 40, 40);
-  af_loadanimation(f, renderer, "wormhole2.png", "wormhole", 80, 50);
-  af_loadanimation(f, renderer, "white_top.png", "white-top", 44, 29);
-  af_loadanimation(f, renderer, "green_bottom.png", "green-bottom", 44, 29);
-  af_loadanimation(f, renderer, "grey_broken.png", "grey-broken", 44, 29);
-  af_loadanimation(f, renderer, "grey_repair.png", "grey-repair", 44, 29);
-  af_loadanimation(f, renderer, "boss.png", "boss", 124, 104);
-  af_loadanimation(f, renderer, "FatHorseGames.png", "logo", 100, 100);
-
-
-  // And some sound
-  af_loadsample(f, "barkanoid-getready.wav", "getready");
-  af_loadsample(f, "barkanoid-brick.wav", "brick");
-  af_loadsample(f, "barkanoid-brick-high.wav", "brick-high");
-  af_loadsample(f, "barkanoid-brick-laser.wav", "brick-laser");
-  af_loadsample(f, "barkanoid-bat.wav", "bat");
-  af_loadsample(f, "barkanoid-dead.wav", "dead");
-  af_loadsample(f, "barkanoid-1up.wav", "1up");
-  af_loadsample(f, "barkanoid-warp.wav", "warp");
-  af_loadsample(f, "barkanoid-hitcat.wav", "cat-hit");
-  af_loadsample(f, "barkanoid-laser.wav", "laser");
-  af_loadsample(f, "barkanoid-wormhole-in.wav", "wormhole-in");
-  af_loadsample(f, "barkanoid-wormhole-out.wav", "wormhole-out");
-  af_loadsample(f, "barkanoid-victory.wav", "victory");
-  af_loadsample(f, "barkanoid-explosion.wav", "explosion");
-}
 
 static void printDiagnostics(Ball* ball, Arena* arena)
 {
@@ -268,31 +196,31 @@ void drawHowToPlay(App* app, Sprite* sprites)
 
   top = 300;
   int snum = 0;
-  //a_drawstaticframe(af_getanimation(factory, "bonus-c"), app->renderer, left, top, 0, 255);
+
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
   text_drawWrappedText(app, "The ball sticks to the Maus", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  //a_drawstaticframe(af_getanimation(factory, "bonus-l"), app->renderer, left, top, 0, 255);
+
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
   text_drawWrappedText(app, "Enable the Maus's laser guns", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  //a_drawstaticframe(af_getanimation(factory, "bonus-d"), app->renderer, left, top, 0, 255);
+
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
   text_drawWrappedText(app, "Enhance the energy ball", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  //a_drawstaticframe(af_getanimation(factory, "bonus-e"), app->renderer, left, top, 0, 255);
+
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
   text_drawWrappedText(app, "Extend the Maus!", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  //a_drawstaticframe(af_getanimation(factory, "bonus-s"), app->renderer, left, top, 0, 255);
+
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
   text_drawWrappedText(app, "Shrink the Maus. Avoid this one.", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  //a_drawstaticframe(af_getanimation(factory, "bonus-p"), app->renderer, left, top, 0, 255);
+
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
   text_drawWrappedText(app, "Extra player!", left + 80, top - 5, white, 0, 600, fnBody);
   top += 35;
-  //a_drawstaticframe(af_getanimation(factory, "bonus-w"), app->renderer, left, top, 0, 255);
+
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
   text_drawWrappedText(app, "Warp to the next round", left + 80, top - 5, white, 0, 600, fnBody);
 }
@@ -319,7 +247,6 @@ void drawCredits(App* app)
 void drawDonate(App* app)
 {
   int left = 100;
-  int top = 50;
 
   SDL_Color white = {255,255,255,255};
 
@@ -403,8 +330,6 @@ int main(int argc, char** argv)
 
 	Config* config = config_load();
 
-  //config_setfullscreen(config.fullscreen);
-
 	if((flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
     config_setfullscreen(true);
 
@@ -434,9 +359,7 @@ int main(int argc, char** argv)
   player.sprite.lastticks = 0;
   player.sprite.loop = 1;
   player.sprite.state = asLooping;
-  //player.controlmethod = cmBarkanoid;
   player.warpenabled = false;
-
 
   // Set up the ball
   Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 6, .bearing = 60, .radius = 7, .state = bsSticky };
@@ -543,7 +466,6 @@ int main(int argc, char** argv)
 
   Star stars[STARS];
   intro_init(stars);
-  //Gamestate gamestate = gsTitle;
 
   FlashText pressstart = { .text = "Press 1P Start", .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnTitle };
 
@@ -580,24 +502,10 @@ int main(int argc, char** argv)
     }
   };
 
-  //Cat cats[3];
-  //for(int i = 0; i < 3; i++)
-  //  cat_init(&cats[i], &f);
-
-  //cats[0].state = csAlive;
-
   FlashText txt1 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
   FlashText txt2 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
   FlashText txt3 = { .alpha = 0, .targetalpha = 255, .duration = 0, .font = fnStory };
   FlashText fathorse = { .alpha = 0, .targetalpha = 255, .duration = 0, .text = "Fat Horse Games presents", .font = fnTitle };
-
-  /*
-  Vector* v = vector_new();
-  int items = vector_add(v, (void*)(&txt1));
-  items = vector_add(v, (void*)(&txt2));
-  items = vector_add(v, (void*)(&txt3));
-  vector_free(v);
-  */
 
   bool titlefinished = false;
   int currentlywarping = 0;
@@ -827,9 +735,6 @@ int main(int argc, char** argv)
       if(text_drawFlashStory(&app, &story3, &txt3, 380))
         app.gamestate = gsNewLevel;
       intro_movestars(stars);
-      // problem is that on our next loop, if we've changed
-      // to gsNewLevel we draw one single frame of the previous
-      // level layout
     }
     // Again, we want another frame to draw the level
     // before we say "Get Ready!" so we need an else
@@ -852,7 +757,6 @@ int main(int argc, char** argv)
       for(int cnum = 0; cnum < cats->size; cnum++)
         ((Cat*)(cats->elements[cnum]))->state = csDead;
 
-      //baddiecounter = SDL_GetTicks();
       reset(&app, &ball, &player, &arena, &app.gamestate);
     }
 
@@ -913,7 +817,7 @@ int main(int argc, char** argv)
 
       cat_move(kittens, cats->size, arena.bricks, arena.brickcount, &arena.bounds);
       cat_draw(kittens, cats->size, app.renderer);
-      cat_spawn(kittens, cats->size, &f, arena.spawnx, arena.spawny);
+      cat_spawn(kittens, cats->size, &f);
       cat_collidesball(kittens, cats->size, &ball, &f);
       cat_collidesbat(kittens, cats->size, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
 
@@ -988,7 +892,6 @@ int main(int argc, char** argv)
       delay = 3000;
     }
 
-	  //if((app.gamestate != gsTitle) && (app.gamestate != gsMenu) && (app.gamestate != gsStory) && (app.gamestate != gsDying))
 	  if((app.gamestate == gsRunning) || (app.gamestate == gsPaused) || (app.gamestate == gsNewLevel) || (app.gamestate == gsGetReady))
 	  {
 
@@ -1027,7 +930,6 @@ int main(int argc, char** argv)
   config_save();
 
   menu_free(&menu);
-  //af_freeanimation(&f, "ball");
   bonus_freebonuses(&arena.bonuses, &arena.bonuscount);
   arena_freeLevels(&arena);
   arena_freeBullets(&arena);

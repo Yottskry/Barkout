@@ -158,7 +158,7 @@ void cat_draw(Cat** cats, int count, SDL_Renderer* renderer)
   }
 }
 
-void cat_spawn(Cat** cats, int count, ResourceFactory* factory, int x, int y)
+void cat_spawn(Cat** cats, int count, ResourceFactory* factory)
 {
   if(count==0)
     return;
@@ -179,8 +179,8 @@ void cat_spawn(Cat** cats, int count, ResourceFactory* factory, int x, int y)
   {
     // set the position first?
     cats[0]->state = csSpawning;
-    cats[0]->bounds.left = x;
-    cats[0]->bounds.top = y;
+    cats[0]->bounds.left = cats[0]->spawnx;
+    cats[0]->bounds.top = cats[0]->spawny;
     af_setanimation(factory, &(cats[0]->sprite), "cat-spawn", 0, cat_afterspawn, (void*)(cats[0]), (void*)factory);
     baddiecounter = currentcounter;
   }
@@ -191,8 +191,8 @@ void cat_spawn(Cat** cats, int count, ResourceFactory* factory, int x, int y)
       if(cats[i]->state == csDead)
       {
         cats[i]->state = csSpawning;
-        cats[i]->bounds.left = x;
-        cats[i]->bounds.top = y;
+        cats[i]->bounds.left = cats[i]->spawnx;
+        cats[i]->bounds.top = cats[i]->spawny;
         af_setanimation(factory, &(cats[i]->sprite), "cat-spawn", 0, cat_afterspawn, (void*)(cats[i]), (void*)factory);
         baddiecounter = currentcounter;
         break;

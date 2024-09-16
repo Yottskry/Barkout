@@ -22,8 +22,6 @@ typedef struct
 {
   int level;
   int brickcount;
-  int spawnx;
-  int spawny;
   int maxbonuslevel;
   Animation* bg;
   Animation* mg;

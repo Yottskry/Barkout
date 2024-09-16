@@ -94,8 +94,6 @@ void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, c
 
     if(rowdata[col] == '@')
     {
-      level->spawnx = bounds->left + (col * BRICKW);
-      level->spawny = bounds->top + (row * BRICKH);
       // Create three cats at this location
      for(int c = 0; c < 3; c++)
       {
@@ -252,6 +250,7 @@ void arena_brickFinished(void* sender, void* data)
   Brick* brick = (Brick*)sender;
   brick->sprite->currentframe = 0;
   brick->hitcount = 0;
+  brick->isdead = 1; // prevent particles on resurrecting bricks
   ResourceFactory* factory = (ResourceFactory*)data;
   af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickRepaired, (void*)brick, (void*)factory);
   // Set the animation to the reappearing animation here
@@ -265,7 +264,7 @@ void arena_brickRepaired(void* sender, void* data)
   Brick* brick = (Brick*)sender;
   brick->sprite->currentframe = 0;
   ResourceFactory* factory = (ResourceFactory*)data;
-  brick->isdead = false;
+  //brick->isdead = false;
   brick->hitcount = 1;
   af_setanimation(factory, brick->sprite, "grey-broken", 0, arena_brickFinished, (void*)brick, (void*)factory);
   // We need to set this to prevent these two routines just calling each other forever

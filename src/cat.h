@@ -28,7 +28,7 @@ typedef struct
 void cat_init(Cat* cat, ResourceFactory* f);
 void cat_move(Cat** cats, int count, Brick** bricks, int brickcount, Bounds* bounds);
 void cat_draw(Cat** cats, int count, SDL_Renderer* renderer);
-void cat_spawn(Cat** cats, int count, ResourceFactory* factory, int x, int y);
+void cat_spawn(Cat** cats, int count, ResourceFactory* factory);
 bool cat_collidesball(Cat** cats, int count, Ball* ball, ResourceFactory* factory);
 bool cat_collidesbat(Cat** cats, int count, Bounds* bounds, ResourceFactory* factory);
 void cat_afterdie(void* sender, void* data);
