@@ -252,10 +252,10 @@ void arena_brickFinished(void* sender, void* data)
   brick->hitcount = 0;
   brick->isdead = 1; // prevent particles on resurrecting bricks
   ResourceFactory* factory = (ResourceFactory*)data;
-  af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickRepaired, (void*)brick, (void*)factory);
   // Set the animation to the reappearing animation here
   // as the frame doesn't increase unless the sprite as
   // drawn, and it won't draw while the counter > 0
+  af_setanimation(factory, brick->sprite, "grey-repair", 0, arena_brickRepaired, (void*)brick, (void*)factory);
 }
 
 void arena_brickRepaired(void* sender, void* data)

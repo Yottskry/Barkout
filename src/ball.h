@@ -3,6 +3,7 @@
 
 #include "brick.h"
 #include "bounds.h"
+#include "bat.h"
 #include <stdbool.h>
 
 #define PI 3.14159
@@ -34,7 +35,7 @@ typedef struct
 } Ball;
 
 bool ball_collidesBounds(Ball* ball, Bounds* bounds, Edge* e, int* delta);
-Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e);
+Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcount, Edge* e);
 void ball_ricochet(Ball* ball, Edge hitedge);
 void ball_drawBall(Ball* ball, SDL_Renderer* renderer);
 

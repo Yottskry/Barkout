@@ -43,15 +43,15 @@ static void printDiagnostics(Ball* ball, Arena* arena)
   }
 }
 
-static int gameOver(App* app, Arena* arena, Gamestate* gamestate, int* hi)
+static int gameOver(App* app, Bat* player, Gamestate* gamestate, int* hi)
 {
   *gamestate = gsDying;
   text_drawText(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
   text_drawText(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
-  if(arena->score > *hi)
+  if(player->score > *hi)
   {
-    saveHighScore(((int*)&arena->score));
-    *hi = arena->score;
+    saveHighScore(((int*)&player->score));
+    *hi = player->score;
   }
   return *hi;
 }
@@ -117,7 +117,13 @@ void menu_donateClick(void* data)
   app->gamestate = gsDonate;
 }
 
-void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
+static void drawLives(App* app, Bat* player, ResourceFactory* factory)
+{
+  for(int i = 0; i < player->lives; i++)
+    a_drawstaticframe(af_getanimation(factory, "life"), app->renderer, 40+(40*i), 560, 0, 255);
+}
+
+static void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
 {
   int ofs = 0;
   int ofs2 = 0;
@@ -136,7 +142,7 @@ void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory* factor
   a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0, 255);
 }
 
-void drawArenaText(App* app, Arena* arena, int hi)
+static void drawArenaText(App* app, Arena* arena, Bat* player, int hi)
 {
   text_drawText(app, "BARKOUT", 612, 22, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
   text_drawText(app, "BARKOUT", 610, 20, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
@@ -153,7 +159,7 @@ void drawArenaText(App* app, Arena* arena, int hi)
 
   char scores[10] = "";
 
-  sprintf(scores, "%08d", arena->score);
+  sprintf(scores, "%08d", player->score);
 
   text_drawText(app, "Score", 612, 202, (SDL_Color){0,0,0,255}, 0, fnTitle);
   text_drawText(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, 0, fnTitle);
@@ -172,7 +178,7 @@ void drawArenaText(App* app, Arena* arena, int hi)
   text_drawText(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
 }
 
-void drawHowToPlay(App* app, Sprite* sprites)
+static void drawHowToPlay(App* app, Sprite* sprites)
 {
   int left = 40;
   int top = 30;
@@ -225,7 +231,7 @@ void drawHowToPlay(App* app, Sprite* sprites)
   text_drawWrappedText(app, "Warp to the next round", left + 80, top - 5, white, 0, 600, fnBody);
 }
 
-void drawCredits(App* app)
+static void drawCredits(App* app)
 {
   int left = 150;
 
@@ -244,7 +250,7 @@ void drawCredits(App* app)
     text_drawText(app, "Fat Harry", left + 260, 160 + (i*40), white, 0, fnTitle);
 }
 
-void drawDonate(App* app)
+static void drawDonate(App* app)
 {
   int left = 100;
 
@@ -353,7 +359,7 @@ int main(int argc, char** argv)
   // Load animations and samples
   loadResources(&f, app.renderer);
 
-  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = 3 };
+  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = STARTLIVES, .score = 0 };
   player.sprite.anim = af_getanimation(&f, "bat");
   player.sprite.currentframe = 0;
   player.sprite.lastticks = 0;
@@ -395,8 +401,6 @@ int main(int argc, char** argv)
                   .bonuscount = 0,
                   .factory = &f,
                   .bonuses = NULL,
-                  .score = 0,
-                  .lives = STARTLIVES,
                   .level = startlevel,
                   .counter = 0,
                   .bulletcount = 0,
@@ -633,9 +637,9 @@ int main(int argc, char** argv)
             else if(app.gamestate == gsStory)
             {
               app.gamestate = gsNewLevel;
-              arena.lives = STARTLIVES;
+              player.lives = STARTLIVES;
               arena.level = startlevel;
-              arena.score = 0;
+              player.score = 0;
               arena.alpha = 255;
               arena_loadBricks(&arena, arena.level);
             }
@@ -746,7 +750,7 @@ int main(int argc, char** argv)
         Mix_HaltMusic();
       arena_loadBricks(&arena, arena.level);
       drawBackground(&app, &arena, NULL, &f);
-      drawArenaText(&app, &arena, hi);
+      drawArenaText(&app, &arena, &player, hi);
       arena_drawBricks(&arena, app.renderer);
       arena_drawBricks(&arena, app.renderer);
       // Reset immediately changes the state to gsGetReady
@@ -763,7 +767,7 @@ int main(int argc, char** argv)
     if(app.gamestate == gsPaused)
     {
       drawBackground(&app, &arena, &player, &f);
-      drawArenaText(&app, &arena, hi);
+      drawArenaText(&app, &arena, &player, hi);
       arena_drawBricks(&arena, app.renderer);
       bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
     }
@@ -771,7 +775,7 @@ int main(int argc, char** argv)
     if(app.gamestate == gsRunning)
     {
       drawBackground(&app, &arena, &player, &f);
-      drawArenaText(&app, &arena, hi);
+      drawArenaText(&app, &arena, &player, hi);
       arena_moveBricks(&arena, &ball);
       arena_drawBricks(&arena, app.renderer);
 
@@ -794,8 +798,8 @@ int main(int argc, char** argv)
         // renderpresent
         af_playsample(&f, "dead");
         while(Mix_Playing(-1));
-        arena.lives--;
-        if(arena.lives >= 0)
+        player.lives--;
+        if(player.lives >= 0)
         {
           // Lives already reset, but ideally we want to delay
           // the delay() call until after the next render
@@ -804,7 +808,7 @@ int main(int argc, char** argv)
         }
         else
         {
-          gameOver(&app, &arena, &app.gamestate, &hi);
+          gameOver(&app, &player, &app.gamestate, &hi);
           arena_resetBricks(&arena);
         }
       }
@@ -831,7 +835,7 @@ int main(int argc, char** argv)
           text_drawText(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED, fnTitle);
           if(allfinished)
           {
-            gameOver(&app, &arena, &app.gamestate, &hi);
+            gameOver(&app, &player, &app.gamestate, &hi);
             arena_resetBricks(&arena);
           }
         }
@@ -860,18 +864,17 @@ int main(int argc, char** argv)
         // but add them incrementally for a nice "ticking up" effect.
         if(arena.remaining > 0)
         {
-          arena.score += BRICKSCORE;
+          player.score += BRICKSCORE;
           arena.remaining--;
         }
 
         if((player.x > arena.bounds.right + 20) && (arena.remaining == 0))
         {
-          //arena.score += BRICKSCORE * arena.remaining;
           arena.remaining = 0;
           player.targetspeed = 0;
         }
       }
-      arena_checkBulletCollisions(&arena);
+      arena_checkBulletCollisions(&arena, &player);
       arena_batCollidesBonus(&arena, &player, &ball);
 
     } // This one is an else because we need one loop between
@@ -895,7 +898,7 @@ int main(int argc, char** argv)
 	  if((app.gamestate == gsRunning) || (app.gamestate == gsPaused) || (app.gamestate == gsNewLevel) || (app.gamestate == gsGetReady))
 	  {
 
-      arena_drawLives(&arena, &app);
+      drawLives(&app, &player, arena.factory);
       // Draw the ball
       if((ball.cy - ball.radius) < (arena.bounds.bottom - 15))
       {

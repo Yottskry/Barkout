@@ -53,10 +53,11 @@ bool ball_collidesBounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
 }
 
 
-Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
+Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcount, Edge* e)
 {
   int lastd = 0;
   Brick* returnbrick = NULL;
+  Edge hitedge = eNone;
   for(int brickno = brickcount-1; brickno >= 0; brickno--)
   {
     Brick* brick = bricks[brickno];
@@ -92,6 +93,8 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
           brick->hitcount--;
           if(brick->hitcount == -50)
             brick->hitcount = 0;
+          if((brick->type & btIndestructible) != btIndestructible)
+            player->score += BRICKSCORE;
         }
         else if((brick->type & btResurrecting) == btResurrecting)
         {
@@ -103,12 +106,14 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, int brickcount, Edge* e)
       if((d < lastd) || (lastd == 0))
       {
         returnbrick = brick;
+        hitedge = *e;
         lastd = d;
       }
     }
   }
 
   // Will be null if no collision occurred
+  *e = hitedge;
   return returnbrick;
 }
 

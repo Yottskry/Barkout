@@ -6,6 +6,7 @@
 #define RESURRECTTIMER 600
 #define EXPLOSIONPARTICLES 200
 #define BRICKSPEED 3
+#define BRICKSCORE 10
 
 #include "resourcefactory.h"
 #include <stdbool.h>

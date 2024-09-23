@@ -17,7 +17,6 @@
 
 #define MAXBULLETS 10
 #define MAXSPEED 12
-#define BRICKSCORE 10
 #define NUMEXPLOSIONS 40
 
 typedef unsigned char byte;
@@ -36,10 +35,8 @@ typedef struct
   int brickcount;
   long bonuscounter;
   int bonuscount;
-  int score;
   int remaining;
   int bulletcount;
-  int lives; // Signed because we will reduce to -1 before saying Game Over
   int level;
   Animation* bg;
   Animation* mg;
@@ -85,9 +82,7 @@ void arena_moveBullets(Arena* arena);
 void arena_drawBullets(Arena* arena, SDL_Renderer* renderer);
 void arena_freeBullet(Arena* arena, int index);
 void arena_freeBullets(Arena* arena);
-void arena_checkBulletCollisions(Arena* arena);
-
-void arena_drawLives(Arena* arena, App* app);
+void arena_checkBulletCollisions(Arena* arena, Bat* player);
 
 void arena_finalLevelEnd(void* sender);
 void arena_resetExplosions(Arena* arena);

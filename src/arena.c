@@ -256,8 +256,6 @@ void arena_loadBricks(Arena* arena, int level)
   arena->mg = arena->levels[level-1].mg;
   arena->fg = arena->levels[level-1].fg;
   arena->remaining = 0;
-  //arena->spawnx = arena->levels[level-1].spawnx;
-  //arena->spawny = arena->levels[level-1].spawny;
 
   for(int i = 0; i < arena->levels[level-1].brickcount; i++)
   {
@@ -274,6 +272,16 @@ void arena_loadBricks(Arena* arena, int level)
     brick->isdead = false;
     brick->left = brick->startleft;
     brick->right = brick->startright;
+
+    if((brick->type & btResurrecting) == btResurrecting)
+    {
+      brick->isdead = true; // avoids particles
+      brick->hitcount = 1;
+      brick->counter = 0;
+      brick->sprite->currentframe = 0;
+      af_setanimation(arena->factory, brick->sprite, "grey-broken", 0, arena_brickFinished, (void*)brick, (void*)(arena->factory));
+      brick->sprite->state = asStatic;
+    }
 
     if((brick->type & btSwitch) == btSwitch)
     {
@@ -473,11 +481,13 @@ void arena_resetBricks(Arena* arena)
     arena->bricks[brickno]->left = arena->bricks[brickno]->startleft;
     arena->bricks[brickno]->right = arena->bricks[brickno]->startright;
 
-    if(arena->bricks[brickno]->type == btResurrecting)
+    if((arena->bricks[brickno]->type & btResurrecting) == btResurrecting)
     {
       arena->bricks[brickno]->hitcount = 1;
+      arena->bricks[brickno]->isdead = true;
       af_setanimation(arena->factory, arena->bricks[brickno]->sprite, "grey-broken", 0, arena_brickFinished, (void*)arena->bricks[brickno], (void*)arena->factory);
       arena->bricks[brickno]->sprite->state = asStatic;
+      arena->bricks[brickno]->sprite->currentframe = 0;
     }
   }
 }
@@ -585,7 +595,7 @@ Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball)
         break;
         case boCatch: ball->state = bsLoose; break;
         case boPlayer:
-          arena->lives++;
+          player->lives++;
           af_playsample(arena->factory, "1up");
         break;
         case boGrow:
@@ -700,7 +710,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
       ball->x = ball->cx - ball->radius;
       ball->y = ball->cy - ball->radius;
 
-      b = ball_collidesBricks(ball, arena->bricks, arena->brickcount, &hitedge);
+      b = ball_collidesBricks(ball, arena->bricks, player, arena->brickcount, &hitedge);
 
       // We've hit a brick. Ball will be positioned
       // on the brick edge
@@ -799,15 +809,15 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
           //{
             // first hit before animation starts
             //b->sprite->state = asPlayToEnd;
-            arena->score += BRICKSCORE;
+            player->score += BRICKSCORE;
             af_playsample(arena->factory, "brick");
           //}
 
         }
         else
         {
-
-          arena->score += BRICKSCORE;
+          // Bug... if multiple bricks are destroyed we're only adding on the score for one
+          //arena->score += BRICKSCORE;
 
           //if((b->type != btIndestructible) && (b->type != btWormhole) && (b->type != btResurrecting) && (b->hitcount == 0))
             // The hit edge is not solid (i.e. it can be destroyed on that edge)
@@ -1121,7 +1131,7 @@ void arena_freeBullets(Arena* arena)
   }
 }
 
-void arena_checkBulletCollisions(Arena* arena)
+void arena_checkBulletCollisions(Arena* arena, Bat* player)
 {
   for(int i = arena->bulletcount - 1; i >= 0; i--)
   {
@@ -1170,18 +1180,12 @@ void arena_checkBulletCollisions(Arena* arena)
       b->hitcount--;
       if(b->hitcount == 0)
       {
-        arena->score += BRICKSCORE;
+        player->score += BRICKSCORE;
         //arena->remaining--;
       }
       af_playsample(arena->factory, "brick-laser");
     }
   }
-}
-
-void arena_drawLives(Arena* arena, App* app)
-{
-  for(int i = 0; i < arena->lives; i++)
-    a_drawstaticframe(af_getanimation(arena->factory, "life"), app->renderer, 40+(40*i), 560, 0, 255);
 }
 
 void arena_finalLevelEnd(void* sender)
