@@ -112,7 +112,6 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcou
     }
   }
 
-  // Will be null if no collision occurred
   *e = hitedge;
   return returnbrick;
 }

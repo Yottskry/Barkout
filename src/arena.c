@@ -794,7 +794,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
             }
           }
         }
-        else if((b->type == btResurrecting))
+        else if((b->type & btResurrecting) == btResurrecting)
         {
           // What if we hit more than one resurrecting brick at once?
 
@@ -895,14 +895,16 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
 
           }
 
+          // Normal brick, deadly ball, so no ricochet
           if(((b->type & btNormal) == btNormal) && (ball->state == bsDeadly) && (!(b->solidedges & hitedge)))
             hitedge = eNone;
 
           // Because we break here, lastx/y are not updated
           // so retain the last non-collision position
 
-          break; // Go to EndLoop
+          //break; // Go to EndLoop so we stop testing for collisions and just destroy the brick and carry on
         }
+        break; // We've hit a brick, so don't keep processing the path of the ball and instead ricochet
       }
       else // b == null
       {

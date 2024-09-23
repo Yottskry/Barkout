@@ -20,6 +20,15 @@ void text_drawText(App* app, const char* text, int x, int y, SDL_Color color, in
   else if ((flags & TEXT_ARENA_CENTRED) == TEXT_ARENA_CENTRED)
     xpos = (int)((ARENAW - txt->w) / 2) + 40;
 
+  if((flags & TEXT_SHADOW) == TEXT_SHADOW)
+  {
+    SDL_SetTextureColorMod(tex, 0, 0, 0);
+    SDL_SetTextureAlphaMod(tex, color.a);
+    SDL_Rect src = {0, 0, txt->w, txt->h};
+    SDL_Rect dst = {xpos+2, y+2, txt->w, txt->h};
+    SDL_RenderCopy(app->renderer, tex, &src, &dst);
+  }
+
   SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
   SDL_SetTextureAlphaMod(tex, color.a);
   SDL_Rect src = {0, 0, txt->w, txt->h};

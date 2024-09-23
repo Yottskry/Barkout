@@ -46,8 +46,7 @@ static void printDiagnostics(Ball* ball, Arena* arena)
 static int gameOver(App* app, Bat* player, Gamestate* gamestate, int* hi)
 {
   *gamestate = gsDying;
-  text_drawText(app, "Game Over!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawText(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
+  text_drawText(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
   if(player->score > *hi)
   {
     saveHighScore(((int*)&player->score));
@@ -71,8 +70,7 @@ static int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gam
   ball->speed = 6;
   ball->warpdest = NULL;
   *gamestate = gsGetReady;
-  text_drawText(app, "Get Ready!", 202, 302, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawText(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, 0, fnTitle);
+  text_drawText(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
   return 0;
 }
 
@@ -144,38 +142,21 @@ static void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory*
 
 static void drawArenaText(App* app, Arena* arena, Bat* player, int hi)
 {
-  text_drawText(app, "BARKOUT", 612, 22, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawText(app, "BARKOUT", 610, 20, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
-
   char highs[10] = "";
-
-  sprintf(highs, "%08d", hi);
-
-  text_drawText(app, "Hi Score", 612, 82, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawText(app, "Hi Score", 610, 80, (SDL_Color){255,255,255,255}, 0, fnTitle);
-
-  text_drawText(app, highs, 612, 122, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawText(app, highs, 610, 120, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
-
   char scores[10] = "";
-
-  sprintf(scores, "%08d", player->score);
-
-  text_drawText(app, "Score", 612, 202, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawText(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, 0, fnTitle);
-
-  text_drawText(app, scores, 612, 242, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawText(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
-
   char level[4] = "";
 
+  sprintf(highs, "%08d", hi);
+  sprintf(scores, "%08d", player->score);
   sprintf(level, "%02d", arena->level);
 
-  text_drawText(app, "Round", 612, 322, (SDL_Color){0,0,0,255}, 0, fnTitle);
-  text_drawText(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, 0, fnTitle);
-
-  text_drawText(app, level, 742, 322, (SDL_Color){0, 0, 0, 255}, 0, fnTitle);
-  text_drawText(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+  text_drawText(app, "BARKOUT", 610, 20, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
+  text_drawText(app, "Hi Score", 610, 80, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
+  text_drawText(app, highs, 610, 120, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
+  text_drawText(app, "Score", 610, 200, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
+  text_drawText(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
+  text_drawText(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
+  text_drawText(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
 }
 
 static void drawHowToPlay(App* app, Sprite* sprites)
@@ -832,7 +813,7 @@ int main(int argc, char** argv)
         {
           bool allfinished = arena_drawExplosions(&arena, app.renderer);
           arena.alpha -= arena.alpha < 3 ? arena.alpha : 3;
-          text_drawText(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED, fnTitle);
+          text_drawText(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED | TEXT_SHADOW, fnTitle);
           if(allfinished)
           {
             gameOver(&app, &player, &app.gamestate, &hi);
