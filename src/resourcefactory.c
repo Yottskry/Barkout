@@ -18,7 +18,7 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
   // Load an image into a temporary surface.
 	SDL_Surface* tmpImage = IMG_Load(apath);
 
-	TEST_LOADED(tmpImage)
+	TEST_LOADED(tmpImage, filename)
 
 	// Literally can't remember why I do this. Transparency? Can't remember...
 	SDL_SetSurfaceAlphaMod(tmpImage, 255);
@@ -298,7 +298,7 @@ Mix_Music* af_loadmusic(const char* filename)
   strcat(apath, filename);
   Mix_Music* mus = Mix_LoadMUS(apath);
 
-  TEST_LOADED(mus)
+  TEST_LOADED(mus, filename)
 
   return mus;
 }

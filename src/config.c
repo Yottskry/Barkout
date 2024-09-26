@@ -11,13 +11,14 @@
 
 static Config config;
 
-Config* config_load()
+void config_load()
 {
   config.fullscreen = false;
   config.brickparticles = 15;
   config.trailparticles = 20;
   config.controlmethod = cmClassic;
   config.installed = false;
+  config.debug = false;
 
   #ifdef _WIN32
   HKEY newKey;
@@ -74,8 +75,6 @@ Config* config_load()
   #endif // INSTALLDIR
 
   #endif
-
-  return &config;
 }
 
 int config_getbrickparticles()
@@ -88,14 +87,29 @@ int config_gettrailparticles()
   return config.trailparticles;
 }
 
-ControlMethod config_getcontrolmethod()
+ControlMethod* config_getcontrolmethod()
 {
-  return config.controlmethod;
+  return &(config.controlmethod);
 }
 
 bool config_getinstalled()
 {
   return config.installed;
+}
+
+bool config_getdebug()
+{
+  return config.debug;
+}
+
+bool* config_getfullscreen()
+{
+  return &(config.fullscreen);
+}
+
+bool config_isfullscreen()
+{
+  return config.fullscreen;
 }
 
 void config_setbrickparticles(int brickparticles)
@@ -114,6 +128,11 @@ void config_setcontrolmethod(ControlMethod method)
 void config_setfullscreen(bool fullscreen)
 {
   config.fullscreen = fullscreen;
+}
+
+void config_setdebug(bool debug)
+{
+  config.debug = debug;
 }
 
 void config_save(void)

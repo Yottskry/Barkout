@@ -6,15 +6,6 @@
 #else
 #include <windows.h>
 #endif // WIN32
-/*  To avoid plaintext files, we take a normal level file (in the Delphi editor)
-    we take each character in the file in turn and bit shift it left (in groups of 4)
-    to form a Uint32. We then XOR that number with FFFFFFFF to invert it and save a
-    file in that format. The very first UInt32 in the file is the number of Uints to
-    read.
-
-    So a file consists of a Uint32 counter (X) + X * Uint32s, including CRLF info.
-
-*/
 
 static void arena_resetBrickParticles(Brick* brick, bool hide)
 {
@@ -44,6 +35,8 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
 
   FILE* f = fopen(fname, "rb");
 
+  TEST_LOADED(f, fname);
+
   assert(f != NULL);
   // Read number of levels
   fread(&count, sizeof(Uint32), 1, f);
@@ -56,6 +49,10 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
   // Loop through levels
   for(unsigned int i = 0; i < count; i++)
   {
+    if(config_getdebug())
+      printf("Loading level %d\n", i+1);
+    else
+      printf("#");
     Uint32 levelsize = 0;
     // How many bytes for this level?
     fread(&levelsize, sizeof(Uint32), 1, f);
@@ -78,6 +75,7 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
     level->onlevelend = NULL;
     level->maxbonuslevel = 8;
     level->brickcount = 0;
+    level->cats = vector_new();
 
     if(i == arena->numlevels-1)
       level->onlevelend = arena_finalLevelEnd;
@@ -85,7 +83,7 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
     int brickno = 0;
     int row = 0;
 
-    // strtok treats contiguous delimiters as a single delimiter, so whether we end in \n oe \r\n it will work
+    // strtok treats contiguous delimiters as a single delimiter, so whether we end in \n or \r\n it will work
     char* rowdata = strtok(buffer, "\r\n");
     // First row is the background
     char bgname[4] = "";
@@ -109,12 +107,15 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
 
     while(rowdata != NULL)
     {
+      if(config_getdebug())
+        printf("%s\n", rowdata);
       levels_processRow(factory, level, &(arena->bounds), rowdata, row, &brickno);
       rowdata = strtok(NULL, "\r\n");
       row++;
     }
   } // end level
-
+  if(!config_getdebug())
+    printf("\n");
   fclose(f);
   return 0;
 }
@@ -198,23 +199,15 @@ int arena_loadLevels(Arena* arena, ResourceFactory* factory)
     sprintf(fname, "/level%d.lvl", level->level);
     strcat(apath, fname);
 
-
-    //char fname2[255] = "";
-
-    //sprintf(fname2, "./Levels/level%d.dat", 1);
-
-    //char* rows = arena_loadbinary(fname2);
-
     FILE* f = fopen(apath, "r");
     char rowdata[14];
 
     level->brickcount = 0;
     int brickno = 0;
     int row = 0;
-    //char* rowdata = strtok(rows, "\r\n");
 
     char bgname[4] = "bg1";
-//  strcpy(bgname, rowdata);
+
     fscanf(f, "%s", bgname);
 
     level->maxbonuslevel = 8;
@@ -235,13 +228,10 @@ int arena_loadLevels(Arena* arena, ResourceFactory* factory)
 
     // Read each line. This is the row position.
     while(fscanf(f, "%s", rowdata) > 0)
-  //rowdata = strtok(NULL, "\r\n");
-    //while(rowdata != NULL)
     {
       levels_processRow(factory, level, &arena->bounds, rowdata, row, &brickno);
       row++;
-      //rowdata = strtok(NULL, "\r\n");
-    } // _WHERE_
+    }
 
     fclose(f);
   }
@@ -998,7 +988,7 @@ int ball_collidesBat(Ball* ball, Bat* player, Edge* e)
     ball->cy = player->y - ball->radius - 1;
 
     // Barkanoid control method, allow spin
-    if(config_getcontrolmethod() == cmBarkanoid)
+    if(*config_getcontrolmethod() == cmBarkanoid)
     {
       if((abs(player->speed) >= 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
       {

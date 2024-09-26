@@ -16,9 +16,9 @@
           printf("Memory allocation failed\n"); \
           exit(1); \
         }
-#define TEST_LOADED(V) if(V == 0) \
+#define TEST_LOADED(V, F) if(V == 0) \
         { \
-          printf("File load failed\n"); \
+          printf("File load failed: %s \n", F); \
           exit(1); \
         }
 

@@ -252,6 +252,7 @@ int main(int argc, char** argv)
   bool binarylevels = true;
   char customlevelfile[255] = "";
   bool customlevels = false;
+  bool debug = false;
   // Test parameters here before initialising anything
   // as we may only be compiling a level file
   for(int i = 0; i < argc; i++)
@@ -260,6 +261,11 @@ int main(int argc, char** argv)
     if(strcmp(argv[i], "-f") == 0)
     {
       flags |= SDL_WINDOW_FULLSCREEN;
+    }
+    // Show debugging information
+    if(strcmp(argv[i], "-d") == 0)
+    {
+      debug = true;
     }
     // Select starting level
     if(strcmp(argv[i], "-l") == 0)
@@ -315,12 +321,14 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	Config* config = config_load();
+	config_load();
+  if(debug)
+    config_setdebug(true);
 
 	if((flags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN)
     config_setfullscreen(true);
 
-  if(config->fullscreen)
+  if(config_isfullscreen())
     flags = flags | SDL_WINDOW_FULLSCREEN;
 
   text_loadFonts(&app);
@@ -416,10 +424,10 @@ int main(int argc, char** argv)
 
   Menu menu = { .itemcount = 0, .items = NULL, .selectedindex = 0, .optionx = 500, .x = 100, .y = 240, .app=&app };
   MenuItem* item = menu_addItem(&menu, "Start game", NULL, menu_startClick, NULL);
-  item = menu_addItem(&menu, "Control method", (int*)&(config->controlmethod), NULL, NULL);
+  item = menu_addItem(&menu, "Control method", (int*)config_getcontrolmethod(), NULL, NULL);
   menu_addItemOption(item, "Barkout", OPT2, (int)cmBarkanoid);
   menu_addItemOption(item, "Classic", OPT1, (int)cmClassic);
-  item = menu_addItem(&menu, "Full screen", (int*)&(config->fullscreen), NULL, menu_fullScreenToggle);
+  item = menu_addItem(&menu, "Full screen", (int*)config_getfullscreen(), NULL, menu_fullScreenToggle);
   menu_addItemOption(item, "Yes", "Stretch to full screen", 1);
   menu_addItemOption(item, "No", "Play windowed", 0);
   menu_addItem(&menu, "How to Play", NULL, menu_howToPlayClick, NULL);

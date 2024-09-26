@@ -116,7 +116,12 @@ TTF_Font* text_loadfont(const char* filename, int ptsize)
   #endif // INSTALLDIR
 
   strcat(apath, filename);
-  return TTF_OpenFont(apath, ptsize);
+
+  TTF_Font* tmp = TTF_OpenFont(apath, ptsize);
+
+  TEST_LOADED(tmp, filename)
+
+  return tmp;
 }
 
 void text_loadFonts(App* app)
