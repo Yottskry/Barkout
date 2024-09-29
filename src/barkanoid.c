@@ -63,6 +63,7 @@ static int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gam
   bonus_freebonuses(&arena->bonuses, &arena->bonuscount);
   arena_freeBullets(arena);
   arena->counter = SDL_GetTicks();
+  arena->bonuscounter = 0;
   af_setanimation(arena->factory, &(ball->sprite), "ball", 1, NULL, NULL, NULL);
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
@@ -134,8 +135,10 @@ static void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory*
 
   // Draw the background
   a_drawstaticframe(arena->bg, app->renderer, 0, 0, 0, arena->alpha);
-  a_drawstaticframe(arena->mg, app->renderer, ofs, 0, 0, arena->alpha);
-  a_drawstaticframe(arena->fg, app->renderer, ofs2 - 30, 0, 0, arena->alpha);
+  if(arena->mg != NULL)
+    a_drawstaticframe(arena->mg, app->renderer, ofs, 0, 0, arena->alpha);
+  if(arena->fg != NULL)
+    a_drawstaticframe(arena->fg, app->renderer, ofs2 - 30, 0, 0, arena->alpha);
   a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0, 255);
   a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0, 255);
 }
@@ -575,10 +578,10 @@ int main(int argc, char** argv)
 
         switch(e.key.keysym.sym)
         {
-          case SDLK_1:
-            if(app.gamestate == gsRunning)
-              arena_addBonus(&arena, 200, 300, boLaser);
-          break;
+//          case SDLK_1:
+//            if(app.gamestate == gsRunning)
+//              arena_addBonus(&arena, 200, 300, boLaser);
+//          break;
 
           case SDLK_k:
             // Kill self - if stuck in a loop, for example
@@ -775,8 +778,10 @@ int main(int argc, char** argv)
       // Move the ball, check for collisions with bat, arena, and bricks
       // In the event of losing the ball, reset the level
       // Check if it was already set (by keypress)
+      // We've borrowed bonuscounter and set it to -1 when the last brick is hit but before the particles explode
+      // so we can stop the ball moving on destruction of the last brick.
       if(currentlywarping == 0)
-        if(arena.remaining > 0)
+        if((arena.remaining > 0) && (arena.bonuscounter >= 0))
           islostball = ball_moveBall(&ball, &arena, &player) || islostball;
 
       if(1 == islostball)
@@ -813,6 +818,15 @@ int main(int argc, char** argv)
       cat_spawn(kittens, cats->size, &f);
       cat_collidesball(kittens, cats->size, &ball, &f);
       cat_collidesbat(kittens, cats->size, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
+      for(int j = arena.bulletcount-1; j >= 0; j--)
+      {
+        Bounds b = { .left = arena.bullets[j]->x, .top = arena.bullets[j]->y, .width = 5, .height = 8 };
+        // use cat_collidesbat() to test against bullets as it only checks against a bounds anyway
+        if(cat_collidesbat(kittens, cats->size, &b, &f))
+        {
+            arena_freeBullet(&arena, j);
+        }
+      }
 
       if(arena.remaining == 0)
       {

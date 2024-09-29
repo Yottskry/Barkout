@@ -73,11 +73,12 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
     Level* level = &(arena->levels[i]);
     level->bricks = NULL;
     level->onlevelend = NULL;
-    level->maxbonuslevel = 8;
+    level->maxbonuslevel = 7;
     level->brickcount = 0;
     level->cats = vector_new();
 
-    if(i == arena->numlevels-1)
+    // Avoid warning about different signedness
+    if((int)i == arena->numlevels-1)
       level->onlevelend = arena_finalLevelEnd;
 
     int brickno = 0;
@@ -210,7 +211,7 @@ int arena_loadLevels(Arena* arena, ResourceFactory* factory)
 
     fscanf(f, "%s", bgname);
 
-    level->maxbonuslevel = 8;
+    level->maxbonuslevel = 7;
     fscanf(f, "%d", &level->maxbonuslevel);
 
     char mgname[8] = "";
@@ -324,6 +325,9 @@ void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
     else if(!brick->isdead)
     {
       brick->isdead = true;
+
+
+
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
       for(int j = 0; j < config_getbrickparticles(); j++)
       {
@@ -347,8 +351,10 @@ void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
       // Only reduce the brick count for non-switch type bricks.
-      if(((brick->type & btSwitch) != btSwitch) && ((brick->type & btResurrecting) != btResurrecting) && (brick->isdead))
+      if(((brick->type & btSwitch) != btSwitch) && ((brick->type & btResurrecting) != btResurrecting))
       {
+        if (brick->isdead)
+        {
         arena->remaining--;
         if(arena->remaining == 0)
           if(arena->levels[arena->level-1].onlevelend != NULL)
@@ -356,6 +362,12 @@ void arena_drawBricks(Arena* arena, SDL_Renderer* renderer)
             arena->levels[arena->level-1].onlevelend(arena);
             return;
           }
+        }
+        else if(arena->remaining == 1)
+        {
+          // Borrow this for another purpose (stopping the ball)
+          arena->bonuscounter = -1;
+        }
       }
     }
   }
@@ -508,45 +520,50 @@ Bonus* arena_addBonus(Arena* arena, int x, int y, Bonustype type)
   // There was a memory leak reported by valgrind here...
   // but actually the leak is because I hadn't yet freed
   // arena->bonuses (et al) before the program exits
-  arena->bonuses = realloc(arena->bonuses, sizeof(Bonus*) * ++arena->bonuscount);
-
-  TEST_ALLOC(arena->bonuses)
-
-  arena->bonuses[arena->bonuscount - 1] = malloc(sizeof(Bonus));
-
-  TEST_ALLOC(arena->bonuses[arena->bonuscount - 1])
-
-  Bonus* bonus = arena->bonuses[arena->bonuscount - 1];
-  bonus->sprite = malloc(sizeof(Sprite));
-
-  TEST_ALLOC(bonus->sprite)
-
-  bonus->sprite->currentframe = 0;
-  bonus->sprite->lastticks = 0;
-  switch(type)
+  Bonus* result = NULL;
+  Bonus** tmp = realloc(arena->bonuses, sizeof(Bonus*) * ++arena->bonuscount);
+  if(tmp != NULL)
   {
-    case boDeadly: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d"); break;
-    case boShrink: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-s"); break;
-    case boCatch: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-c"); break;
-    case boPlayer: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-p"); break;
-    case boGrow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
-    case boLaser: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-l"); break;
-    case boWarp: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-w"); break;
-    case boSlow: break;
-    case boNone: break;
+    arena->bonuses = tmp;
+
+    TEST_ALLOC(arena->bonuses)
+
+    arena->bonuses[arena->bonuscount - 1] = malloc(sizeof(Bonus));
+
+    TEST_ALLOC(arena->bonuses[arena->bonuscount - 1])
+
+    Bonus* bonus = arena->bonuses[arena->bonuscount - 1];
+    bonus->sprite = malloc(sizeof(Sprite));
+
+    TEST_ALLOC(bonus->sprite)
+
+    bonus->sprite->currentframe = 0;
+    bonus->sprite->lastticks = 0;
+    switch(type)
+    {
+      case boDeadly: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-d"); break;
+      case boShrink: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-s"); break;
+      case boCatch: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-c"); break;
+      case boPlayer: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-p"); break;
+      case boGrow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
+      case boLaser: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-l"); break;
+      case boWarp: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-w"); break;
+      //case boSlow: break;
+      case boNone: break;
+    }
+
+    bonus->sprite->loop = 1;
+    bonus->sprite->state = asLooping;
+    bonus->x = x;
+    bonus->y = y;
+    bonus->w = 43;
+    bonus->h = 25;
+    bonus->type = type;
+
+    arena->bonuses[arena->bonuscount-1] = bonus;
+    result = bonus;
   }
-
-  bonus->sprite->loop = 1;
-  bonus->sprite->state = asLooping;
-  bonus->x = x;
-  bonus->y = y;
-  bonus->w = 43;
-  bonus->h = 25;
-  bonus->type = type;
-
-  arena->bonuses[arena->bonuscount-1] = bonus;
-
-  return bonus;
+  return result;
 }
 
 Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball)
@@ -605,7 +622,7 @@ Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball)
         case boWarp:
           player->warpenabled = true;
         break;
-        case boSlow: break;
+        //case boSlow: break;
         case boNone: break;
       }
 
@@ -700,7 +717,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
       ball->x = ball->cx - ball->radius;
       ball->y = ball->cy - ball->radius;
 
-      b = ball_collidesBricks(ball, arena->bricks, player, arena->brickcount, &hitedge);
+      b = ball_collidesBricks(ball, arena->bricks, player, arena->brickcount, &(arena->bonuscounter), &hitedge);
 
       // We've hit a brick. Ball will be positioned
       // on the brick edge
@@ -816,11 +833,20 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
 
           b->sprite->state = asPlayAndReset;
 
-          // Chance of bonus no more frequently than every BONUSFREQUENCY bricks
-          // and no more than two bonuses on screen at once
+          // There's a one in BONUSFREQUENCY chance of a bonus being created
+          // If it's normal and not a boss, decide whether to create a bonus
+          if((rand() % BONUSFREQUENCY == 0) && ((b->type & btNormal) == btNormal) && ((b->type & btBoss) != btBoss) && (arena->bonuscount < 2))
+          {
+            long bonusscore = arena->bonuscounter;
+            int bonustype = bonusscore % (arena->levels[arena->level].maxbonuslevel);
+            Bonustype bt = (Bonustype)(bonustype+1);
+            arena_addBonus(arena, b->left, b->bottom, bt);
+            arena->bonuscounter = 0;
+
+         /*
           if((arena->bonuscounter % BONUSFREQUENCY == 0) &&
-             (b->hitcount == 0) && ((b->type & btNormal) == btNormal) &&
-             (arena->bonuscount < 2) && ((b->solidedges & hitedge) != hitedge))
+             (b->hitcount == 0) &&  &&
+              && ((b->solidedges & hitedge) != hitedge))
           {
             int bonusscore = rand() % 100;
             Bonustype botype = boNone;
@@ -844,8 +870,15 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
             // e.g. to prevent laser or warp on the boss level
             if((botype != boNone) && ((int)botype <= arena->levels[arena->level - 1].maxbonuslevel))
               arena_addBonus(arena, b->left, b->bottom, botype);
-
+            */
             af_playsample(arena->factory, "brick");
+          }
+          else if((b->type & btBoss) == btBoss)
+          {
+            if(b->hitcount == 0)
+              af_playsample(arena->factory, "meow");
+            else
+              af_playsample(arena->factory, "ow");
           }
           else if((b->type & btNormal) == btNormal)
           {
@@ -958,8 +991,8 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
       ball->cy = lasty;
     }
 
-    if(hitedge != eNone)
-      arena->bonuscounter++;
+    //if(hitedge != eNone)
+    //  arena->bonuscounter++;
 
     ball_ricochet(ball, hitedge);
 
@@ -974,78 +1007,6 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
   ball->x = ball->cx - ball->radius;
   ball->y = ball->cy - ball->radius;
 
-  return 0;
-}
-
-int ball_collidesBat(Ball* ball, Bat* player, Edge* e)
-{
-  if ((ball->cy - (player->y + player->h) < ball->radius) &&
-      (player->x - ball->cx < ball->radius) &&
-      (player->y - ball->cy < ball->radius) &&
-      (ball->cx - (player->x + (int)(player->w)) < ball->radius))
-  {
-    *e = eTop;
-    ball->cy = player->y - ball->radius - 1;
-
-    // Barkanoid control method, allow spin
-    if(*config_getcontrolmethod() == cmBarkanoid)
-    {
-      if((abs(player->speed) >= 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
-      {
-          // we need a right-angled triangle
-          double rads = (180 - ball->bearing) * (PI / 180);
-          double nextx = ball->speed * sinl(rads);
-          double nexty = ball->speed * cosl(rads);
-
-          double newx = (int)(nextx + player->speed);
-
-          //now we need a new "hypotenuse"
-          double nspd = sqrt((newx*newx) + (nexty*nexty));
-
-          rads = asinl((double)(newx/nspd));
-          double bearing = rads / (PI / 180);
-
-          if((ball->bearing + bearing > 110) && (ball->bearing + bearing < 250))
-            ball->bearing += bearing;
-      }
-
-    }
-    else // Control method = Classic, no spin, but angle based on bat segment hit
-    {
-      int e1 = player->w / 10;
-      int q1 = player->w / 5;
-      int q2 = player->w / 2;
-      int q3 = player->w - q1;
-      int q4 = player->w - e1;
-
-      if(ball->cx < player->x + e1)
-      {
-        ball->bearing = 250;
-      }
-      else if(ball->cx < player->x + q1)
-      {
-        ball->bearing = 240;
-      }
-      else if(ball->cx < player->x + q2)
-      {
-        ball->bearing = 210;
-      }
-      else if(ball->cx < player->x + q3)
-      {
-        ball->bearing = 150;
-      }
-      else if(ball->cx < player->x + q4)
-      {
-        ball->bearing = 120;
-      }
-      else // right edge
-      {
-        ball->bearing = 110;
-      }
-    }
-
-    return 1;
-  }
   return 0;
 }
 
@@ -1125,6 +1086,7 @@ void arena_freeBullets(Arena* arena)
 
 void arena_checkBulletCollisions(Arena* arena, Bat* player)
 {
+  // Check for bullets leaving the top of the arena
   for(int i = arena->bulletcount - 1; i >= 0; i--)
   {
     Bullet* bullet = arena->bullets[i];
@@ -1138,15 +1100,13 @@ void arena_checkBulletCollisions(Arena* arena, Bat* player)
   // We could have included this within the loop above
   // but it would make it harder for two bullets hitting
   // one brick to only register as a single hit (which is what we want)
-
-
   for(int j = 0; j < arena->brickcount; j++)
   {
     bool hit = false;
     Brick* b = arena->bricks[j];
     // Skip invincible bricks and those that
     // are already knocked out.
-    if((b->hitcount <= 0) && ((b->type & btIndestructible) != btIndestructible) && (b->type != btResurrecting))
+    if((b->hitcount <= 0) && ((b->type & btIndestructible) != btIndestructible) && ((b->type & btResurrecting) != btResurrecting))
       continue;
 
     if(((b->type & btResurrecting) == btResurrecting) && (b->counter > 0))
@@ -1168,7 +1128,7 @@ void arena_checkBulletCollisions(Arena* arena, Bat* player)
       }
     }
 
-    if((hit) && ((b->type & btIndestructible) != btIndestructible) && (b->type != btResurrecting)){
+    if((hit) && ((b->type & btIndestructible) != btIndestructible) && ((b->type & btResurrecting) != btResurrecting)){
       b->hitcount--;
       if(b->hitcount == 0)
       {

@@ -14,8 +14,8 @@ static Config config;
 void config_load()
 {
   config.fullscreen = false;
-  config.brickparticles = 15;
-  config.trailparticles = 20;
+  config.brickparticles = 35;
+  config.trailparticles = 50;
   config.controlmethod = cmClassic;
   config.installed = false;
   config.debug = false;
@@ -39,10 +39,10 @@ void config_load()
   #else // assume linux / BSD
   char* homedir = getenv("HOME");
   if(homedir == NULL)
-    return 0;
+    return;
   char barkdata[255] = "";
   strcat(barkdata, homedir);
-  strcat(barkdata, "/.barkanoid/options");
+  strcat(barkdata, "/.barkout/options");
   FILE* datafile = fopen(barkdata, "r");
   if(datafile != NULL)
   {

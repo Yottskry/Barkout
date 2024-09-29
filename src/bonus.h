@@ -6,7 +6,7 @@
 
 #define BONUSFREQUENCY 4
 
-typedef enum { boNone = 0, boShrink = 1, boDeadly = 2, boGrow = 3, boPlayer = 4, boCatch = 5, boLaser = 6, boSlow = 7, boWarp = 8 } Bonustype;
+typedef enum { boNone = 0, boShrink = 1, boDeadly = 2, boGrow = 3, boCatch = 4, boPlayer = 5, boLaser = 6, boWarp = 7 } Bonustype;
 
 typedef struct
 {

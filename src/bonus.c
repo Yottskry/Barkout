@@ -3,7 +3,7 @@
 // The *** is becuase we need to be able to realloc the property in Arena so we need its address, not just what it points to
 int bonus_freebonus(Bonus*** bonuses, int* bonuscount, Bonus* bonus)
 {
-  for(int i = 0; i < *bonuscount; i++)
+  for(int i = (*bonuscount)-1; i >= 0; i--)
   {
     // Find the item to be removed
     if((*bonuses)[i] == bonus)
@@ -17,17 +17,32 @@ int bonus_freebonus(Bonus*** bonuses, int* bonuscount, Bonus* bonus)
       // Move all subsequent items up one
       for(int j = i; j < (*bonuscount) - 1; j++)
         (*bonuses)[j] = (*bonuses)[j+1];
-    }
 
-    (*bonuscount)--;
-    (*bonuses) = realloc(*bonuses, sizeof(Bonus*) * (*bonuscount));
+
+      (*bonuscount)--;
+
+      if(*bonuscount == 0)
+      {
+        free(*bonuses);
+        *bonuses = NULL;
+      }
+      else
+      {
+        // We'll assume that shrinking the buffer won't fail
+        (*bonuses) = realloc(*bonuses, sizeof(Bonus*) * (*bonuscount));
+      //  if(tmp != NULL)
+      //    (*bonuses) = tmp;
+      //  else // What do we do here? The original pointer still points to *bonuses
+      //    free(*bonuses);
+      }
+    }
   }
   return 0;
 }
 
 int bonus_freebonuses(Bonus*** bonuses, int* bonuscount)
 {
-  for(int i = 0; i < *bonuscount; i++)
+  for(int i = (*bonuscount)-1; i >= 0; i--)
   {
     free((*bonuses)[i]->sprite);
     free((*bonuses)[i]);
@@ -42,7 +57,7 @@ int bonus_freebonuses(Bonus*** bonuses, int* bonuscount)
 // The *** is becuase we need to pass the address of Arena's bonuses property
 int bonus_movebonuses(Bonus*** bonuses, int* bonuscount, Bounds bounds)
 {
-  for(int i = 0; i < (*bonuscount); i++)
+  for(int i = (*bonuscount)-1; i >= 0; i--)
   {
     Bonus* bonus = (*bonuses)[i];
     bonus->y += 1;

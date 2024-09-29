@@ -22,6 +22,7 @@ void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "bg3.png", "bg3", 600, 600);
   af_loadanimation(f, renderer, "bg3_mg.png", "bg3-mg", 600, 600);
   af_loadanimation(f, renderer, "bg3_fg.png", "bg3-fg", 660, 600);
+  af_loadanimation(f, renderer, "bg4.png", "bg4", 600, 600);
   af_loadanimation(f, renderer, "scores.png", "scores", 200, 600);
   af_loadanimation(f, renderer, "bat.png", "bat", 82, 29);
   af_loadanimation(f, renderer, "ball.png", "ball", 17, 17);
@@ -70,4 +71,6 @@ void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-wormhole-out.wav", "wormhole-out");
   af_loadsample(f, "barkanoid-victory.wav", "victory");
   af_loadsample(f, "barkanoid-explosion.wav", "explosion");
+  af_loadsample(f, "barkanoid-meow.wav", "meow");
+  af_loadsample(f, "barkanoid-ow.wav", "ow");
 }

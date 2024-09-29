@@ -74,7 +74,6 @@ void bat_afterLaser(void* sender, void* data);
 
 // Ball related functions
 int ball_moveBall(Ball* ball, Arena* arena, Bat* player);
-int ball_collidesBat(Ball* ball, Bat* player, Edge* e);
 
 // Bullet related functions
 void arena_addBullet(Arena* arena, Bat* player);

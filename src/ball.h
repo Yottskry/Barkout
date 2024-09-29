@@ -5,6 +5,7 @@
 #include "bounds.h"
 #include "bat.h"
 #include <stdbool.h>
+#include <math.h>
 
 #define PI 3.14159
 #define MAXTRAILPARTICLES 255
@@ -35,8 +36,9 @@ typedef struct
 } Ball;
 
 bool ball_collidesBounds(Ball* ball, Bounds* bounds, Edge* e, int* delta);
-Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcount, Edge* e);
+Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcount, long* bonuscounter, Edge* e);
 void ball_ricochet(Ball* ball, Edge hitedge);
 void ball_drawBall(Ball* ball, SDL_Renderer* renderer);
+int ball_collidesBat(Ball* ball, Bat* player, Edge* e);
 
 #endif

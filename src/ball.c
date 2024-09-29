@@ -53,7 +53,7 @@ bool ball_collidesBounds(Ball* ball, Bounds* bounds, Edge* e, int* delta)
 }
 
 
-Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcount, Edge* e)
+Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcount, long* bonuscounter, Edge* e)
 {
   int lastd = 0;
   Brick* returnbrick = NULL;
@@ -102,6 +102,10 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcou
           brick->counter = RESURRECTTIMER;
         }
       }
+
+      // Keep track of our bonus creation counter. Increment it on destruction of a normal brick
+      if(((brick->type & btNormal) == btNormal) && (brick->hitcount == 0))
+        (*bonuscounter)++;
 
       if((d < lastd) || (lastd == 0))
       {
@@ -198,4 +202,80 @@ void ball_drawBall(Ball* ball, SDL_Renderer* renderer)
     }
   }
   a_drawsprite(&ball->sprite, renderer, ball->cx - ball->radius, ball->cy - ball->radius);
+}
+
+int ball_collidesBat(Ball* ball, Bat* player, Edge* e)
+{
+  if((ball->bearing >= 270) || (ball->bearing <= 90))
+    return 0;
+
+  if ((ball->cy - (player->y + (player->h - 10)) < ball->radius) &&
+      (player->x - ball->cx < ball->radius) &&
+      (player->y - ball->cy < ball->radius) &&
+      (ball->cx - (player->x + (int)(player->w)) < ball->radius))
+  {
+    *e = eTop;
+    if(ball->state == bsLoose)
+      ball->cy = player->y - ball->radius - 1;
+
+    // Barkanoid control method, allow spin
+    if(*config_getcontrolmethod() == cmBarkanoid)
+    {
+      if((abs(player->speed) >= 3) && ((ball->bearing > 90) && (ball->bearing < 270)))
+      {
+          // we need a right-angled triangle
+          double rads = (180 - ball->bearing) * (PI / 180);
+          double nextx = ball->speed * sinl(rads);
+          double nexty = ball->speed * cosl(rads);
+
+          double newx = (int)(nextx + player->speed);
+
+          //now we need a new "hypotenuse"
+          double nspd = sqrt((newx*newx) + (nexty*nexty));
+
+          rads = asinl((double)(newx/nspd));
+          double bearing = rads / (PI / 180);
+
+          if((ball->bearing + bearing > 110) && (ball->bearing + bearing < 250))
+            ball->bearing += bearing;
+      }
+
+    }
+    else // Control method = Classic, no spin, but angle based on bat segment hit
+    {
+      int e1 = player->w / 10;
+      int q1 = player->w / 5;
+      int q2 = player->w / 2;
+      int q3 = player->w - q1;
+      int q4 = player->w - e1;
+
+      if(ball->cx < player->x + e1)
+      {
+        ball->bearing = 250;
+      }
+      else if(ball->cx < player->x + q1)
+      {
+        ball->bearing = 240;
+      }
+      else if(ball->cx < player->x + q2)
+      {
+        ball->bearing = 210;
+      }
+      else if(ball->cx < player->x + q3)
+      {
+        ball->bearing = 150;
+      }
+      else if(ball->cx < player->x + q4)
+      {
+        ball->bearing = 120;
+      }
+      else // right edge
+      {
+        ball->bearing = 110;
+      }
+    }
+
+    return 1;
+  }
+  return 0;
 }

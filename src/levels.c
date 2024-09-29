@@ -203,6 +203,7 @@ void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, c
         brick->starthitcount = 32;
         brick->right = bounds->left + (col * BRICKW) + (BRICKW * 3);
         brick->bottom = bounds->top + (row * BRICKH) + (BRICKH * 4);
+        brick->type = btNormal | btBoss;
         brickanim = af_getanimation(factory, "boss");
       break;
       case 'M':
