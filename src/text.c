@@ -107,7 +107,7 @@ bool text_drawFlashStory(App* app, FlashStory* story, FlashText* text, int y)
 }
 
 // private - not in header
-TTF_Font* text_loadfont(const char* filename, int ptsize)
+static TTF_Font* text_loadfont(const char* filename, int ptsize)
 {
   char apath[255] = "./Fonts/";
   #ifdef INSTALLDIR
@@ -133,6 +133,8 @@ void text_loadFonts(App* app)
   assert(app->font[1] != NULL);
   app->font[2] = text_loadfont("Vectroid.otf", 32);
   assert(app->font[2] != NULL);
+  app->font[3] = text_loadfont("Nordine.ttf", 30);
+  assert(app->font[3] != NULL);
 }
 
 void text_freeFonts(App* app)

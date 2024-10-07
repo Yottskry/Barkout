@@ -15,7 +15,7 @@ static void arena_resetBrickParticles(Brick* brick, bool hide)
     brick->particles[j].gdiff = 0;
     brick->particles[j].x = rand() % (brick->right - brick->left);
     brick->particles[j].y = rand() % (brick->bottom - brick->top);
-    brick->particles[j].yv = ((rand() % 6) + 1) * -1;
+    brick->particles[j].yv = ((rand() % 10) + 1) * -1;
     if(brick->particles[j].x < 10)
       brick->particles[j].xv = ((rand() % 3) * -1) - 3; // -6 to -3
     else if(brick->particles[j].x < 20)
@@ -595,6 +595,7 @@ Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball)
             bat_afterShrink((void*)arena, (void*)player);
           ball->state = bsNormal;
           player->state = plShort;
+          player->w = psShort;
         break;
         case boDeadly:
           ball->state = bsDeadly;
@@ -943,7 +944,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
 
         Uint32 curticks = SDL_GetTicks();
 
-        if(curticks - arena->counter >= 60000)
+        if(curticks - arena->counter >= 45000)
         {
           if(ball->speed < MAXSPEED)
             ball->speed++;

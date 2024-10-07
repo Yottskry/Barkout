@@ -10,6 +10,8 @@ typedef struct {
   ControlMethod controlmethod;
   int brickparticles;
   int trailparticles;
+  int startlives;
+  int ballspeed;
   bool fullscreen;
   bool installed;
   bool debug;
@@ -19,6 +21,8 @@ typedef struct {
 void config_load();
 int config_getbrickparticles();
 int config_gettrailparticles();
+int config_getstartlives();
+int config_getballspeed();
 ControlMethod* config_getcontrolmethod();
 bool config_getinstalled();
 bool config_getdebug();

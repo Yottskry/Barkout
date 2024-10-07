@@ -19,11 +19,13 @@ void config_load()
   config.controlmethod = cmClassic;
   config.installed = false;
   config.debug = false;
+  config.startlives = 3;
+  config.ballspeed = 7;
 
   #ifdef _WIN32
   HKEY newKey;
   long retval;
-  retval = RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, KEY_READ, &newKey);
+  retval = RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames\\barkout", 0, KEY_READ, &newKey);
   if(retval == ERROR_SUCCESS)
   {
     long unsigned int lpSize = sizeof(int);
@@ -31,6 +33,8 @@ void config_load()
     retval = RegQueryValueExA(newKey, "trailparticles", 0, NULL, (BYTE*)(&config.trailparticles), &lpSize);
     retval = RegQueryValueExA(newKey, "fullscreen", 0, NULL, (BYTE*)(&config.fullscreen), &lpSize);
     retval = RegQueryValueExA(newKey, "ctrlmethod", 0, NULL, (BYTE*)(&config.controlmethod), &lpSize);
+    retval = RegQueryValueExA(newKey, "startlives", 0, NULL, (BYTE*)(&config.startlives), &lpSize);
+    retval = RegQueryValueExA(newKey, "ballspeed", 0, NULL, (BYTE*)(&config.ballspeed), &lpSize);
   }
   else
   {
@@ -58,6 +62,10 @@ void config_load()
         config.fullscreen = (bool)val;
       if(strcmp("CTRLMETHOD", key) == 0)
         config.controlmethod = (ControlMethod)val;
+      if(strcmp("STARTLIVES", key) == 0)
+        config.startlives = val;
+      if(strcmp("BALLSPEED", key) == 0)
+        config.ballspeed = val;
     }
 
     fclose(datafile);
@@ -87,6 +95,16 @@ int config_gettrailparticles()
   return config.trailparticles;
 }
 
+int config_getstartlives()
+{
+  return config.startlives;
+}
+
+int config_getballspeed()
+{
+  return config.ballspeed;
+}
+
 ControlMethod* config_getcontrolmethod()
 {
   return &(config.controlmethod);
@@ -114,10 +132,12 @@ bool config_isfullscreen()
 
 void config_setbrickparticles(int brickparticles)
 {
+  config.brickparticles = brickparticles;
 }
 
 void config_settrailparticles(int brickparticles)
 {
+  config.trailparticles = brickparticles;
 }
 
 void config_setcontrolmethod(ControlMethod method)
@@ -140,7 +160,7 @@ void config_save(void)
   #ifdef _WIN32
   HKEY newKey;
   long retval;
-  retval = RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, "", 0, KEY_WRITE, 0, &newKey, NULL);
+  retval = RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames\\barkout", 0, "", 0, KEY_WRITE, 0, &newKey, NULL);
   if(retval == ERROR_SUCCESS)
   {
     RegSetValueExA(newKey, "fullscreen", 0, REG_DWORD, (BYTE*)(&config.fullscreen), sizeof(int));
@@ -153,7 +173,7 @@ void config_save(void)
     return;
   char barkdata[255] = "";
   strcat(barkdata, homedir);
-  strcat(barkdata, "/.barkanoid");
+  strcat(barkdata, "/.barkout");
   mkdir(barkdata, 0777);
   strcat(barkdata, "/options");
   remove(barkdata);

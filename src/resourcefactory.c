@@ -122,6 +122,17 @@ int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y, int
   return 0;
 }
 
+int a_drawpartialframe(Animation* anim, SDL_Renderer* renderer, SDL_Rect src, int x, int y, int frameno, Uint8 alpha)
+{
+  //SDL_Rect src = {anim->framewidth * frameno, 0, anim->framewidth, anim->frameheight};
+  // The source rect will only indicate the region within the frame, so add on the offset
+  src.x += (anim->framewidth * frameno);
+  SDL_Rect dst = {x, y, src.w, src.h};
+  SDL_SetTextureAlphaMod(anim->sheet, alpha);
+  SDL_RenderCopy(renderer, anim->sheet, &src, &dst);
+  return 0;
+}
+
 void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y)
 {
   Animation* anim = sprite->anim;

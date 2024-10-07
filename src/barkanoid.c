@@ -16,7 +16,6 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
-#define STARTLIVES 3
 #define OPT1 "Ball angle is determined by segment of bat hit"
 #define OPT2 "Bat speed and direction influences ball spin and angle"
 #define DON1 "This game is a labour of love. All programming, graphics, music, and sound effects were produced by me."
@@ -68,7 +67,7 @@ static int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gam
   ball->state = bsSticky;
   ball->cx = player->x + (player->w / 2);
   ball->cy = player->y - (ball->radius);
-  ball->speed = 6;
+  ball->speed = config_getballspeed();
   ball->warpdest = NULL;
   *gamestate = gsGetReady;
   text_drawText(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
@@ -122,7 +121,7 @@ static void drawLives(App* app, Bat* player, ResourceFactory* factory)
     a_drawstaticframe(af_getanimation(factory, "life"), app->renderer, 40+(40*i), 560, 0, 255);
 }
 
-static void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
+static void drawBackground1(App* app, Arena* arena, Bat* player, ResourceFactory* factory)
 {
   int ofs = 0;
   int ofs2 = 0;
@@ -141,6 +140,13 @@ static void drawBackground(App* app, Arena* arena, Bat* player, ResourceFactory*
     a_drawstaticframe(arena->fg, app->renderer, ofs2 - 30, 0, 0, arena->alpha);
   a_drawstaticframe(af_getanimation(factory, "scores"), app->renderer, 600, 0, 0, 255);
   a_drawstaticframe(af_getanimation(factory, "border"), app->renderer, 0, 0, 0, 255);
+}
+
+// Draw the right side of the frame again so that it sits over the brick shadows.
+// Can't draw the whole border after the bricks or ITS shadow overlaps the bricks!
+static void drawBackground2(App* app, ResourceFactory* factory)
+{
+  a_drawpartialframe(af_getanimation(factory, "border"), app->renderer, (SDL_Rect){ .x = 560, .y = 0, .h = 600, .w = 40 }, 560, 0, 0, 255);
 }
 
 static void drawArenaText(App* app, Arena* arena, Bat* player, int hi)
@@ -229,6 +235,8 @@ static void drawCredits(App* app)
   text_drawText(app, "Music", left, 280, white, 0, fnTitle);
 
   text_drawText(app, "Go team!", left, 360, white, 0, fnTitle);
+
+  text_drawText(app, "https://www.retrojunkies.co.uk/fathorsegames", 20, 560, white, TEXT_CENTRED, fnBody);
 
   for(int i = 0; i < 4; i++)
     text_drawText(app, "Fat Harry", left + 260, 160 + (i*40), white, 0, fnTitle);
@@ -351,7 +359,7 @@ int main(int argc, char** argv)
   // Load animations and samples
   loadResources(&f, app.renderer);
 
-  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = STARTLIVES, .score = 0 };
+  Bat player = { .x = 100, .y = 520, .w = psNormal, .h = 25, .maxspeed = 8, .speed = 0, .targetspeed = 0, .lives = config_getstartlives(), .score = 0 };
   player.sprite.anim = af_getanimation(&f, "bat");
   player.sprite.currentframe = 0;
   player.sprite.lastticks = 0;
@@ -360,7 +368,7 @@ int main(int argc, char** argv)
   player.warpenabled = false;
 
   // Set up the ball
-  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = 6, .bearing = 60, .radius = 7, .state = bsSticky };
+  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = config_getballspeed(), .bearing = 60, .radius = 7, .state = bsSticky };
   ball.sprite.anim = af_getanimation(&f, "ball");
   ball.sprite.currentframe = 0;
   ball.sprite.lastticks = 0;
@@ -629,7 +637,7 @@ int main(int argc, char** argv)
             else if(app.gamestate == gsStory)
             {
               app.gamestate = gsNewLevel;
-              player.lives = STARTLIVES;
+              player.lives = config_getstartlives();
               arena.level = startlevel;
               player.score = 0;
               arena.alpha = 255;
@@ -741,10 +749,11 @@ int main(int argc, char** argv)
       if(Mix_PlayingMusic() != 0)
         Mix_HaltMusic();
       arena_loadBricks(&arena, arena.level);
-      drawBackground(&app, &arena, NULL, &f);
+      drawBackground1(&app, &arena, NULL, &f);
       drawArenaText(&app, &arena, &player, hi);
       arena_drawBricks(&arena, app.renderer);
-      arena_drawBricks(&arena, app.renderer);
+      drawBackground2(&app, &f);
+      //arena_drawBricks(&arena, app.renderer);
       // Reset immediately changes the state to gsGetReady
       // So this block only executes once
 
@@ -758,19 +767,23 @@ int main(int argc, char** argv)
 
     if(app.gamestate == gsPaused)
     {
-      drawBackground(&app, &arena, &player, &f);
+      drawBackground1(&app, &arena, &player, &f);
       drawArenaText(&app, &arena, &player, hi);
       arena_drawBricks(&arena, app.renderer);
+      drawBackground2(&app, &f);
       bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
+      Vector* cats = arena.levels[arena.level - 1].cats;
+      Cat** kittens = (Cat**)(cats->elements);
+      cat_draw(kittens, cats->size, app.renderer);
     }
 
     if(app.gamestate == gsRunning)
     {
-      drawBackground(&app, &arena, &player, &f);
+      drawBackground1(&app, &arena, &player, &f);
       drawArenaText(&app, &arena, &player, hi);
       arena_moveBricks(&arena, &ball);
       arena_drawBricks(&arena, app.renderer);
-
+      drawBackground2(&app, &f);
       // draw the warp area on the right
       if(player.warpenabled == true)
         a_drawsprite(&warp, app.renderer, 560, arena.bounds.bottom - 80);

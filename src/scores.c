@@ -16,7 +16,7 @@ int loadHighScore()
   #ifdef _WIN32
   HKEY newKey;
   long retval;
-  retval = RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, KEY_READ, &newKey);
+  retval = RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames\\barkout", 0, KEY_READ, &newKey);
   if(retval == ERROR_SUCCESS)
   {
     long unsigned int lpSize = sizeof(int);
@@ -36,7 +36,7 @@ int loadHighScore()
     return 0;
   char barkdata[255] = "";
   strcat(barkdata, homedir);
-  strcat(barkdata, "/.barkanoid/data");
+  strcat(barkdata, "/.barkout/data");
   FILE* scorefile = fopen(barkdata, "r");
   if(scorefile != NULL)
   {
@@ -52,7 +52,7 @@ void saveHighScore(int* score)
   #ifdef _WIN32
   HKEY newKey;
   long retval;
-  retval = RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames", 0, "", 0, KEY_WRITE, 0, &newKey, NULL);
+  retval = RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\FatHorseGames\\barkout", 0, "", 0, KEY_WRITE, 0, &newKey, NULL);
   if(retval == ERROR_SUCCESS)
   {
     RegSetValueExA(newKey, "highscore", 0, REG_DWORD, (BYTE*)score, sizeof(int));
@@ -64,7 +64,7 @@ void saveHighScore(int* score)
     return;
   char barkdata[255] = "";
   strcat(barkdata, homedir);
-  strcat(barkdata, "/.barkanoid");
+  strcat(barkdata, "/.barkout");
   mkdir(barkdata, 0777);
   strcat(barkdata, "/data");
   remove(barkdata);

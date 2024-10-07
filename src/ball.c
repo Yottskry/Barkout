@@ -90,11 +90,8 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcou
       {
         if(((brick->type & btSwitch) != btSwitch) && ((brick->type & btResurrecting) != btResurrecting))
         {
-          brick->hitcount--;
-          if(brick->hitcount == -50)
-            brick->hitcount = 0;
-          if((brick->type & btIndestructible) != btIndestructible)
-            player->score += BRICKSCORE;
+   //       brick->hitcount--;
+     //     player->score += BRICKSCORE;
         }
         else if((brick->type & btResurrecting) == btResurrecting)
         {
@@ -115,6 +112,15 @@ Brick* ball_collidesBricks(Ball* ball, Brick** bricks, Bat* player, int brickcou
       }
     }
   }
+
+      if(returnbrick != NULL)
+        if(((returnbrick->type & btSwitch) != btSwitch) && ((returnbrick->type & btResurrecting) != btResurrecting))
+        {
+          returnbrick->hitcount--;
+          player->score += BRICKSCORE;
+          if(((returnbrick->type & btNormal) == btNormal) && (returnbrick->hitcount == 0))
+            (*bonuscounter)++;
+        }
 
   *e = hitedge;
   return returnbrick;
@@ -190,14 +196,14 @@ void ball_drawBall(Ball* ball, SDL_Renderer* renderer)
         SDL_SetRenderDrawColor(renderer, 255 - (ball->sparkles[i].gdiff * 2),255 - (ball->sparkles[i].gdiff),255,(Uint8)a);
       else
         SDL_SetRenderDrawColor(renderer, 255 - (ball->sparkles[i].gdiff * 2),255, 255 - (ball->sparkles[i].gdiff),(Uint8)a);
-      SDL_RenderFillRect(renderer, &(SDL_Rect){.x = ball->sparkles[i].x, .y = ball->sparkles[i].y, .w = 2, .h = 2});
+      SDL_RenderFillRect(renderer, &(SDL_Rect){.x = ball->sparkles[i].x, .y = ball->sparkles[i].y, .w = 3, .h = 3});
 
       SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-      if(ball->sparkles[i].alpha < 12)
+      if(ball->sparkles[i].alpha < 6)
         ball->sparkles[i].alpha = 0;
       else
-        ball->sparkles[i].alpha -= 12;
+        ball->sparkles[i].alpha -= 6;
 
     }
   }

@@ -57,6 +57,7 @@ Animation* af_getanimation(ResourceFactory* factory, char name[50]);
 int a_freeanimation(Animation* anim);
 
 int a_drawstaticframe(Animation* anim, SDL_Renderer* renderer, int x, int y, int frameno, Uint8 alpha);
+int a_drawpartialframe(Animation* anim, SDL_Renderer* renderer, SDL_Rect src, int x, int y, int frameno, Uint8 alpha);
 
 void a_drawsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y);
 

@@ -45,13 +45,13 @@ void menu_drawMenu(Menu* menu, App* app)
   {
     MenuItem* item = menu->items[i];
     if(i==menu->selectedindex)
-      text_drawText(app, item->text, menu->x, 35*i + menu->y, (SDL_Color){200, 200, 255, 255}, 0, fnTitle);
+      text_drawText(app, item->text, menu->x, 35*i + menu->y, (SDL_Color){200, 200, 255, 255}, 0, fnMenu);
     else
-      text_drawText(app, item->text, menu->x, 35*i + menu->y, (SDL_Color){255, 255, 255, 100}, 0, fnTitle);
+      text_drawText(app, item->text, menu->x, 35*i + menu->y, (SDL_Color){255, 255, 255, 100}, 0, fnMenu);
 
     if(item->optioncount > 0)
     {
-      text_drawText(app, item->options[item->selectedindex]->text, menu->optionx, 35*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0, fnTitle);
+      text_drawText(app, item->options[item->selectedindex]->text, menu->optionx, 35*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0, fnMenu);
       if(i==menu->selectedindex)
         text_drawWrappedText(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600, fnBody);
     }

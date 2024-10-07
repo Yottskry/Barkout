@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 typedef enum { TEXT_CENTRED = 1, TEXT_ARENA_CENTRED = 2, TEXT_SHADOW = 4 } TextFlags;
-typedef enum { fnTitle = 0, fnBody = 1, fnStory = 2 } FontType;
+typedef enum { fnTitle = 0, fnBody = 1, fnStory = 2, fnMenu = 3} FontType;
 
 typedef struct
 {
