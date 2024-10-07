@@ -21,7 +21,9 @@ barkout_SOURCES = src/barkanoid.c src/app.h src/brick.h \
 		src/menu.c src/menu.h \
 		src/resourcefactory.c src/resourcefactory.h \
 		src/scores.c src/scores.h \
-		src/text.c src/text.h
+		src/text.c src/text.h \
+		src/vector.c src/vector.h \
+		src/resources.c src/resources.h
 # Additional platform-independent data files
 FONTS = 	Fonts/Nordine.ttf \
 		Fonts/Vectroid.otf \
@@ -65,10 +67,12 @@ SOUNDS = 	Sounds/barkanoid-1up.wav \
 		Sounds/barkanoid-victory.wav \
 		Sounds/barkanoid-warp.wav \
 		Sounds/barkanoid-wormhole-in.wav \
-		Sounds/barkanoid-wormhole-out.wav
+		Sounds/barkanoid-wormhole-out.wav \
+		Sounds/barkanoid-meow.wav \
+		Sounds/barkanoid-ow.wav
 SPRITES = 	Sprites/ball-deadly.png \
 		Sprites/ball.png \
-		Sprites/barkanoid-intro.png \
+		Sprites/barkout-intro.png \
 		Sprites/bat_grow.png \
 		Sprites/bat_laserify.png \
 		Sprites/bat_laser.png \
@@ -85,6 +89,7 @@ SPRITES = 	Sprites/ball-deadly.png \
 		Sprites/bg3_fg.png \
 		Sprites/bg3_mg.png \
 		Sprites/bg3.png \
+		Sprites/bg4.png \
 		Sprites/blue.png \
 		Sprites/bonus-c.png \
 		Sprites/bonus-e.png \
@@ -115,7 +120,8 @@ SPRITES = 	Sprites/ball-deadly.png \
 		Sprites/wormhole2.png \
 		Sprites/wormhole.png \
 		Sprites/yellow.png \
-		Sprites/FatHorseGames.png
+		Sprites/FatHorseGames.png \
+		Sprites/switch.png
 
 # nobase tells it to include the prefixing directory names in the destination (i.e. not just dump the files into the single data folder)
 nobase_dist_pkgdata_DATA = $(FONTS) $(SOUNDS) $(SPRITES) Levels/levels.dat
