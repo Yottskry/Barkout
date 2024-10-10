@@ -1,4 +1,4 @@
-Barkanoid!
+Barkout!
 -------------------------------
 (Or Yet Another Arkanoid Clone)
 
@@ -8,8 +8,7 @@ Copyright (c) 2023 Fat Horse Games / Stephen Branley
 What's this then?
 -----------------
 
-This is Barkanoid, a vaguely dog-themed Breakout / Arkanoid clone with a few twists. The project exists purely as a C programming exercise because I needed to brush up my skills. 
-
+This is Barkout, a vaguely dog-themed Breakout / Arkanoid clone with a few twists. The project exists purely as a C programming exercise because I needed to brush up my skills, plus I have fond memories of playing Arkanoid on my Amstrad CPC 6128 with my Dad in the 80s.
 
 What's the objective?
 ---------------------
