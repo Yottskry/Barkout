@@ -20,8 +20,8 @@ jobs:
     - name: configure
       run: ./configure
 
-    - name: Add missing
-      run: automake --add-missing
+        #- name: Add missing
+        #run: automake --add-missing
 
     - name: Install dependencies
       run: make
