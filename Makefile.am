@@ -17,7 +17,7 @@ barkout_SOURCES = src/barkanoid.c src/app.h src/brick.h \
 		src/cat.c src/cat.h \
 		src/config.c src/config.h \
 		src/intro.c src/intro.h \
-		src/levels.c src.levels.h \
+		src/levels.c src/levels.h \
 		src/menu.c src/menu.h \
 		src/resourcefactory.c src/resourcefactory.h \
 		src/scores.c src/scores.h \
