@@ -4,7 +4,7 @@
 #include "resourcefactory.h"
 #include "bounds.h"
 
-#define BONUSFREQUENCY 4
+#define BONUSFREQUENCY 6
 
 typedef enum { boNone = 0, boShrink = 1, boDeadly = 2, boGrow = 3, boCatch = 4, boPlayer = 5, boLaser = 6, boWarp = 7 } Bonustype;
 

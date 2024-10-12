@@ -838,7 +838,10 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
           // If it's normal and not a boss, decide whether to create a bonus
           if((rand() % BONUSFREQUENCY == 0) && ((b->type & btNormal) == btNormal) && ((b->type & btBoss) != btBoss) && (arena->bonuscount < 2))
           {
-            long bonusscore = arena->bonuscounter;
+
+            // divide the bonus count by four. This means more bricks need to be hit to get the better bonuses
+            long bonusscore = round(arena->bonuscounter / 4);
+            // limit to the highest level bonus allowed on the given level
             int bonustype = bonusscore % (arena->levels[arena->level].maxbonuslevel);
             Bonustype bt = (Bonustype)(bonustype+1);
             arena_addBonus(arena, b->left, b->bottom, bt);
