@@ -4,17 +4,17 @@
 *
 * This file is part of Barkout.
 *
-* Barkout is free software: you can redistribute it and/or modify 
-* it under the terms of the GNU General Public License as published by 
-* the Free Software Foundation, either version 3 of the License, 
+* Barkout is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License,
 * or (at your option) any later version.
 *
-* Barkout is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+* Barkout is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with Foobar. If not, see <https://www.gnu.org/licenses/>.
 *
 */
@@ -26,6 +26,7 @@
 #include "bounds.h"
 #include "brick.h"
 #include "ball.h"
+#include "vector.h"
 #include "resourcefactory.h"
 
 #define FIRSTBADDIE 25000
@@ -48,11 +49,11 @@ typedef struct
 } Cat;
 
 void cat_init(Cat* cat, ResourceFactory* f);
-void cat_move(Cat** cats, int count, Brick** bricks, int brickcount, Bounds* bounds);
-void cat_draw(Cat** cats, int count, SDL_Renderer* renderer);
-void cat_spawn(Cat** cats, int count, ResourceFactory* factory);
-bool cat_collidesball(Cat** cats, int count, Ball* ball, ResourceFactory* factory);
-bool cat_collidesbat(Cat** cats, int count, Bounds* bounds, ResourceFactory* factory);
+void cat_move(Vector* cats, Brick** bricks, int brickcount, Bounds* bounds);
+void cat_draw(Vector* cats, SDL_Renderer* renderer);
+void cat_spawn(Vector* cats, ResourceFactory* factory);
+bool cat_collidesball(Vector* cats, Ball* ball, ResourceFactory* factory);
+bool cat_collidesbat(Vector* cats, Bounds* bounds, ResourceFactory* factory);
 void cat_afterdie(void* sender, void* data);
 void cat_afterspawn(void* sender, void* data);
 

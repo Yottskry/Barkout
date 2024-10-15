@@ -4,17 +4,17 @@
 *
 * This file is part of Barkout.
 *
-* Barkout is free software: you can redistribute it and/or modify 
-* it under the terms of the GNU General Public License as published by 
-* the Free Software Foundation, either version 3 of the License, 
+* Barkout is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License,
 * or (at your option) any later version.
 *
-* Barkout is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+* Barkout is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with Foobar. If not, see <https://www.gnu.org/licenses/>.
 *
 */
@@ -795,8 +795,7 @@ int main(int argc, char** argv)
       drawBackground2(&app, &f);
       bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
       Vector* cats = arena.levels[arena.level - 1].cats;
-      Cat** kittens = (Cat**)(cats->elements);
-      cat_draw(kittens, cats->size, app.renderer);
+      cat_draw(cats, app.renderer);
     }
 
     if(app.gamestate == gsRunning)
@@ -846,18 +845,16 @@ int main(int argc, char** argv)
 
 
       Vector* cats = arena.levels[arena.level - 1].cats;
-      Cat** kittens = (Cat**)(cats->elements);
-
-      cat_move(kittens, cats->size, arena.bricks, arena.brickcount, &arena.bounds);
-      cat_draw(kittens, cats->size, app.renderer);
-      cat_spawn(kittens, cats->size, &f);
-      cat_collidesball(kittens, cats->size, &ball, &f);
-      cat_collidesbat(kittens, cats->size, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
+      cat_move(cats, arena.bricks, arena.brickcount, &arena.bounds);
+      cat_draw(cats, app.renderer);
+      cat_spawn(cats, &f);
+      cat_collidesball(cats, &ball, &f);
+      cat_collidesbat(cats, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
       for(int j = arena.bulletcount-1; j >= 0; j--)
       {
         Bounds b = { .left = arena.bullets[j]->x, .top = arena.bullets[j]->y, .width = 5, .height = 8 };
         // use cat_collidesbat() to test against bullets as it only checks against a bounds anyway
-        if(cat_collidesbat(kittens, cats->size, &b, &f))
+        if(cat_collidesbat(cats, &b, &f))
         {
             arena_freeBullet(&arena, j);
         }

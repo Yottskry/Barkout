@@ -4,17 +4,17 @@
 *
 * This file is part of Barkout.
 *
-* Barkout is free software: you can redistribute it and/or modify 
-* it under the terms of the GNU General Public License as published by 
-* the Free Software Foundation, either version 3 of the License, 
+* Barkout is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License,
 * or (at your option) any later version.
 *
-* Barkout is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+* Barkout is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with Foobar. If not, see <https://www.gnu.org/licenses/>.
 *
 */
@@ -38,11 +38,11 @@ void cat_init(Cat* cat, ResourceFactory* f)
   cat->state = csDead;
 }
 
-void cat_move(Cat** cats, int count, Brick** bricks, int brickcount, Bounds* bounds)
+void cat_move(Vector* cats, Brick** bricks, int brickcount, Bounds* bounds)
 {
-  for(int catno = 0; catno < count; catno++)
+  for(int catno = 0; catno < cats->size; catno++)
   {
-    Cat* cat = cats[catno];
+    Cat* cat = (Cat*)cats->elements[catno];
 
     if(cat->state != csAlive)
       continue;
@@ -170,19 +170,19 @@ void cat_move(Cat** cats, int count, Brick** bricks, int brickcount, Bounds* bou
   }
 }
 
-void cat_draw(Cat** cats, int count, SDL_Renderer* renderer)
+void cat_draw(Vector* cats, SDL_Renderer* renderer)
 {
-  for(int catno = 0; catno < count; catno++)
+  for(int catno = 0; catno < cats->size; catno++)
   {
-    Cat* cat = cats[catno];
+    Cat* cat = (Cat*)cats->elements[catno];
     if(cat->state != csDead)
       a_drawsprite(&cat->sprite, renderer, cat->bounds.left, cat->bounds.top);
   }
 }
 
-void cat_spawn(Cat** cats, int count, ResourceFactory* factory)
+void cat_spawn(Vector* cats, ResourceFactory* factory)
 {
-  if(count==0)
+  if(cats->size==0)
     return;
 
   static Uint32 baddiecounter;
@@ -191,31 +191,34 @@ void cat_spawn(Cat** cats, int count, ResourceFactory* factory)
   Uint32 currentcounter = SDL_GetTicks();
 
   int alivecount = 0;
-  for(int i = 0; i < count; i++)
+  for(int i = 0; i < cats->size; i++)
   {
-    if(cats[i]->state != csDead)
+    Cat* cat = (Cat*)cats->elements[i];
+    if(cat->state != csDead)
       alivecount++;
   }
 
   if((alivecount == 0) && ((currentcounter - baddiecounter) > FIRSTBADDIE))
   {
+    Cat* cat = (Cat*)cats->elements[0];
     // set the position first?
-    cats[0]->state = csSpawning;
-    cats[0]->bounds.left = cats[0]->spawnx;
-    cats[0]->bounds.top = cats[0]->spawny;
-    af_setanimation(factory, &(cats[0]->sprite), "cat-spawn", 0, cat_afterspawn, (void*)(cats[0]), (void*)factory);
+    cat->state = csSpawning;
+    cat->bounds.left = cat->spawnx;
+    cat->bounds.top = cat->spawny;
+    af_setanimation(factory, &(cat->sprite), "cat-spawn", 0, cat_afterspawn, (void*)(cat), (void*)factory);
     baddiecounter = currentcounter;
   }
-  else if((alivecount < count) && ((currentcounter - baddiecounter) > NEXTBADDIE))
+  else if((alivecount < cats->size) && ((currentcounter - baddiecounter) > NEXTBADDIE))
   {
-    for(int i = 0; i < count; i++)
+    for(int i = 0; i < cats->size; i++)
     {
-      if(cats[i]->state == csDead)
+      Cat* cat = (Cat*)cats->elements[i];
+      if(cat->state == csDead)
       {
-        cats[i]->state = csSpawning;
-        cats[i]->bounds.left = cats[i]->spawnx;
-        cats[i]->bounds.top = cats[i]->spawny;
-        af_setanimation(factory, &(cats[i]->sprite), "cat-spawn", 0, cat_afterspawn, (void*)(cats[i]), (void*)factory);
+        cat->state = csSpawning;
+        cat->bounds.left = cat->spawnx;
+        cat->bounds.top = cat->spawny;
+        af_setanimation(factory, &(cat->sprite), "cat-spawn", 0, cat_afterspawn, (void*)(cat), (void*)factory);
         baddiecounter = currentcounter;
         break;
       }
@@ -223,20 +226,21 @@ void cat_spawn(Cat** cats, int count, ResourceFactory* factory)
   }
 }
 
-bool cat_collidesball(Cat** cats, int count, Ball* ball, ResourceFactory* factory)
+bool cat_collidesball(Vector* cats, Ball* ball, ResourceFactory* factory)
 {
   Edge edge = eNone;
-  for(int i = 0; i < count; i++)
+  for(int i = 0; i < cats->size; i++)
   {
-    if(cats[i]->state == csAlive)
+    Cat* cat = (Cat*)cats->elements[i];
+    if(cat->state == csAlive)
     {
       int d = 0;
-      if(ball_collidesBounds(ball, &cats[i]->bounds, &edge, &d))
+      if(ball_collidesBounds(ball, &cat->bounds, &edge, &d))
       {
-        cats[i]->state = csDying;
+        cat->state = csDying;
         ball_ricochet(ball, edge);
         af_playsample(factory, "cat-hit");
-        af_setanimation(factory, &(cats[i]->sprite), "cat-die", 0, cat_afterdie, (void*)(cats[i]), (void*)factory);
+        af_setanimation(factory, &(cat->sprite), "cat-die", 0, cat_afterdie, (void*)(cat), (void*)factory);
         return true;
       }
     }
@@ -244,17 +248,18 @@ bool cat_collidesball(Cat** cats, int count, Ball* ball, ResourceFactory* factor
   return false;
 }
 
-bool cat_collidesbat(Cat** cats, int count, Bounds* bounds, ResourceFactory* factory)
+bool cat_collidesbat(Vector* cats, Bounds* bounds, ResourceFactory* factory)
 {
-  for(int i = 0; i < count; i++)
+  for(int i = 0; i < cats->size; i++)
   {
-    if(cats[i]->state == csAlive)
+    Cat* cat = (Cat*)cats->elements[i];
+    if(cat->state == csAlive)
     {
-      if(bounds_intersects(&cats[i]->bounds, bounds))
+      if(bounds_intersects(&cat->bounds, bounds))
       {
-        cats[i]->state = csDying;
+        cat->state = csDying;
         af_playsample(factory, "cat-hit");
-        af_setanimation(factory, &(cats[i]->sprite), "cat-die", 0, cat_afterdie, (void*)(cats[i]), (void*)factory);
+        af_setanimation(factory, &(cat->sprite), "cat-die", 0, cat_afterdie, (void*)(cat), (void*)factory);
         return true;
       }
     }
