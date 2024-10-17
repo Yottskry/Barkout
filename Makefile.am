@@ -69,7 +69,8 @@ SOUNDS = 	Sounds/barkanoid-1up.wav \
 		Sounds/barkanoid-wormhole-in.wav \
 		Sounds/barkanoid-wormhole-out.wav \
 		Sounds/barkanoid-meow.wav \
-		Sounds/barkanoid-ow.wav
+		Sounds/barkanoid-ow.wav \
+		Sounds/barkanoid-wallbounce.wav
 SPRITES = 	Sprites/ball-deadly.png \
 		Sprites/ball.png \
 		Sprites/barkout-intro.png \
