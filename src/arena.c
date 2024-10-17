@@ -4,17 +4,17 @@
 *
 * This file is part of Barkout.
 *
-* Barkout is free software: you can redistribute it and/or modify 
-* it under the terms of the GNU General Public License as published by 
-* the Free Software Foundation, either version 3 of the License, 
+* Barkout is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License,
 * or (at your option) any later version.
 *
-* Barkout is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+* Barkout is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with Foobar. If not, see <https://www.gnu.org/licenses/>.
 *
 */
@@ -983,12 +983,14 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
       {
         ball->cy = arena->bounds.top + ball->radius;
         hitedge = eBottom;
+        af_playsample(arena->factory, "wallbounce");
       }
 
       if(ball->cy + ball->radius > arena->bounds.bottom)
       {
         ball->cy = arena->bounds.bottom - ball->radius;
         hitedge = eTop;
+        af_playsample(arena->factory, "wallbounce");
         return 1;
       }
 
@@ -996,6 +998,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
       {
         ball->cx = arena->bounds.right - ball->radius;
         hitedge = eLeft;
+        af_playsample(arena->factory, "wallbounce");
       }
 
       if(ball->cx - ball->radius < arena->bounds.left)
@@ -1003,6 +1006,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
 
         ball->cx = arena->bounds.left + ball->radius;
         hitedge = eRight;
+        af_playsample(arena->factory, "wallbounce");
       }
       // If we've hit a brick, we've broken out already
       // so these store the last non-collision position.
