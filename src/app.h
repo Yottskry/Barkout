@@ -45,7 +45,7 @@
           exit(1); \
         }
 
-typedef enum { gsTitle, gsMenu, gsStory, gsCredits, gsHelp, gsDonate, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused, gsQuit } Gamestate;
+typedef enum { gsTitle, gsMenu, gsStory, gsCredits, gsHelp, gsDonate, gsLostLife, gsNewLevel, gsGetReady, gsRunning, gsDying, gsPaused, gsQuit } Gamestate;
 
 typedef struct
 {

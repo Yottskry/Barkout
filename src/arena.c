@@ -974,7 +974,6 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
       {
         ball->cy = arena->bounds.bottom - ball->radius;
         hitedge = eTop;
-        af_playsample(arena->factory, "wallbounce");
         return 1;
       }
 

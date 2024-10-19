@@ -536,6 +536,7 @@ int main(int argc, char** argv)
 
   bool titlefinished = false;
   int currentlywarping = 0;
+  Uint32 aCounter = 0;
 
   while(app.gamestate != gsQuit)
   {
@@ -799,7 +800,7 @@ int main(int argc, char** argv)
       cat_draw(cats, app.renderer);
     }
 
-    if(app.gamestate == gsRunning)
+    if((app.gamestate == gsRunning) || (app.gamestate == gsLostLife))
     {
       drawBackground1(&app, &arena, &player, &f);
       drawArenaText(&app, &arena, &player, hi);
@@ -815,11 +816,11 @@ int main(int argc, char** argv)
       // Check if it was already set (by keypress)
       // We've borrowed bonuscounter and set it to -1 when the last brick is hit but before the particles explode
       // so we can stop the ball moving on destruction of the last brick.
-      if(currentlywarping == 0)
+      if((currentlywarping == 0) && (app.gamestate == gsRunning))
         if((arena.remaining > 0) && (arena.bonuscounter >= 0))
           islostball = ball_moveBall(&ball, &arena, &player) || islostball;
 
-      if(1 == islostball)
+      if(islostball == 1)
       {
         // What we really want to do here is decrease the lives
         // remove any bonuses, and THEN show the "Get Ready!" text
@@ -828,12 +829,29 @@ int main(int argc, char** argv)
         af_playsample(&f, "dead");
         while(Mix_Playing(-1));
         player.lives--;
+
+        // Reset all cats by killing them
+        Vector* cats = arena.levels[arena.level - 1].cats;
+        for(int i = 0; i < cats->size; i++)
+        {
+          Cat* cat = (Cat*)cats->elements[i];
+          if(cat->state == csAlive)
+          {
+            cat->state = csDying;
+            af_setanimation(&f, &(cat->sprite), "cat-die", 0, cat_afterdie, (void*)(cat), (void*)&f);
+          }
+        }
+
+
         if(player.lives >= 0)
         {
           // Lives already reset, but ideally we want to delay
           // the delay() call until after the next render
-          reset(&app, &ball, &player, &arena, &app.gamestate);
-          delay = 3000;
+          if(app.gamestate == gsRunning)
+          {
+            app.gamestate = gsLostLife;
+            aCounter = SDL_GetTicks();
+          }
         }
         else
         {
@@ -841,16 +859,24 @@ int main(int argc, char** argv)
           arena_resetBricks(&arena);
         }
       }
+      else if((app.gamestate == gsLostLife) && ((SDL_GetTicks() - aCounter) > 2000))
+      {
+        reset(&app, &ball, &player, &arena, &app.gamestate);
+        delay = 3000;
+      }
 
-      bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
-
+      if(app.gamestate == gsRunning)
+        bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
 
       Vector* cats = arena.levels[arena.level - 1].cats;
-      cat_move(cats, arena.bricks, arena.brickcount, &arena.bounds);
+      if(app.gamestate == gsRunning)
+        cat_move(cats, arena.bricks, arena.brickcount, &arena.bounds);
       cat_draw(cats, app.renderer);
-      cat_spawn(cats, &f);
+      if(app.gamestate == gsRunning)
+        cat_spawn(cats, &f);
       cat_collidesball(cats, &ball, &f);
       cat_collidesbat(cats, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
+
       for(int j = arena.bulletcount-1; j >= 0; j--)
       {
         Bounds b = { .left = arena.bullets[j]->x, .top = arena.bullets[j]->y, .width = 5, .height = 8 };
@@ -861,7 +887,7 @@ int main(int argc, char** argv)
         }
       }
 
-      if(arena.remaining == 0)
+      if((arena.remaining == 0) && (app.gamestate == gsRunning))
       {
         // We rely on the onlevelend event at the point remaining is decremented in order to set up the explosions
         if(arena.level == arena.numlevels)
@@ -885,7 +911,9 @@ int main(int argc, char** argv)
       }
 
       // Move the bat, check we're within the arena
-      currentlywarping = bat_movebat(&player, arena.bounds);
+      if(app.gamestate == gsRunning)
+        currentlywarping = bat_movebat(&player, arena.bounds);
+
       if(currentlywarping == 0)
       {
         bonus_movebonuses(&arena.bonuses, &arena.bonuscount, arena.bounds);
@@ -931,7 +959,8 @@ int main(int argc, char** argv)
       delay = 3000;
     }
 
-	  if((app.gamestate == gsRunning) || (app.gamestate == gsPaused) || (app.gamestate == gsNewLevel) || (app.gamestate == gsGetReady))
+	  if((app.gamestate == gsRunning) || (app.gamestate == gsPaused) ||
+      (app.gamestate == gsNewLevel) || (app.gamestate == gsGetReady) || (app.gamestate == gsLostLife))
 	  {
 
       drawLives(&app, &player, arena.factory);
