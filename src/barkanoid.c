@@ -862,7 +862,7 @@ int main(int argc, char** argv)
       else if((app.gamestate == gsLostLife) && ((SDL_GetTicks() - aCounter) > 2000))
       {
         reset(&app, &ball, &player, &arena, &app.gamestate);
-        delay = 3000;
+        delay = 1000;
       }
 
       if(app.gamestate == gsRunning)
