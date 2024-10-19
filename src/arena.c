@@ -872,10 +872,10 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
             // The range and shifting is to limit to 7 values and an interesting spread of likelihoods
             arena->lastbonus = ticks;
             int bonusscore = ((rand() % 5)+1) + ((rand() % 5)+1) + ((rand() % 6)+1);
-            while((bonusscore > 10) || (bonusscore < 4))
+            while(bonusscore > 9)
               bonusscore = ((rand() % 5)+1) + ((rand() % 5)+1) + ((rand() % 6)+1);
 
-            int bonusresult = 8 - (bonusscore - 3);
+            int bonusresult = 8 - (bonusscore - 2);
 
             Bonustype bt = (Bonustype)(bonusresult);
 
