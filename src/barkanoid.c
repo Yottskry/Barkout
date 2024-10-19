@@ -431,7 +431,8 @@ int main(int argc, char** argv)
                   .numlevels = 0,
                   .levels = NULL,
                   .alpha = 255,
-                  .multiplier = 1
+                  .multiplier = 1,
+                  .lastbonus = 0
                 };
 
   int spritecount = 7;

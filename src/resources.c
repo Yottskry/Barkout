@@ -95,5 +95,5 @@ void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadsample(f, "barkanoid-explosion.wav", "explosion");
   af_loadsample(f, "barkanoid-meow.wav", "meow");
   af_loadsample(f, "barkanoid-ow.wav", "ow");
-  af_loadsample(f, "barkanoid-wallbound.wav", "wallbounce");
+  af_loadsample(f, "barkanoid-wallbounce.wav", "wallbounce");
 }

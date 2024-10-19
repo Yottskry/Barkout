@@ -4,17 +4,17 @@
 *
 * This file is part of Barkout.
 *
-* Barkout is free software: you can redistribute it and/or modify 
-* it under the terms of the GNU General Public License as published by 
-* the Free Software Foundation, either version 3 of the License, 
+* Barkout is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License,
 * or (at your option) any later version.
 *
-* Barkout is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+* Barkout is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with Foobar. If not, see <https://www.gnu.org/licenses/>.
 *
 */
@@ -27,8 +27,9 @@
 #include "bounds.h"
 
 #define BONUSFREQUENCY 6
+#define BONUSDELAY 2000 // 2 seconds must elapse between bonuses
 
-typedef enum { boNone = 0, boShrink = 1, boDeadly = 2, boGrow = 3, boCatch = 4, boPlayer = 5, boLaser = 6, boWarp = 7 } Bonustype;
+typedef enum { boNone = 0, boShrink = 1, boGrow = 2, boCatch = 3, boLaser = 4, boDeadly = 5, boPlayer = 6, boWarp = 7 } Bonustype;
 
 typedef struct
 {

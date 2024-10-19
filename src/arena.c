@@ -856,47 +856,31 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
 
           b->sprite->state = asPlayAndReset;
 
+          Uint32 ticks = SDL_GetTicks();
+          Uint32 timesincelast = ticks - arena->lastbonus;
+
           // There's a one in BONUSFREQUENCY chance of a bonus being created
+          // and BONUSDELAY must have passed since last bonus (2 seconds)
           // If it's normal and not a boss, decide whether to create a bonus
-          if((rand() % BONUSFREQUENCY == 0) && ((b->type & btNormal) == btNormal) && ((b->type & btBoss) != btBoss) && (arena->bonuscount < 2))
+          if((rand() % BONUSFREQUENCY == 0) &&
+             ((b->type & btNormal) == btNormal) &&
+             ((b->type & btBoss) != btBoss) &&
+             (arena->bonuscount < 2) &&
+             (timesincelast > BONUSDELAY))
           {
+            // Roll two 5-sided and one 6-sided dice and convert this to the enumeration value
+            // The range and shifting is to limit to 7 values and an interesting spread of likelihoods
+            arena->lastbonus = ticks;
+            int bonusscore = ((rand() % 5)+1) + ((rand() % 5)+1) + ((rand() % 6)+1);
+            while((bonusscore > 10) || (bonusscore < 4))
+              bonusscore = ((rand() % 5)+1) + ((rand() % 5)+1) + ((rand() % 6)+1);
 
-            // divide the bonus count by four. This means more bricks need to be hit to get the better bonuses
-            long bonusscore = round(arena->bonuscounter / 4);
-            // limit to the highest level bonus allowed on the given level
-            int bonustype = bonusscore % (arena->levels[arena->level].maxbonuslevel);
-            Bonustype bt = (Bonustype)(bonustype+1);
+            int bonusresult = 8 - (bonusscore - 3);
+
+            Bonustype bt = (Bonustype)(bonusresult);
+
             arena_addBonus(arena, b->left, b->bottom, bt);
-            arena->bonuscounter = 0;
 
-         /*
-          if((arena->bonuscounter % BONUSFREQUENCY == 0) &&
-             (b->hitcount == 0) &&  &&
-              && ((b->solidedges & hitedge) != hitedge))
-          {
-            int bonusscore = rand() % 100;
-            Bonustype botype = boNone;
-
-            if(bonusscore > 90)
-              botype = boGrow;
-            else if (bonusscore > 85)
-              botype = boDeadly;
-            else if (bonusscore > 82)
-              botype = boPlayer;
-            else if (bonusscore > 75)
-              botype = boCatch;
-            else if (bonusscore > 70)
-              botype = boLaser;
-            else if (bonusscore > 63)
-              botype = boShrink;
-            else if (bonusscore > 60)
-              botype = boWarp;
-
-            // We can limit the maximum bonus on each level if we want
-            // e.g. to prevent laser or warp on the boss level
-            if((botype != boNone) && ((int)botype <= arena->levels[arena->level - 1].maxbonuslevel))
-              arena_addBonus(arena, b->left, b->bottom, botype);
-            */
             af_playsample(arena->factory, "brick");
           }
           else if((b->type & btBoss) == btBoss)
