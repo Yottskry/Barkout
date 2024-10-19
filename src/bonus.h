@@ -29,7 +29,7 @@
 #define BONUSFREQUENCY 6
 #define BONUSDELAY 2000 // 2 seconds must elapse between bonuses
 
-typedef enum { boNone = 0, boShrink = 1, boGrow = 2, boCatch = 3, boLaser = 4, boDeadly = 5, boPlayer = 6, boWarp = 7 } Bonustype;
+typedef enum { boNone = 0, boGrow = 1, boCatch = 2, boShrink = 3, boLaser = 4, boDeadly = 5, boPlayer = 6, boWarp = 7 } Bonustype;
 
 typedef struct
 {
