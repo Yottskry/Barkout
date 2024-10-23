@@ -24,10 +24,9 @@ I did. Good, isn't it?
 
 ## Screenshots
 
-![Alt Text](https://www.retrojunkies.co.uk/fathorsegames/Resources/barkout3.png "Level 3")
+![Screenshot of the title screen](https://www.retrojunkies.co.uk/fathorsegames/Resources/barkoutt.png "Title Screen")
 
-<img href="https://www.retrojunkies.co.uk/fathorsegames/Resources/barkout3.png"></img>
-
+![Screenshot of level 3](https://www.retrojunkies.co.uk/fathorsegames/Resources/barkout3.png "Level 3")
 
 ## What's the licence?
 
