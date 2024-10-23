@@ -24,7 +24,7 @@ I did. Good, isn't it?
 
 ## Screenshots
 
-[Alt Text](https://www.retrojunkies.co.uk/fathorsegames/Resources/barkout3.png "Level 3")
+![Alt Text](https://www.retrojunkies.co.uk/fathorsegames/Resources/barkout3.png "Level 3")
 
 
 ## What's the licence?
