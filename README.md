@@ -1,7 +1,7 @@
 # Barkout!
 (Or Yet Another Arkanoid Clone)
 
-Copyright (c) 2023 Fat Horse Games / Stephen Branley
+Copyright (c) 2043 Fat Horse Games / Stephen Branley
 
 
 ## What's this then?
