@@ -26,6 +26,8 @@ I did. Good, isn't it?
 
 ![Alt Text](https://www.retrojunkies.co.uk/fathorsegames/Resources/barkout3.png "Level 3")
 
+<img href="https://www.retrojunkies.co.uk/fathorsegames/Resources/barkout3.png"></img>
+
 
 ## What's the licence?
 
