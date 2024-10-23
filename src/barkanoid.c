@@ -683,17 +683,6 @@ int main(int argc, char** argv)
           case SDLK_F1:
             printDiagnostics(&ball, &arena);
           break;
-          case SDLK_n:
-            if(app.gamestate == gsRunning)
-            {
-              // Skip to next level
-              arena.remaining = 0;
-            }
-          break;
-          case SDLK_l:
-            if(app.gamestate == gsRunning)
-              player.state = plLaser;
-          break;
         }
       }
 		}
