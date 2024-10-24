@@ -646,6 +646,13 @@ int main(int argc, char** argv)
             }
           break;
           case SDLK_p: app.gamestate = app.gamestate == gsRunning ? gsPaused : gsRunning; break;
+          case SDLK_UP:
+            if(app.gamestate==gsMenu)
+            {
+              menu_previous(&menu);
+              break;
+            }
+          // fall through
           case SDLK_SPACE:
             if((app.gamestate == gsRunning) && (player.state == plLaser))
             {
@@ -672,12 +679,6 @@ int main(int argc, char** argv)
             if(app.gamestate==gsMenu)
             {
               menu_next(&menu);
-            }
-          break;
-          case SDLK_UP:
-            if(app.gamestate==gsMenu)
-            {
-              menu_previous(&menu);
             }
           break;
           case SDLK_F1:
