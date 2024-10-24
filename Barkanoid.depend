@@ -553,14 +553,14 @@
 1709029088 source:/home/pi/Projects/Barkanoid/bonus.c
 	"bonus.h"
 
-1712508678 source:/home/pi/Projects/Barkanoid/src/arena.c
+1729354521 source:/home/pi/Projects/Barkanoid/src/arena.c
 	"arena.h"
 	"config.h"
 	<assert.h>
 	<dirent.h>
 	<windows.h>
 
-1712508405 /home/pi/Projects/Barkanoid/src/arena.h
+1729250019 /home/pi/Projects/Barkanoid/src/arena.h
 	"resourcefactory.h"
 	"bounds.h"
 	"bonus.h"
@@ -569,60 +569,67 @@
 	"app.h"
 	"brick.h"
 	"cat.h"
+	"levels.h"
+	"vector.h"
 	<SDL2/SDL_mixer.h>
 	<stdio.h>
 	<math.h>
 
-1712508001 /home/pi/Projects/Barkanoid/src/resourcefactory.h
+1728905141 /home/pi/Projects/Barkanoid/src/resourcefactory.h
 	"config.h"
+	"app.h"
 	<SDL2/SDL.h>
 	<SDL2/SDL_image.h>
 	<SDL2/SDL_mixer.h>
 
-1704565464 /home/pi/Projects/Barkanoid/src/bounds.h
+1728905141 /home/pi/Projects/Barkanoid/src/bounds.h
 	<stdbool.h>
 
-1711120807 /home/pi/Projects/Barkanoid/src/bonus.h
+1729345730 /home/pi/Projects/Barkanoid/src/bonus.h
 	"resourcefactory.h"
 	"bounds.h"
 
-1712349613 /home/pi/Projects/Barkanoid/src/bat.h
+1728905141 /home/pi/Projects/Barkanoid/src/bat.h
 	"resourcefactory.h"
 	"bounds.h"
 	"bonus.h"
 	<stdbool.h>
 	<SDL2/SDL.h>
 
-1706867864 /home/pi/Projects/Barkanoid/src/ball.h
+1728905140 /home/pi/Projects/Barkanoid/src/ball.h
 	"brick.h"
 	"bounds.h"
+	"bat.h"
 	<stdbool.h>
+	<math.h>
 
-1712048085 /home/pi/Projects/Barkanoid/src/brick.h
+1728905141 /home/pi/Projects/Barkanoid/src/brick.h
 	"resourcefactory.h"
 	<stdbool.h>
 
-1712349572 /home/pi/Projects/Barkanoid/src/app.h
+1729355044 /home/pi/Projects/Barkanoid/src/app.h
 	<SDL2/SDL.h>
 	<SDL2/SDL_ttf.h>
 	<SDL2/SDL_mixer.h>
 	<stdbool.h>
+	<stdio.h>
 
-1711540730 /home/pi/Projects/Barkanoid/src/cat.h
+1729014696 /home/pi/Projects/Barkanoid/src/cat.h
 	"bounds.h"
 	"brick.h"
 	"ball.h"
+	"vector.h"
 	"resourcefactory.h"
 
-1712508525 /home/pi/Projects/Barkanoid/src/config.h
+1728905141 /home/pi/Projects/Barkanoid/src/config.h
 	<stdio.h>
 	<stdbool.h>
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/ball.c
+1728905140 source:/home/pi/Projects/Barkanoid/src/ball.c
 	"ball.h"
 	"config.h"
 
-1712349578 source:/home/pi/Projects/Barkanoid/src/barkanoid.c
+1729356102 source:/home/pi/Projects/Barkanoid/src/barkanoid.c
 	"resourcefactory.h"
 	"arena.h"
 	"app.h"
@@ -632,41 +639,44 @@
 	"scores.h"
 	"config.h"
 	"menu.h"
+	"levels.h"
+	"vector.h"
+	"resources.h"
 	<time.h>
 	<stdio.h>
 	<SDL2/SDL.h>
 	<SDL2/SDL_ttf.h>
 	<stdbool.h>
 
-1712508090 /home/pi/Projects/Barkanoid/src/text.h
+1728905141 /home/pi/Projects/Barkanoid/src/text.h
 	"app.h"
 	"config.h"
 	<assert.h>
 	<stdbool.h>
 
-1702058853 /home/pi/Projects/Barkanoid/src/intro.h
+1728905141 /home/pi/Projects/Barkanoid/src/intro.h
 	"resourcefactory.h"
 
-1704562763 /home/pi/Projects/Barkanoid/src/scores.h
+1728905141 /home/pi/Projects/Barkanoid/src/scores.h
 
-1711388678 /home/pi/Projects/Barkanoid/src/menu.h
+1728905141 /home/pi/Projects/Barkanoid/src/menu.h
 	"app.h"
 	"text.h"
 	<stdbool.h>
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/bat.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/bat.c
 	"bat.h"
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/bonus.c
+1729356175 source:/home/pi/Projects/Barkanoid/src/bonus.c
 	"bonus.h"
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/bounds.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/bounds.c
 	"bounds.h"
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/cat.c
+1729015060 source:/home/pi/Projects/Barkanoid/src/cat.c
 	"cat.h"
 
-1712508511 source:/home/pi/Projects/Barkanoid/src/config.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/config.c
 	"config.h"
 	<stdlib.h>
 	<string.h>
@@ -674,21 +684,21 @@
 	<winreg.h>
 	<sys/stat.h>
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/intro.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/intro.c
 	"intro.h"
 	<math.h>
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/menu.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/menu.c
 	"menu.h"
 	"config.h"
 
-1712349756 source:/home/pi/Projects/Barkanoid/src/resourcefactory.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/resourcefactory.c
 	<stdio.h>
 	<stdlib.h>
 	<assert.h>
 	"resourcefactory.h"
 
-1712333413 source:/home/pi/Projects/Barkanoid/src/scores.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/scores.c
 	"scores.h"
 	<stdio.h>
 	<stdlib.h>
@@ -697,8 +707,40 @@
 	<winreg.h>
 	<sys/stat.h>
 
-1712349810 source:/home/pi/Projects/Barkanoid/src/text.c
+1728905141 source:/home/pi/Projects/Barkanoid/src/text.c
 	"text.h"
 	<SDL2/SDL.h>
 	<SDL2/SDL_ttf.h>
+
+1728905141 /home/pi/Projects/Barkanoid/src/levels.h
+	"bounds.h"
+	"brick.h"
+	"cat.h"
+	"app.h"
+	"vector.h"
+	"resourcefactory.h"
+	<dirent.h>
+	<assert.h>
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+
+1728905141 source:/home/pi/Projects/Barkanoid/src/levels.c
+	"levels.h"
+	"cat.h"
+
+1729179690 source:/home/pi/Projects/Barkanoid/src/vector.c
+	"vector.h"
+	"app.h"
+
+1728905141 /home/pi/Projects/Barkanoid/src/vector.h
+	<stdlib.h>
+	<stdbool.h>
+
+1729180105 source:/home/pi/Projects/Barkanoid/src/resources.c
+	"resources.h"
+
+1728905141 /home/pi/Projects/Barkanoid/src/resources.h
+	"resourcefactory.h"
+	<SDL2/SDL.h>
 

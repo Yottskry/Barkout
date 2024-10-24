@@ -13,6 +13,8 @@
 				<Option compiler="gcc" />
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
+					<Add option="-pedantic" />
+					<Add option="-Wextra" />
 					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-fsanitize=address" />
@@ -81,6 +83,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/intro.h" />
+		<Unit filename="src/levels.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/levels.h" />
 		<Unit filename="src/menu.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -89,6 +95,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/resourcefactory.h" />
+		<Unit filename="src/resources.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/resources.h" />
 		<Unit filename="src/scores.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -97,6 +107,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/text.h" />
+		<Unit filename="src/vector.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/vector.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

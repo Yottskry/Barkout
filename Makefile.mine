@@ -6,16 +6,18 @@ WCC = x86_64-w64-mingw32-gcc
 
 LIBS = -lm -lSDL2 -lSDL2_mixer -lSDL2_ttf -lSDL2_image
 
+COFF = barkout.res
+
 CFLAGS = -I/usr/include
 SDL-CFLAGS = `sdl2-config --cflags`
 SDL-LIBS = `sdl2-config --libs`
 
-WCFLAGS = -I/usr/x86_64-w64-mingw32/include 
+WCFLAGS = -I/usr/x86_64-w64-mingw32/include -I/home/pi/SDL/x86_64-w64-mingw32/include
 WSDL-CFLAGS = `/home/pi/SDL/x86_64-w64-mingw32/bin/sdl2-config --cflags` 
 WSDL-LIBS = `/home/pi/SDL/x86_64-w64-mingw32/bin/sdl2-config --libs`
 
-OUTFILE = bark
-WOUTFILE = bark.exe
+OUTFILE = barkout
+WOUTFILE = barkout.exe
 
 OBFILES = $(patsubst *.c, *.o, $(wildcard *.c))
 
@@ -30,7 +32,7 @@ windows:	bark.exe
 	tar cvf Windows.tar.gz Windows
 
 bark.exe:	$(wildcard src/*.c)
-	$(WCC) $(WCFLAGS) $(WSDL-CFLAGS) $(WSDL-LIBS) -o $(WOUTFILE) $(wildcard src/*.c) $(LIBS)
+	$(WCC) $(WCFLAGS) $(WSDL-CFLAGS) $(WSDL-LIBS) -o $(WOUTFILE) $(wildcard src/*.c) $(COFF) $(LIBS)
 
 bark:	$(wildcard src/*.c)
 	$(CC) -DINSTALLDIR=$(INSTALLDIR) $(CFLAGS) $(SDL-CFLAGS) $(SDL-LIBS) -o $(OUTFILE) $(wildcard src/*.c) $(LIBS)
