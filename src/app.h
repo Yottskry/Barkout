@@ -32,7 +32,7 @@
 #define SCREENW 800
 #define SCREENH 600
 #define ARENAW 520
-#define FONTCOUNT 4
+#define FONTCOUNT 5
 
 #define TEST_ALLOC(V) if(V == 0) \
         { \

@@ -4,17 +4,17 @@
 *
 * This file is part of Barkout.
 *
-* Barkout is free software: you can redistribute it and/or modify 
-* it under the terms of the GNU General Public License as published by 
-* the Free Software Foundation, either version 3 of the License, 
+* Barkout is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License,
 * or (at your option) any later version.
 *
-* Barkout is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+* Barkout is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with Foobar. If not, see <https://www.gnu.org/licenses/>.
 *
 */
@@ -29,7 +29,7 @@
 #include <stdbool.h>
 
 typedef enum { TEXT_CENTRED = 1, TEXT_ARENA_CENTRED = 2, TEXT_SHADOW = 4 } TextFlags;
-typedef enum { fnTitle = 0, fnBody = 1, fnStory = 2, fnMenu = 3} FontType;
+typedef enum { fnTitle = 0, fnBody = 1, fnStory = 2, fnMenu = 3, fnSmallBody = 4} FontType;
 
 typedef struct
 {

@@ -256,7 +256,7 @@ static void drawCredits(App* app)
   text_drawText(app, "Sound FX", left, 240, white, 0, fnTitle);
   text_drawText(app, "Music", left, 280, white, 0, fnTitle);
 
-  text_drawText(app, "Go team!", left, 360, white, 0, fnTitle);
+  text_drawText(app, "Go team!", left, 380, white, 0, fnTitle);
 
   text_drawText(app, "https://www.retrojunkies.co.uk/fathorsegames", 20, 560, white, TEXT_CENTRED, fnBody);
 
@@ -589,10 +589,10 @@ int main(int argc, char** argv)
             if(currentlywarping == 0)
               player.targetspeed = player.speed < 0 ? player.targetspeed : 0;
           break;
-          case SDLK_SPACE:
-            ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
-            ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
-          break;
+          //case SDLK_SPACE:
+          //  ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
+          //  ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
+          //break;
         }
       }
 
@@ -659,6 +659,11 @@ int main(int argc, char** argv)
               af_playsample(&f, "laser");
               arena_addBullet(&arena, &player);
             }
+            else if (app.gamestate == gsRunning)
+            {
+              ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
+              ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
+            }
           // fall through
           case SDLK_RETURN:
             if((app.gamestate == gsTitle) || (app.gamestate == gsCredits) || (app.gamestate == gsHelp) || (app.gamestate == gsDonate))
@@ -697,14 +702,16 @@ int main(int argc, char** argv)
       if(Mix_PlayingMusic() == 0)
           Mix_PlayMusic(app.music, 0);
 
-      if(!titlefinished){
+      if(!titlefinished)
+      {
         // Returns true when text has completed fade in and out
         titlefinished = text_drawFlashText(&app, &fathorse, 200, 100, 2);
       }
       intro_drawstars(app.renderer, stars);
-      if(titlefinished){
-        a_drawsprite(&intro, app.renderer, 200, 160);
-        text_drawFlashText(&app, &pressstart, 260, 220, 2);
+      if(titlefinished)
+      {
+        a_drawsprite(&intro, app.renderer, 200, 120);
+        text_drawFlashText(&app, &pressstart, 260, 180, 2);
         //a_drawstaticframe(af_getanimation(&f, "logo"), app.renderer, 700, 500, 0, 255);
       }
 
@@ -716,7 +723,7 @@ int main(int argc, char** argv)
       titlefinished = true;
 
       intro_drawstars(app.renderer, stars);
-      a_drawsprite(&intro, app.renderer, 200, 160);
+      a_drawsprite(&intro, app.renderer, 200, 120);
 
       menu_drawMenu(&menu, &app);
 
@@ -724,6 +731,7 @@ int main(int argc, char** argv)
       // problem is that on our next loop, if we've changed
       // to gsNewLevel we draw one single frame of the previous
       // level layout
+      text_drawText(&app, "Copyright 2024 Stephen Branley, Fat Horse Games", 10, 560, (SDL_Color){255,255,255,255}, 0, fnSmallBody);
       a_drawstaticframe(af_getanimation(&f, "logo"), app.renderer, 700, 500, 0, 255);
     }
 
