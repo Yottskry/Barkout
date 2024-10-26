@@ -27,6 +27,16 @@ I did. Good, isn't it?
 ![Screenshot of the title screen](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/1_title.png "Title Screen")
 ![Screenshot of the menu screen](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/2_menu.png "Main menu")
 ![Screenshot of the level 1](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/3_level1_1.png "Level 1")
+![Screenshot of the level 2](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/4_level2_1.png "Level 2")
+![Screenshot of the level 2](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/5_level2_2.png "Level 2")
+![Screenshot of the level 3](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/6_level3_1.png "Level 3")
+![Screenshot of the level 3](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/7_level3_2.png "Level 3")
+![Screenshot of the level 10](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/8_level10_1.png "Level 10")
+
+## To do
+
+* Mouse control
+* Joystick control
 
 ## What's the licence?
 
