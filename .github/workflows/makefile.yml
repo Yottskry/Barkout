@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
+    
     - name: Download dependencies
       run: sudo apt-get update && sudo apt-get install -y tzdata && sudo apt-get install -y build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
@@ -31,3 +31,9 @@ jobs:
 
     - name: Run distcheck
       run: make distcheck
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with: 
+        name: barkout-1.1.tar.gz
+        path: barkout-1.1.tar.gz
