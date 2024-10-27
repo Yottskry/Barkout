@@ -33,6 +33,12 @@ I did. Good, isn't it?
 ![Screenshot of the level 3](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/7_level3_2.png "Level 3")
 ![Screenshot of the level 10](https://www.retrojunkies.co.uk/fathorsegames/Resources/GithubScreenshots/8_level10_1.png "Level 10")
 
+## Downloads
+### Version 1.1.0
+
+[Windows installer](https://github.com/Yottskry/Barkout/releases/download/Barkout-1.1/barkout-installer-1.1.0.0.exe)
+[Source tarball](https://github.com/Yottskry/Barkout/archive/refs/tags/Barkout-1.1.tar.gz)
+
 ## To do
 
 * Mouse control
