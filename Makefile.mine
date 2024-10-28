@@ -25,13 +25,9 @@ OBFILES = $(patsubst *.c, *.o, $(wildcard *.c))
 all:	bark
 
 # To build windows, we have a prerequisite of bark.exe...
-windows:	bark.exe
-	if [ -d Windows ]; then rm -rf Windows; fi
-	mkdir Windows
-	cp -r bark.exe Levels Sounds Sprites Windows
-	tar cvf Windows.tar.gz Windows
+windows:	barkout.exe
 
-bark.exe:	$(wildcard src/*.c)
+barkout.exe:	$(wildcard src/*.c)
 	$(WCC) $(WCFLAGS) $(WSDL-CFLAGS) $(WSDL-LIBS) -o $(WOUTFILE) $(wildcard src/*.c) $(COFF) $(LIBS)
 
 bark:	$(wildcard src/*.c)
