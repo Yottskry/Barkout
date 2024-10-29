@@ -42,6 +42,19 @@ I did. Good, isn't it?
 [Windows installer](https://github.com/Yottskry/Barkout/releases/download/Barkout-1.1/barkout-installer-1.1.0.0.exe)
 [Source tarball](https://github.com/Yottskry/Barkout/archive/refs/tags/Barkout-1.1.tar.gz)
 
+## Installing from source
+
+Barkout has been packaged using Autotools, so the usual Autotools commands apply for installation, usually:
+
+```
+./configure
+make
+```
+And then to install globally:
+```
+make install
+```
+
 ## To do
 
 * Mouse control
