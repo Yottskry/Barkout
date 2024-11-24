@@ -672,6 +672,13 @@ int main(int argc, char** argv)
               menu_execute(&menu);
             else if(app.gamestate == gsStory)
             {
+                
+              story1.current = 0;
+              story2.current = 0;
+              story3.current = 0;
+              txt1.alpha = 0;
+              txt2.alpha = 0;
+              txt3.alpha = 0;
               app.gamestate = gsNewLevel;
               player.lives = config_getstartlives();
               arena.level = startlevel;
