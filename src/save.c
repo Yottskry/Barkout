@@ -1,7 +1,5 @@
 #include "save.h"
 
-#define chars "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
 long FromBase36(char* str)
 {
 	int len = strlen(str);
@@ -57,6 +55,7 @@ char* ToBase36(int imp, int minLength)
 long GetCheckTotal(char* encLevel)
 {
 	long tot = 0;
+	printf("len %d\n", strlen(encLevel));
 	for(int i = 0; i < strlen(encLevel); i++)
 	{
 		char* c = calloc(2, sizeof(char));
@@ -68,20 +67,23 @@ long GetCheckTotal(char* encLevel)
 	return tot;
 }
 
-int DecodeLevel(char* encLevel, long* lev, long* liv, long* scr, long* pow)
+int save_decodeLevel(char* encLevel, long* lev, long* liv, long* scr, long* pow)
 {
 	// Get the check digit and remove it from the string
-	char dig = encLevel[strlen(encLevel)-1];
+	//char dig = encLevel[strlen(encLevel)-1];
 	long chk = FromBase36(&(encLevel[strlen(encLevel)-1]));
 
 	char* code = calloc(strlen(encLevel), sizeof(char)); // strlen omits the \0 so we don't need to add 1
 	strncpy(code, encLevel, strlen(encLevel)-1);
 	long tot = GetCheckTotal(code);
-	free(code);
 
+	printf("%ld\n", chk);
+	printf("%ld\n", tot);
+
+	free(code);
 	if(chk != (tot % 11))
 	{
-		return -1;
+//		return -1;
 	}
 
 	char* lives = calloc(2, sizeof(char));
@@ -96,8 +98,10 @@ int DecodeLevel(char* encLevel, long* lev, long* liv, long* scr, long* pow)
 
 	*lev = FromBase36(level);
 	*liv = FromBase36(lives);
-	*scr = FromBase36(score);
+	*scr = FromBase36(score) * 10;
 	*pow = FromBase36(power);
+
+	printf("OK\n");
 
 	free(score);
 	free(lives);
@@ -137,4 +141,74 @@ char* AddCheckDigit(char* encLevel)
 	out[strlen(out)] = dig[0];
 	free(dig);
 	return out;
+}
+
+int save_createLetters(Save* save)
+{
+	int ofs = 48;
+
+	save->collimit = 10;
+	save->selected = 0;
+	memset(&(save->code[0]), 0, 9);
+	for(int i = 0; i < LETTERS; i++)
+	{
+		if(i == 10)
+			ofs = 55; 
+		memset(&(save->letters[i].chr), 0, 3);
+		save->letters[i].chr[0] = i == 36 ? 0xc2 : ofs + i;
+		if(i == 36)
+			save->letters[i].chr[1] = 0xab;
+		save->letters[i].col = 150 + ((i % save->collimit) * 50); 
+		save->letters[i].row = 120 + (((int)(i / save->collimit)) * 50);
+	}
+	return 0;
+}
+
+int save_drawLetters(App* app, Save* save)
+{
+	for(int i = 0; i < LETTERS; i++)
+	{
+		if(save->selected == i)
+		{	
+			text_drawText(app, &(save->letters[i].chr[0]), save->letters[i].col, save->letters[i].row, (SDL_Color){200, 200, 255, 255}, TEXT_SHADOW, fnTitle);
+		}
+		else
+		{
+			text_drawText(app, &(save->letters[i].chr[0]), save->letters[i].col, save->letters[i].row, (SDL_Color){255, 255, 255, 100}, TEXT_SHADOW, fnTitle);
+		}
+	}
+
+	if(strlen(&(save->code[0])) > 0)
+	text_drawText(app, &(save->code[0]), 150, 400, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
+
+	return 0;
+}
+
+int save_moveLetter(Save* save, bool forward, bool multiple)
+{
+	int next = save->selected;
+	next += forward == true ? 
+						multiple == true ? save->collimit : 1 
+						: multiple == true ? save->collimit*-1 : -1;
+	next = next < 0 ? 0 : next;
+	next = next >= LETTERS ? LETTERS-1 : next;
+	save->selected = next;
+
+	return 0;
+}
+
+char* save_selectLetter(Save* save)
+{
+	char c = 0;
+	if(save->selected < LETTERS-1)
+	{
+		c = save->letters[save->selected].chr[0];
+	}
+	int pos = strlen(save->code);
+	if(c == 0)
+		pos--;
+	if((pos > 7) || (pos < 0))
+		return NULL;
+	save->code[pos] = c;
+	return strlen(save->code) == 8 ? &(save->code[0]) : NULL;
 }
