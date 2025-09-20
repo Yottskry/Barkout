@@ -32,6 +32,7 @@
 #include "levels.h"
 #include "vector.h"
 #include "resources.h"
+#include "save.h"
 #include <time.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
@@ -91,8 +92,21 @@ static int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gam
   ball->cy = player->y - (ball->radius);
   ball->speed = config_getballspeed();
   ball->warpdest = NULL;
-  *gamestate = gsGetReady;
+
   text_drawText(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
+ 
+ 	if((arena->level % 1 == 0) && (*gamestate == gsNewLevel))
+	{
+		char* sc = ToBase36(player->score, 4);
+		char* encodedLevelText = EncodeLevel(sc, (int)(arena->level / 4), player->lives, 1);
+		char* finalLevelText = AddCheckDigit(encodedLevelText);
+		free(sc);
+		text_drawText(app, finalLevelText, 200,350, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED|TEXT_SHADOW, fnTitle);
+		free(finalLevelText);
+		free(encodedLevelText);
+	}
+
+  *gamestate = gsGetReady;
   return 0;
 }
 
@@ -135,6 +149,12 @@ void menu_donateClick(void* data)
 {
   App* app = (App*)data;
   app->gamestate = gsDonate;
+}
+
+void menu_continueClick(void* data)
+{
+	App* app = (App*)data;
+	app->gamestate = gsContinue;
 }
 
 static void drawLives(App* app, Bat* player, ResourceFactory* factory)
@@ -467,7 +487,12 @@ int main(int argc, char** argv)
   menu_addItem(&menu, "How to Play", NULL, menu_howToPlayClick, NULL);
   menu_addItem(&menu, "Credits", NULL, menu_creditsClick, NULL);
   menu_addItem(&menu, "Donate!", NULL, menu_donateClick, NULL);
-  menu_addItem(&menu, "Quit", NULL, menu_quitClick, NULL);
+  menu_addItem(&menu, "Continue", NULL, menu_continueClick, NULL);
+	menu_addItem(&menu, "Quit", NULL, menu_quitClick, NULL);
+
+	Save save;
+
+	save_createLetters(&save);
 
 	SDL_ShowCursor(SDL_DISABLE);
 
@@ -632,6 +657,10 @@ int main(int argc, char** argv)
             {
               menu_previousOption(&menu);
             }
+						else if(app.gamestate==gsContinue)
+						{
+							save_moveLetter(&save, false, false);
+						}
           break;
           case SDLK_x:
           case SDLK_RIGHT:
@@ -644,14 +673,32 @@ int main(int argc, char** argv)
             {
               menu_nextOption(&menu);
             }
+						else if(app.gamestate==gsContinue)
+						{
+							save_moveLetter(&save, true, false);
+						}
           break;
-          case SDLK_p: app.gamestate = app.gamestate == gsRunning ? gsPaused : gsRunning; break;
+          case SDLK_p: 
+						if(app.gamestate == gsRunning)
+						{
+							app.gamestate = gsPaused;
+						}
+						else if (app.gamestate == gsPaused)
+						{
+							app.gamestate = gsRunning;
+						}
+					break;
           case SDLK_UP:
             if(app.gamestate==gsMenu)
             {
               menu_previous(&menu);
               break;
             }
+						if(app.gamestate==gsContinue)
+						{
+							save_moveLetter(&save, false, true);
+							break;
+						}
           // fall through
           case SDLK_SPACE:
             if((app.gamestate == gsRunning) && (player.state == plLaser))
@@ -686,12 +733,46 @@ int main(int argc, char** argv)
               arena.alpha = 255;
               arena_loadBricks(&arena, arena.level);
             }
+						else if(app.gamestate == gsContinue)
+						{
+							char* code = save_selectLetter(&save);
+							long lev;
+							long liv;
+							long pow;
+							long score;
+							if(code != NULL)
+							{
+								printf("test\n");
+								if(save_decodeLevel(code, &lev, &liv, &score, &pow) == 0)
+								{
+									if(lev>0)
+									{
+										story1.current = 0;
+              			story2.current = 0;
+              			story3.current = 0;
+              			txt1.alpha = 0;
+              			txt2.alpha = 0;
+              			txt3.alpha = 0;
+										app.gamestate = gsNewLevel;
+										player.lives = (int)liv;
+										arena.level = (int)lev;
+										player.score = (int)score;
+										arena.alpha = 255;
+										arena_loadBricks(&arena, arena.level);	
+									}
+								}
+							}
+						}
           break;
           case SDLK_DOWN:
             if(app.gamestate==gsMenu)
             {
               menu_next(&menu);
             }
+						if(app.gamestate==gsContinue)
+						{
+							save_moveLetter(&save, true, true);
+						}
           break;
           case SDLK_F1:
             printDiagnostics(&ball, &arena);
@@ -738,9 +819,16 @@ int main(int argc, char** argv)
       // problem is that on our next loop, if we've changed
       // to gsNewLevel we draw one single frame of the previous
       // level layout
-      text_drawText(&app, "Copyright 2024 Stephen Branley, Fat Horse Games", 10, 560, (SDL_Color){255,255,255,255}, 0, fnSmallBody);
+      text_drawText(&app, "Copyright 2024 - 2025 Stephen Branley, Fat Horse Games", 10, 560, (SDL_Color){255,255,255,255}, 0, fnSmallBody);
       a_drawstaticframe(af_getanimation(&f, "logo"), app.renderer, 700, 500, 0, 255);
     }
+
+		if(app.gamestate == gsContinue)
+		{
+			intro_drawstars(app.renderer, stars);
+			intro_movestars(stars);
+			save_drawLetters(&app, &save);
+		}
 
     if((app.gamestate == gsCredits) || (app.gamestate == gsHelp) || (app.gamestate == gsDonate))
     {
@@ -803,6 +891,7 @@ int main(int argc, char** argv)
       bonus_drawbonuses(arena.bonuses, arena.bonuscount, app.renderer);
       Vector* cats = arena.levels[arena.level - 1].cats;
       cat_draw(cats, app.renderer);
+			text_drawText(&app, "PAUSED", 0, 350, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED | TEXT_SHADOW, fnTitle);
     }
 
     if((app.gamestate == gsRunning) || (app.gamestate == gsLostLife))
