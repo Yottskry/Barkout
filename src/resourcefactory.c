@@ -25,7 +25,7 @@
 #include <assert.h>
 #include "resourcefactory.h"
 
-Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, char* filename, char name[50], int w, int h)
+Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, const char* filename, const char* name, int w, int h)
 {
   char apath[255] = "./Sprites/";
 
@@ -111,7 +111,7 @@ Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, ch
 	return factory->anims[factory->animationcount - 1];
 }
 
-Animation* af_getanimation(ResourceFactory* factory, char name[50])
+Animation* af_getanimation(ResourceFactory* factory, const char* name)
 {
   for(int i = 0; i < factory->animationcount; i++)
   {
@@ -237,7 +237,7 @@ int af_freeanimations(ResourceFactory* factory)
   return 0;
 }
 
-void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*, void*), void* sender, void* data)
+void af_setanimation(ResourceFactory* factory, Sprite* sprite, const char* name, int loop, void (*f)(void*, void*), void* sender, void* data)
 {
   Animation* anim = af_getanimation(factory, name);
 
@@ -257,7 +257,7 @@ void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], in
   sprite->data = data;
 }
 
-Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char name[50])
+Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, const char* name)
 {
   char apath[255] = "./Sounds/";
 

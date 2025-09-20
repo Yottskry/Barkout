@@ -72,9 +72,9 @@ typedef struct
 
 /* Animation related functions */
 
-Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, char* filename, char name[50], int w, int h);
+Animation* af_loadanimation(ResourceFactory* factory, SDL_Renderer* renderer, const char* filename, const char* name, int w, int h);
 
-Animation* af_getanimation(ResourceFactory* factory, char name[50]);
+Animation* af_getanimation(ResourceFactory* factory, const char* name);
 
 int a_freeanimation(Animation* anim);
 
@@ -87,11 +87,11 @@ void a_drawclippedsprite(Sprite* sprite, SDL_Renderer* renderer, int x, int y, S
 
 int af_freeanimations(ResourceFactory* factory);
 
-void af_setanimation(ResourceFactory* factory, Sprite* sprite, char name[50], int loop, void (*f)(void*, void*), void* sender, void* data);
+void af_setanimation(ResourceFactory* factory, Sprite* sprite, const char* name, int loop, void (*f)(void*, void*), void* sender, void* data);
 
 /* Mixer / Sample related functions */
 
-Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, char name[50]);
+Mix_Chunk* af_loadsample(ResourceFactory* factory, const char* filename, const char* name);
 
 int af_playsample(ResourceFactory* factory, const char* name);
 
