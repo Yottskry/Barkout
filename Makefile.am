@@ -23,7 +23,8 @@ barkout_SOURCES = src/barkanoid.c src/app.h src/brick.h \
 		src/scores.c src/scores.h \
 		src/text.c src/text.h \
 		src/vector.c src/vector.h \
-		src/resources.c src/resources.h
+		src/resources.c src/resources.h \
+		src/save.c src/save.h
 # Additional platform-independent data files
 FONTS = 	Fonts/Nordine.ttf \
 		Fonts/Vectroid.otf \
