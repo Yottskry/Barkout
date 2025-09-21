@@ -75,7 +75,7 @@ void menu_drawMenu(Menu* menu, App* app)
     {
       text_drawText(app, item->options[item->selectedindex]->text, menu->optionx, 35*i + menu->y, (SDL_Color){255, 255, 255, 255}, 0, fnMenu);
       if(i==menu->selectedindex)
-        text_drawWrappedText(app, item->options[item->selectedindex]->description, menu->x, 500, (SDL_Color){255, 255, 255, 255}, 0, 600, fnBody);
+        text_drawWrappedText(app, item->options[item->selectedindex]->description, menu->x, 525, (SDL_Color){255, 255, 255, 255}, 0, 600, fnBody);
     }
   }
 }

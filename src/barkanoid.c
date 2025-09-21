@@ -74,6 +74,7 @@ static int gameOver(App* app, Bat* player, Gamestate* gamestate, int* hi)
     saveHighScore(((int*)&player->score));
     *hi = player->score;
   }
+	memset(app->LastCode, 0, 9);
   return *hi;
 }
 
@@ -95,13 +96,14 @@ static int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gam
 
   text_drawText(app, "Get Ready!", 200, 300, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
  
- 	if((arena->level % 1 == 0) && (*gamestate == gsNewLevel))
+ 	if((arena->level % 4 == 0) && (*gamestate == gsNewLevel))
 	{
-		char* sc = ToBase36(player->score, 4);
+		char* sc = ToBase36((int)(player->score / 10), 4);
 		char* encodedLevelText = EncodeLevel(sc, (int)(arena->level / 4), player->lives, 1);
 		char* finalLevelText = AddCheckDigit(encodedLevelText);
+		strncpy(app->LastCode, finalLevelText, 8);
 		free(sc);
-		text_drawText(app, finalLevelText, 200,350, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED|TEXT_SHADOW, fnTitle);
+		text_drawText(app, app->LastCode, 200,350, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED|TEXT_SHADOW, fnTitle);
 		free(finalLevelText);
 		free(encodedLevelText);
 	}
@@ -208,6 +210,8 @@ static void drawArenaText(App* app, Arena* arena, Bat* player, int hi)
   text_drawText(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
   text_drawText(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
   text_drawText(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
+	if(strlen(app->LastCode) > 0)
+		text_drawText(app, app->LastCode, 610, 400, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
 }
 
 static void drawHowToPlay(App* app, Sprite* sprites)
@@ -388,10 +392,9 @@ int main(int argc, char** argv)
 
 	app.window = SDL_CreateWindow("Barkout", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, flags);
 	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED);
-
 	app.music = af_loadmusic("barkanoidiii.mp3");
-
   app.gamestate = gsTitle;
+	app.LastCode = calloc(9, sizeof(char));
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
   SDL_RenderSetLogicalSize(app.renderer, 800, 600);
@@ -742,7 +745,6 @@ int main(int argc, char** argv)
 							long score;
 							if(code != NULL)
 							{
-								printf("test\n");
 								if(save_decodeLevel(code, &lev, &liv, &score, &pow) == 0)
 								{
 									if(lev>0)
@@ -757,6 +759,7 @@ int main(int argc, char** argv)
 										player.lives = (int)liv;
 										arena.level = (int)lev;
 										player.score = (int)score;
+										printf("Loaded score: %d\n", player.score);
 										arena.alpha = 255;
 										arena_loadBricks(&arena, arena.level);	
 									}
@@ -1090,6 +1093,8 @@ int main(int argc, char** argv)
   // Exiting the program, so free all allocated memory
 
   config_save();
+
+	free(app.LastCode);
 
   menu_free(&menu);
   bonus_freebonuses(&arena.bonuses, &arena.bonuscount);

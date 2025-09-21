@@ -55,7 +55,7 @@ char* ToBase36(int imp, int minLength)
 long GetCheckTotal(char* encLevel)
 {
 	long tot = 0;
-	printf("len %d\n", strlen(encLevel));
+//	printf("len %d\n", strlen(encLevel));
 	for(int i = 0; i < strlen(encLevel); i++)
 	{
 		char* c = calloc(2, sizeof(char));
@@ -77,9 +77,6 @@ int save_decodeLevel(char* encLevel, long* lev, long* liv, long* scr, long* pow)
 	strncpy(code, encLevel, strlen(encLevel)-1);
 	long tot = GetCheckTotal(code);
 
-	printf("%ld\n", chk);
-	printf("%ld\n", tot);
-
 	free(code);
 	if(chk != (tot % 11))
 	{
@@ -96,12 +93,10 @@ int save_decodeLevel(char* encLevel, long* lev, long* liv, long* scr, long* pow)
 	strncpy(power, &(encLevel[2]), 1);
 	strncpy(score, &(encLevel[3]), strlen(encLevel) - 4);
 
-	*lev = FromBase36(level);
+	*lev = FromBase36(level) * 4;
 	*liv = FromBase36(lives);
 	*scr = FromBase36(score) * 10;
 	*pow = FromBase36(power);
-
-	printf("OK\n");
 
 	free(score);
 	free(lives);
@@ -114,7 +109,8 @@ int save_decodeLevel(char* encLevel, long* lev, long* liv, long* scr, long* pow)
 char* EncodeLevel(char* encScore, int level, int lives, int powerup)
 {
 	// Codes are only offered up every 4 levels, so "level" is just how many multiples of 4 apply
-	level = (int)(level / 4);
+	//level = (int)(level / 4);
+	printf("Encoding level %d \n", level);
 	char* lev = ToBase36(level, 1);
 	char* liv = ToBase36(lives, 1);
 	char* pow = ToBase36(powerup, 1);

@@ -54,6 +54,7 @@ typedef struct
 	TTF_Font* font[FONTCOUNT];
 	Mix_Music* music;
 	Gamestate gamestate;
+	char* LastCode;
 } App;
 
 #endif // _APP_H_
