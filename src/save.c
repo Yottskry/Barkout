@@ -110,7 +110,7 @@ char* EncodeLevel(char* encScore, int level, int lives, int powerup)
 {
 	// Codes are only offered up every 4 levels, so "level" is just how many multiples of 4 apply
 	//level = (int)(level / 4);
-	printf("Encoding level %d \n", level);
+	//printf("Encoding level %d \n", level);
 	char* lev = ToBase36(level, 1);
 	char* liv = ToBase36(lives, 1);
 	char* pow = ToBase36(powerup, 1);

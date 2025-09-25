@@ -65,11 +65,30 @@ static void printDiagnostics(Ball* ball, Arena* arena)
   }
 }
 
-static int gameOver(App* app, Bat* player, Gamestate* gamestate, int* hi)
+static int createContinueCode(App* app, Bat* player, Arena* arena)
+{
+	char* sc = ToBase36((int)(player->score / 10), 4);
+	char* encodedLevelText = EncodeLevel(sc, (int)(arena->level / 4), player->lives, 1);
+	char* finalLevelText = AddCheckDigit(encodedLevelText);
+	strncpy(app->LastCode, finalLevelText, 8);
+	free(sc);
+	free(finalLevelText);
+	return 0;
+}
+
+static int drawContinueCode(App* app)
+{
+	if(strlen(app->LastCode) > 0)
+		text_drawText(app, app->LastCode, 200,350, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED|TEXT_SHADOW, fnTitle);
+	return 0;	
+}
+
+static int gameOver(App* app, Bat* player, Gamestate* gamestate, Arena* arena, int* hi)
 {
   *gamestate = gsDying;
   text_drawText(app, "Game Over!", 200, 300, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
-  if(player->score > *hi)
+  drawContinueCode(app);
+	if(player->score > *hi)
   {
     saveHighScore(((int*)&player->score));
     *hi = player->score;
@@ -98,14 +117,8 @@ static int reset(App* app, Ball* ball, Bat* player, Arena* arena, Gamestate* gam
  
  	if((arena->level % 4 == 0) && (*gamestate == gsNewLevel))
 	{
-		char* sc = ToBase36((int)(player->score / 10), 4);
-		char* encodedLevelText = EncodeLevel(sc, (int)(arena->level / 4), player->lives, 1);
-		char* finalLevelText = AddCheckDigit(encodedLevelText);
-		strncpy(app->LastCode, finalLevelText, 8);
-		free(sc);
-		text_drawText(app, app->LastCode, 200,350, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED|TEXT_SHADOW, fnTitle);
-		free(finalLevelText);
-		free(encodedLevelText);
+		createContinueCode(app, player, arena);
+		drawContinueCode(app);
 	}
 
   *gamestate = gsGetReady;
@@ -210,8 +223,8 @@ static void drawArenaText(App* app, Arena* arena, Bat* player, int hi)
   text_drawText(app, scores, 610, 240, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
   text_drawText(app, "Round", 610, 320, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
   text_drawText(app, level, 740, 320, (SDL_Color){255, 255, 255, 255}, TEXT_SHADOW, fnTitle);
-	if(strlen(app->LastCode) > 0)
-		text_drawText(app, app->LastCode, 610, 400, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
+	//if(strlen(app->LastCode) > 0)
+	//	text_drawText(app, app->LastCode, 610, 400, (SDL_Color){255,255,255,255}, TEXT_SHADOW, fnTitle);
 }
 
 static void drawHowToPlay(App* app, Sprite* sprites)
@@ -952,8 +965,9 @@ int main(int argc, char** argv)
         }
         else
         {
-          gameOver(&app, &player, &app.gamestate, &hi);
+          gameOver(&app, &player, &app.gamestate, &arena, &hi);
           arena_resetBricks(&arena);
+					delay = 1000;
         }
       }
       else if((app.gamestate == gsLostLife) && ((SDL_GetTicks() - aCounter) > 2000))
@@ -994,7 +1008,7 @@ int main(int argc, char** argv)
           text_drawText(&app, "VICTORY!", 0, 275, (SDL_Color){255,255,255,255}, TEXT_ARENA_CENTRED | TEXT_SHADOW, fnTitle);
           if(allfinished)
           {
-            gameOver(&app, &player, &app.gamestate, &hi);
+            gameOver(&app, &player, &app.gamestate, &arena, &hi);
             arena_resetBricks(&arena);
           }
         }
