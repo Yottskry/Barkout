@@ -117,7 +117,8 @@ void levels_processRow(ResourceFactory* factory, Level* level, Bounds* bounds, c
     if(rowdata[col] == '@')
     {
       // Create three cats at this location
-     for(int c = 0; c < 3; c++)
+     
+			for(int c = 0; c < 3; c++)
       {
         Cat* cat = malloc(sizeof(Cat));
         cat_init(cat, factory);

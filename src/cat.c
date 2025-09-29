@@ -42,7 +42,7 @@ void cat_move(Vector* cats, Brick** bricks, int brickcount, Bounds* bounds)
 {
   for(int catno = 0; catno < cats->size; catno++)
   {
-    Cat* cat = (Cat*)cats->elements[catno];
+    Cat* cat = (Cat*)(vector_item(cats,catno));
 
     if(cat->state != csAlive)
       continue;
@@ -174,8 +174,10 @@ void cat_draw(Vector* cats, SDL_Renderer* renderer)
 {
   for(int catno = 0; catno < cats->size; catno++)
   {
-    Cat* cat = (Cat*)cats->elements[catno];
-    if(cat->state != csDead)
+//    Cat* cat = (Cat*)cats->elements[catno];
+  
+    Cat* cat = (Cat*)(vector_item(cats,catno));
+		if(cat->state != csDead)
       a_drawsprite(&cat->sprite, renderer, cat->bounds.left, cat->bounds.top);
   }
 }
@@ -193,15 +195,18 @@ void cat_spawn(Vector* cats, ResourceFactory* factory)
   int alivecount = 0;
   for(int i = 0; i < cats->size; i++)
   {
-    Cat* cat = (Cat*)cats->elements[i];
+    Cat* cat = (Cat*)(vector_item(cats,i));
+    //Cat* cat = (Cat*)cats->elements[i];
     if(cat->state != csDead)
       alivecount++;
   }
 
   if((alivecount == 0) && ((currentcounter - baddiecounter) > FIRSTBADDIE))
   {
-    Cat* cat = (Cat*)cats->elements[0];
-    // set the position first?
+    //Cat* cat = (Cat*)cats->elements[0];
+    
+    Cat* cat = (Cat*)(vector_item(cats,0));
+		// set the position first?
     cat->state = csSpawning;
     cat->bounds.left = cat->spawnx;
     cat->bounds.top = cat->spawny;
@@ -212,7 +217,8 @@ void cat_spawn(Vector* cats, ResourceFactory* factory)
   {
     for(int i = 0; i < cats->size; i++)
     {
-      Cat* cat = (Cat*)cats->elements[i];
+	    Cat* cat = (Cat*)(vector_item(cats,i));
+//      Cat* cat = (Cat*)cats->elements[i];
       if(cat->state == csDead)
       {
         cat->state = csSpawning;
@@ -231,7 +237,8 @@ bool cat_collidesball(Vector* cats, Ball* ball, ResourceFactory* factory)
   Edge edge = eNone;
   for(int i = 0; i < cats->size; i++)
   {
-    Cat* cat = (Cat*)cats->elements[i];
+    Cat* cat = (Cat*)(vector_item(cats,i));
+  //  Cat* cat = (Cat*)cats->elements[i];
     if(cat->state == csAlive)
     {
       int d = 0;
@@ -252,7 +259,8 @@ bool cat_collidesbat(Vector* cats, Bounds* bounds, ResourceFactory* factory)
 {
   for(int i = 0; i < cats->size; i++)
   {
-    Cat* cat = (Cat*)cats->elements[i];
+    Cat* cat = (Cat*)(vector_item(cats,i));
+   // Cat* cat = (Cat*)cats->elements[i];
     if(cat->state == csAlive)
     {
       if(bounds_intersects(&cat->bounds, bounds))

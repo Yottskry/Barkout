@@ -19,7 +19,6 @@
 *
 */
 
-
 #include "resourcefactory.h"
 #include "arena.h"
 #include "app.h"
@@ -44,6 +43,7 @@
 #define DON1 "This game is a labour of love. All programming, graphics, music, and sound effects were produced by me."
 #define DON2 "If you enjoy playing it, please consider making a small donation by buying me a coffee through the link below."
 #define DON3 "https://buymeacoffee.com/retrojunkies"
+#define MAXBALLS 3
 
 static void printDiagnostics(Ball* ball, Arena* arena)
 {
@@ -383,14 +383,14 @@ int main(int argc, char** argv)
     return 0;
 	}
 
-	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
-
 	if(Mix_Init(MIX_INIT_MP3) == -1)
 	{
     printf("MIX_Init: %s\n", Mix_GetError());
     return 0;
 	}
 
+	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+	
 	config_load();
   if(debug)
     config_setdebug(true);
@@ -425,20 +425,12 @@ int main(int argc, char** argv)
   player.sprite.state = asLooping;
   player.warpenabled = false;
 
-  // Set up the ball
-  Ball ball = { .cx = player.x + 40, .cy = 310, .speed = config_getballspeed(), .bearing = 60, .radius = 7, .state = bsSticky };
-  ball.sprite.anim = af_getanimation(&f, "ball");
-  ball.sprite.currentframe = 0;
-  ball.sprite.lastticks = 0;
-  ball.sprite.loop = 1;
-  ball.sprite.state = asLooping;
-  for(int i = 0; i < MAXTRAILPARTICLES; i++)
-  {
-    ball.sparkles[i].alpha = 0;
-    ball.sparkles[i].x = 0;
-    ball.sparkles[i].y = 0;
-    ball.sparkles[i].gdiff = 0;
-  }
+  // Set up the balls
+	// Allow for multiple balls
+
+	Vector* balls = vector_new();
+	Ball* b1 = arena_addBall(&f, &player, 60, player.x + 40, 310, bsSticky);
+	vector_add(balls, b1);
 
   Sprite intro = { .currentframe = 0, .lastticks = 0, .loop = 0, .state = asPlayToEnd };
   intro.anim = af_getanimation(&f, "intro");
@@ -471,11 +463,11 @@ int main(int argc, char** argv)
                   .lastbonus = 0
                 };
 
-  int spritecount = 7;
+  int spritecount = 8;
   Sprite bonussprites[spritecount];
   // "dsecplw";
-  // Yes, 7. No \0.
-  char bonustypes[7] = "cldespw";
+  // Yes, 8. No \0.
+  char bonustypes[8] = "cldespwm";
   char bonusstring[8] = "bonus-x";
   for(int i=0; i < spritecount; i++)
   {
@@ -630,10 +622,6 @@ int main(int argc, char** argv)
             if(currentlywarping == 0)
               player.targetspeed = player.speed < 0 ? player.targetspeed : 0;
           break;
-          //case SDLK_SPACE:
-          //  ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
-          //  ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
-          //break;
         }
       }
 
@@ -644,17 +632,25 @@ int main(int argc, char** argv)
         if(e.key.keysym.sym == SDLK_ESCAPE)
         {
           if((app.gamestate != gsTitle) && (app.gamestate != gsStory))
+					{
+						// Remove all but one ball
+						for(int bn = balls->size - 1; bn > 0; bn--)
+						{
+							Ball* b = (Ball*)(vector_item(balls, bn));
+							vector_remove(balls, b);
+							free(b);
+						}
             app.gamestate = gsTitle;
+					}
           else
             break;
         }
 
         switch(e.key.keysym.sym)
         {
-//          case SDLK_1:
-//            if(app.gamestate == gsRunning)
-//              arena_addBonus(&arena, 200, 300, boLaser);
-//          break;
+          case SDLK_1:
+            
+          break;
 
           case SDLK_k:
             // Kill self - if stuck in a loop, for example
@@ -724,8 +720,15 @@ int main(int argc, char** argv)
             }
             else if (app.gamestate == gsRunning)
             {
-              ball.bearing = ball.state == bsSticky ? 30 : ball.bearing;
-              ball.state = ball.state == bsSticky ? bsNormal : ball.state == bsStuck ? bsLoose : ball.state;
+							// Space pressed. If the ball is stuck to the bat after a life or start of level, set bearing to 30, otherwise don't change the bearing.
+							// There should only ever be one ball in this situation, as it's either after a death, at the start of a level, or no sticky is possible because multiple balls are in play
+							Ball* b;
+							for(int bn = 0; bn < balls->size; bn++)
+							{
+								b = (Ball*)(vector_item(balls, bn));
+              	b->bearing = b->state == bsSticky ? 30 : b->bearing;
+              	b->state = b->state == bsSticky ? bsNormal : b->state == bsStuck ? bsLoose : b->state;
+							}
             }
           // fall through
           case SDLK_RETURN:
@@ -790,9 +793,9 @@ int main(int argc, char** argv)
 							save_moveLetter(&save, true, true);
 						}
           break;
-          case SDLK_F1:
-            printDiagnostics(&ball, &arena);
-          break;
+          //case SDLK_F1:
+            //printDiagnostics(ball, &arena);
+          //break;
         }
       }
 		}
@@ -893,9 +896,18 @@ int main(int argc, char** argv)
       Vector* cats = arena.levels[arena.level - 1].cats;
 
       for(int cnum = 0; cnum < cats->size; cnum++)
-        ((Cat*)(cats->elements[cnum]))->state = csDead;
+			{
+				((Cat*)(vector_item(cats, cnum)))->state = csDead;
+			}
+//        ((Cat*)(cats->elements[cnum]))->state = csDead;
 
-      reset(&app, &ball, &player, &arena, &app.gamestate);
+			// This should only occur when only a single ball is in play
+			Ball* b;
+			for(int bn = 0; bn < balls->size; bn++)
+			{
+				b = (Ball*)(vector_item(balls, bn));
+      	reset(&app, b, &player, &arena, &app.gamestate);
+			}
     }
 
     if(app.gamestate == gsPaused)
@@ -914,7 +926,13 @@ int main(int argc, char** argv)
     {
       drawBackground1(&app, &arena, &player, &f);
       drawArenaText(&app, &arena, &player, hi);
-      arena_moveBricks(&arena, &ball);
+
+			for(int bn = 0; bn < balls->size; bn++)
+			{
+      	Ball* b;
+				b = (Ball*)(vector_item(balls, bn));
+				arena_moveBricks(&arena, b);
+			}
       arena_drawBricks(&arena, app.renderer);
       drawBackground2(&app, &f);
       // draw the warp area on the right
@@ -928,7 +946,29 @@ int main(int argc, char** argv)
       // so we can stop the ball moving on destruction of the last brick.
       if((currentlywarping == 0) && (app.gamestate == gsRunning))
         if((arena.remaining > 0) && (arena.bonuscounter >= 0))
-          islostball = ball_moveBall(&ball, &arena, &player) || islostball;
+				{
+					bool lastball = false;
+					Ball* b;
+					for(int bn = balls->size - 1; bn >= 0; bn--)
+					{
+						b = (Ball*)(vector_item(balls, bn));
+						int balllost = ball_moveBall(b, &arena, &player);
+						// Remove lost ball from vector unless it's the last ball in play
+						if(balllost && (balls->size > 1))
+						{
+							vector_remove(balls, b);
+							printf("Freeing %p\n", b);
+							free(b);
+						}
+						else if(balllost)
+						{
+							lastball = true;
+						}
+         		//islostball = lastball || islostball;
+					}
+					// Ball is only truly lost if only one ball is in play
+					islostball = lastball;
+				}
 
       if(islostball == 1)
       {
@@ -944,7 +984,7 @@ int main(int argc, char** argv)
         Vector* cats = arena.levels[arena.level - 1].cats;
         for(int i = 0; i < cats->size; i++)
         {
-          Cat* cat = (Cat*)cats->elements[i];
+          Cat* cat = (Cat*)(vector_item(cats, i));
           if(cat->state == csAlive)
           {
             cat->state = csDying;
@@ -972,7 +1012,13 @@ int main(int argc, char** argv)
       }
       else if((app.gamestate == gsLostLife) && ((SDL_GetTicks() - aCounter) > 2000))
       {
-        reset(&app, &ball, &player, &arena, &app.gamestate);
+
+				for(int bn = 0; bn < balls->size; bn++)
+				{
+					Ball* b;
+					b = (Ball*)(vector_item(balls, bn));
+        	reset(&app, b, &player, &arena, &app.gamestate);
+				}
         delay = 1000;
       }
 
@@ -985,8 +1031,14 @@ int main(int argc, char** argv)
       cat_draw(cats, app.renderer);
       if(app.gamestate == gsRunning)
         cat_spawn(cats, &f);
-      cat_collidesball(cats, &ball, &f);
-      cat_collidesbat(cats, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
+
+			for(int bn = 0; bn < balls->size; bn++)
+			{
+				Ball* b;
+				b = (Ball*)(vector_item(balls, bn));
+     		cat_collidesball(cats, b, &f);
+			}
+			cat_collidesbat(cats, &((Bounds){ .left = player.x, .top = player.y, .width = player.w, .height = player.h }), &f);
 
       for(int j = arena.bulletcount-1; j >= 0; j--)
       {
@@ -1050,7 +1102,11 @@ int main(int argc, char** argv)
         }
       }
       arena_checkBulletCollisions(&arena, &player);
-      arena_batCollidesBonus(&arena, &player, &ball);
+      for(int bn = 0; bn < balls->size; bn++)
+			{
+				Ball* b = (Ball*)(vector_item(balls, bn));
+				arena_batCollidesBonus(&arena, &player, b, balls);
+			}
 
     } // This one is an else because we need one loop between
       // change of app.gamestate for the Get Ready text to render.
@@ -1075,12 +1131,16 @@ int main(int argc, char** argv)
 	  {
 
       drawLives(&app, &player, arena.factory);
-      // Draw the ball
-      if((ball.cy - ball.radius) < (arena.bounds.bottom - 15))
-      {
-
-        ball_drawBall(&ball, app.renderer);
-      }
+      // Draw the balls
+			Ball* b;
+			for(int bn = 0; bn < balls->size; bn++)
+			{
+				b = (Ball*)(vector_item(balls, bn));
+      	if((b->cy - b->radius) < (arena.bounds.bottom - 15))
+      	{
+        	ball_drawBall(b, app.renderer);
+     		}
+			}
 
       // Draw the bat
       bat_drawbat(&player, app.renderer, arena.bounds);
@@ -1108,9 +1168,17 @@ int main(int argc, char** argv)
 
   config_save();
 
-	free(app.LastCode);
 
-  menu_free(&menu);
+
+	free(app.LastCode);
+	for(int bn = 0; bn < balls->size; bn++)
+	{	
+		Ball* b = (Ball*)(vector_item(balls, bn));
+		free(b);
+	}
+  
+	vector_free(balls);
+	menu_free(&menu);
   bonus_freebonuses(&arena.bonuses, &arena.bonuscount);
   arena_freeLevels(&arena);
   arena_freeBullets(&arena);
@@ -1126,6 +1194,7 @@ int main(int argc, char** argv)
 
 	text_freeFonts(&app);
 
+	Mix_Quit();
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();

@@ -28,56 +28,62 @@ Vector* vector_new()
   Vector* v = malloc(sizeof(Vector));
   v->capacity = 0;
   v->size = 0;
-  v->elements = NULL;
+	v->first = NULL;
+//	printf("size %ld\n", sizeof(vMember));
+//	printf("size v %ld\n", sizeof(Vector));
   return v;
 }
 
 bool vector_add(Vector* v, void* element)
 {
-  v->size++;
+//	printf("Size %ld\n", sizeof(*element));
+	
+	vMember* mem = malloc(sizeof(vMember));
+	mem->next = NULL;
+	mem->data = element;
+	if(v->first == NULL)
+	{
+		v->first = mem;
+	}
+	else
+	{
+		vMember* item = v->first;
+		while(item->next != NULL)
+		{
+			item = item->next;
+		}
+		item->next = mem;
+	}
 
-  if(v->size > v->capacity)
-  {
-    v->capacity = v->size * 2;
-    v->elements = realloc(v->elements, v->capacity * sizeof(void*));
-    TEST_ALLOC(v->elements);
+	v->size++;	
 
-    // Initialise new elements to NULL
-    for(int i = v->size-1; i < v->capacity; i++)
-    {
-      v->elements[i] = NULL;
-    }
-  }
-
-  v->elements[v->size - 1] = element;
   return true;
 }
 
 bool vector_remove(Vector* v, void* element)
 {
-  for(int i = 0; i < v->size; v++)
-  {
-    if(v->elements[i] == element)
-    {
-      v->elements[i] = NULL;
-      for(int start = i; start < v->size; start++)
-      {
-        v->elements[start] = v->elements[start + 1];
-        v->elements[start + 1] = NULL;
-      }
-      v->size--;
+	vMember* item = v->first;
+	vMember* lastitem = NULL;
 
-      if(v->size < (v->capacity / 4))
-      {
-        long newcap = v->size * 2;
-        v->elements = realloc(v->elements, newcap * sizeof(void*));
-        TEST_ALLOC(v->elements);
-        v->capacity = newcap;
-      }
+	if(item == NULL)
+		return false;
 
-      return true;
-    }
+  while((item != NULL))
+	{
+		if(item->data == element)
+		{
+			if(lastitem == NULL)
+				v->first = item->next;
+			else
+				lastitem->next = item->next;
+			free(item);
+			v->size--;
+			return true;
+		}
+		lastitem = item;
+		item = item->next;
   }
+
   return false;
 }
 
@@ -86,11 +92,23 @@ void* vector_item(Vector* v, const int index)
   if(index >= v->size)
     return NULL;
 
-  return v->elements[index];
+	vMember* item = v->first;
+	for(int i = 0; i < index; i++)
+	{
+		item = item->next;
+	}
+
+  return item->data;
 }
 
 void vector_free(Vector* v)
 {
-  free(v->elements);
+  vMember* item = v->first;
+	while(item != NULL)
+	{
+		vMember* next = item->next;
+		free(item);
+		item = next;
+	}
   free(v);
 }

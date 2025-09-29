@@ -95,7 +95,7 @@ int arena_loadBinary(ResourceFactory* factory, Arena* arena, char* fname)
     Level* level = &(arena->levels[i]);
     level->bricks = NULL;
     level->onlevelend = NULL;
-    level->maxbonuslevel = 7;
+    level->maxbonuslevel = 8;
     level->brickcount = 0;
     level->cats = vector_new();
 
@@ -233,7 +233,7 @@ int arena_loadLevels(Arena* arena, ResourceFactory* factory)
 
     fscanf(f, "%s", bgname);
 
-    level->maxbonuslevel = 7;
+    level->maxbonuslevel = 8;
     fscanf(f, "%d", &level->maxbonuslevel);
 
     char mgname[8] = "";
@@ -529,8 +529,9 @@ void arena_freeLevels(Arena* arena)
     free(arena->levels[levno].bricks);
     arena->levels[levno].bricks = NULL;
     arena->levels[levno].brickcount = 0;
+
     for(int cn = 0; cn < arena->levels[levno].cats->size; cn++)
-      free(arena->levels[levno].cats->elements[cn]);
+      free(vector_item(arena->levels[levno].cats,cn));
     vector_free(arena->levels[levno].cats);
   }
 
@@ -570,7 +571,7 @@ Bonus* arena_addBonus(Arena* arena, int x, int y, Bonustype type)
       case boGrow: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-e"); break;
       case boLaser: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-l"); break;
       case boWarp: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-w"); break;
-      //case boSlow: break;
+      case boSplit: bonus->sprite->anim = af_getanimation(arena->factory, "bonus-m"); break;
       case boNone: break;
     }
 
@@ -588,7 +589,32 @@ Bonus* arena_addBonus(Arena* arena, int x, int y, Bonustype type)
   return result;
 }
 
-Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball)
+Ball* arena_addBall(ResourceFactory* f, Bat* player, double bearing, int cx, int cy, Ballstate state)
+{
+	Ball* ball = malloc(sizeof(Ball)); 
+	ball->cx = cx;
+	ball->cy = cy;
+	ball->speed = config_getballspeed();
+ 	ball->bearing = bearing;
+ 	ball->radius = 7; 
+	ball->state = state;
+  ball->sprite.anim = af_getanimation(f, "ball");
+  ball->sprite.currentframe = 0;
+  ball->sprite.lastticks = 0;
+  ball->sprite.loop = 1;
+  ball->sprite.state = asLooping;
+  for(int i = 0; i < MAXTRAILPARTICLES; i++)
+  {
+    ball->sparkles[i].alpha = 0;
+    ball->sparkles[i].x = 0;
+    ball->sparkles[i].y = 0;
+    ball->sparkles[i].gdiff = 0;
+  }
+
+	return ball;
+}
+
+Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball, Vector* balls)
 {
   for(int i = 0; i < arena->bonuscount; i++)
   {
@@ -645,7 +671,15 @@ Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball)
         case boWarp:
           player->warpenabled = true;
         break;
-        //case boSlow: break;
+        case boSplit:
+			 		double ang = ball->bearing - 10;	
+					while(balls->size < 3)
+					{
+						Ball* b = arena_addBall(arena->factory, player, ang, ball->cx, ball->cy, bsNormal);
+						vector_add(balls, b);
+						ang = ang + 20;
+					}	
+				break;
         case boNone: break;
       }
 
@@ -713,14 +747,7 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
     {
       int nextx = spd * sinl(rads);
       int nexty = spd * cosl(rads);
-/*
-      if((nextx == 0) && (nexty == 0))
-      {
-        lastx = ball->cx;
-        lasty = ball->cy;
-        continue;
-      }
-*/
+
       if(ball->bearing < 180)
       {
         ball->cy = bally - nexty;
@@ -868,14 +895,14 @@ int ball_moveBall(Ball* ball, Arena* arena, Bat* player)
              (arena->bonuscount < 2) &&
              (timesincelast > BONUSDELAY))
           {
-            // Roll two 5-sided and one 6-sided dice and convert this to the enumeration value
-            // The range and shifting is to limit to 7 values and an interesting spread of likelihoods
+            // Roll one 5-sided, one 6-sided, and one 7-sided dice and convert this to the enumeration value
+            // The range and shifting is to limit to 8 values and an interesting spread of likelihoods
             arena->lastbonus = ticks;
-            int bonusscore = ((rand() % 5)+1) + ((rand() % 5)+1) + ((rand() % 6)+1);
-            while(bonusscore > 9)
-              bonusscore = ((rand() % 5)+1) + ((rand() % 5)+1) + ((rand() % 6)+1);
+            int bonusscore = ((rand() % 5)+1) + ((rand() % 6)+1) + ((rand() % 7)+1);
+            while(bonusscore > 10)
+              bonusscore = ((rand() % 5)+1) + ((rand() % 6)+1) + ((rand() % 7)+1);
 
-            int bonusresult = 8 - (bonusscore - 2);
+            int bonusresult = 9 - (bonusscore - 2);
 
             Bonustype bt = (Bonustype)(bonusresult);
 

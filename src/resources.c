@@ -58,6 +58,7 @@ void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
   af_loadanimation(f, renderer, "bonus-c.png", "bonus-c", 43, 25);
   af_loadanimation(f, renderer, "bonus-p.png", "bonus-p", 43, 25);
   af_loadanimation(f, renderer, "bonus-l.png", "bonus-l", 43, 25);
+  af_loadanimation(f, renderer, "bonus-m.png", "bonus-m", 43, 25);
   af_loadanimation(f, renderer, "bonus-w.png", "bonus-w", 43, 25);
   af_loadanimation(f, renderer, "bat_small.png", "bat-s", 51, 27);
   af_loadanimation(f, renderer, "bat_long.png", "bat-l", 122, 27);
@@ -79,7 +80,8 @@ void loadResources(ResourceFactory* f, SDL_Renderer* renderer)
 
 
   // And some sound
-  af_loadsample(f, "barkanoid-getready.wav", "getready");
+  
+	af_loadsample(f, "barkanoid-getready.wav", "getready");
   af_loadsample(f, "barkanoid-brick.wav", "brick");
   af_loadsample(f, "barkanoid-brick-high.wav", "brick-high");
   af_loadsample(f, "barkanoid-brick-laser.wav", "brick-laser");

@@ -88,7 +88,8 @@ void arena_freeLevels(Arena* arena);
 
 // Bonus related functions - mostly moved to bonus.h
 Bonus* arena_addBonus(Arena* arena, int x, int y, Bonustype type);
-Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball);
+Ball* arena_addBall(ResourceFactory* f, Bat* player, double bearing, int cx, int cy, Ballstate state);
+Bonus* arena_batCollidesBonus(Arena* arena, Bat* player, Ball* ball, Vector* balls);
 
 // Events
 void bat_afterShrink(void* sender, void* data);
