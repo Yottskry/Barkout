@@ -253,31 +253,35 @@ static void drawHowToPlay(App* app, Sprite* sprites)
   int snum = 0;
 
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
-  text_drawWrappedText(app, "The ball sticks to the Maus", left + 80, top - 5, white, 0, 600, fnBody);
+  text_drawWrappedText(app, "The ball sticks to the Maus", left + 80, top , white, 0, 600, fnBody);
   top += 35;
 
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
-  text_drawWrappedText(app, "Enable the Maus's laser guns", left + 80, top - 5, white, 0, 600, fnBody);
+  text_drawWrappedText(app, "Enable the Maus's laser guns", left + 80, top, white, 0, 600, fnBody);
   top += 35;
 
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
-  text_drawWrappedText(app, "Enhance the energy ball", left + 80, top - 5, white, 0, 600, fnBody);
+  text_drawWrappedText(app, "Enhance the energy ball", left + 80, top, white, 0, 600, fnBody);
   top += 35;
 
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
-  text_drawWrappedText(app, "Extend the Maus!", left + 80, top - 5, white, 0, 600, fnBody);
+  text_drawWrappedText(app, "Extend the Maus!", left + 80, top, white, 0, 600, fnBody);
   top += 35;
 
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
-  text_drawWrappedText(app, "Shrink the Maus. Avoid this one.", left + 80, top - 5, white, 0, 600, fnBody);
+  text_drawWrappedText(app, "Divide the ball into three!", left + 80, top, white, 0, 600, fnBody);
   top += 35;
 
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
-  text_drawWrappedText(app, "Extra player!", left + 80, top - 5, white, 0, 600, fnBody);
+  text_drawWrappedText(app, "Shrink the Maus. Avoid this one.", left + 80, top, white, 0, 600, fnBody);
   top += 35;
 
   a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
-  text_drawWrappedText(app, "Warp to the next round", left + 80, top - 5, white, 0, 600, fnBody);
+  text_drawWrappedText(app, "Extra player!", left + 80, top, white, 0, 600, fnBody);
+  top += 35;
+
+  a_drawsprite(&(sprites[snum++]), app->renderer, left, top);
+  text_drawWrappedText(app, "Warp to the next round", left + 80, top, white, 0, 600, fnBody);
 }
 
 static void drawCredits(App* app)
@@ -467,7 +471,7 @@ int main(int argc, char** argv)
   Sprite bonussprites[spritecount];
   // "dsecplw";
   // Yes, 8. No \0.
-  char bonustypes[8] = "cldespwm";
+  char bonustypes[8] = "cldemspw";
   char bonusstring[8] = "bonus-x";
   for(int i=0; i < spritecount; i++)
   {
@@ -957,7 +961,7 @@ int main(int argc, char** argv)
 						if(balllost && (balls->size > 1))
 						{
 							vector_remove(balls, b);
-							printf("Freeing %p\n", b);
+							//printf("Freeing %p\n", b);
 							free(b);
 						}
 						else if(balllost)
