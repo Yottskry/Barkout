@@ -100,6 +100,7 @@ SPRITES = 	Sprites/ball-deadly.png \
 		Sprites/bonus-p.png \
 		Sprites/bonus-s.png \
 		Sprites/bonus-w.png \
+		Sprites/bonus-m.png \
 		Sprites/border.png \
 		Sprites/boss.png \
 		Sprites/cat-die.png \
@@ -131,3 +132,4 @@ nobase_dist_pkgdata_DATA = $(FONTS) $(SOUNDS) $(SPRITES) Levels/levels.dat
 # Flags passed to the C Preprocessor; in this case the install directory
 # The game tests if an installed file exists and then sets a variable (see config.c)
 AM_CPPFLAGS = -DINSTALLDIR=\"$(datadir)/@PACKAGE@\"
+#AM_LDFLAGS = -fsanitize=leak -static-libasan
