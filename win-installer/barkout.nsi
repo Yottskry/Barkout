@@ -6,10 +6,10 @@
 
 Unicode True
 
-!define MUI_ICON "/home/pi/Projects/Barkanoid/installer/barkout.ico"
+!define MUI_ICON "barkout.ico"
 !define MUI_HEADERIMAGE
-!define MUI_WELCOMEFINISHPAGE_BITMAP "/home/pi/Projects/Barkanoid/installer/sidebanner.bmp"
-!define MUI_HEADERIMAGE_BITMAP "/home/pi/Projects/Barkanoid/installer/topbanner.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "sidebanner.bmp"
+!define MUI_HEADERIMAGE_BITMAP "topbanner.bmp"
 !define MUI_HEADERIMAGE_RIGHT
 
 !insertmacro MUI_PAGE_WELCOME
@@ -35,7 +35,7 @@ VIAddVersionKey  "CompanyName" "${PRODUCT_PUBLISHER}"
 VIAddVersionKey  "ProductVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey  "FileVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey  "FileDescription" "${PRODUCT_NAME} ${VERSION}"
-VIAddVersionKey  "LegalCopyright" "Copyright Stephen Branley 2024"
+VIAddVersionKey  "LegalCopyright" "Copyright Stephen Branley 2024-2025"
 
 OutFile "${OUTFILENAME}"
 
