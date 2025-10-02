@@ -57,3 +57,8 @@ jobs:
         working-directory: ./win-installer
         run:
           makensis barkout.nsi
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with: 
+          name: barkout-installer-1.2.0.0.exe
+          path: barkout-installer-1.2.0.0.exe
