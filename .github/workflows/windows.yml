@@ -56,4 +56,4 @@ jobs:
       - name: Build installer
         working-directory: ./win-installer
         run:
-          makensis barkout.nsis
+          makensis barkout.nsi
