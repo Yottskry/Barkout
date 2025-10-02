@@ -49,10 +49,10 @@ InstallDir $PROGRAMFILES64\FatHorseGames\Barkout\
 
 Section "Game" game_id
 	SetOutPath $INSTDIR
-	File ../barkout.exe
+	File ../Barkout/barkout.exe
 	File ../COPYING
 	File ../README.md
-  File ../DLL/*.dll
+  File ../Barkout/*.dll
 	File /r ../Fonts
 	File /r ../Sounds
 	File /r ../Sprites
