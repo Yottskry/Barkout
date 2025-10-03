@@ -20,7 +20,7 @@ jobs:
           
           wget -nv https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.6.3-mingw.tar.gz
           
-          wget -nv https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-mingw.tar.gz
+          wget -nv https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-2.20.2-win32-x64.zip
       - name: Unpack Libraries
         run:
           tar xvf SDL2-devel-2.28.5-mingw.tar.gz
@@ -29,7 +29,7 @@ jobs:
           
           tar xvf SDL2_mixer-devel-2.6.3-mingw.tar.gz
           
-          tar xvf SDL2_ttf-devel-2.20.2-mingw.tar.gz
+          unzip SDL2_ttf-2.20.2-win32-x64.zip
           
           cp -r SDL2-2.28.5/x86_64-w64-mingw32 .
           
@@ -37,9 +37,8 @@ jobs:
           
           cp -r SDL2_mixer-2.6.3/x86_64-w64-mingw32 .
           
-          cp -r SDL2_ttf-2.20.2/x86_64-w64-mingw32 .
+          ##cp -r SDL2_ttf-2.20.2/x86_64-w64-mingw32 .
                     
-          ./x86_64-w64-mingw32/bin/sdl2-config --cflags --libs
       - name: Build tools
         run:
           sudo apt-get update && sudo apt-get install -y tzdata build-essential mingw-w64
@@ -49,7 +48,7 @@ jobs:
           x86_64-w64-mingw32-gcc-win32 `../x86_64-w64-mingw32/bin/sdl2-config --cflags --libs` -I ../x86_64-w64-mingw32/include -o barkout.exe -g -O2 resourcefactory.c resources.c bounds.c config.c levels.c menu.c save.c scores.c ball.c bonus.c cat.c bat.c text.c intro.c arena.c vector.c barkanoid.c -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
       - name: Copy files
         run:
-          mkdir Barkout && cp -r src/barkout.exe Sprites/* Fonts/* Sounds/* Levels/* x86_64-w64-mingw32/bin/*.dll Barkout
+          mkdir Barkout && cp -r src/barkout.exe Sprites/* Fonts/* Sounds/* Levels/* x86_64-w64-mingw32/bin/*.dll SDL2_ttf.dll Barkout
       - name: Download NSIS
         run:
           sudo apt-get install -y nsis
