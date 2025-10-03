@@ -12,22 +12,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Get Libraries
+      - name: Get devel SDL libraries
         run:
           wget -nv https://github.com/libsdl-org/SDL/releases/download/release-2.28.5/SDL2-devel-2.28.5-mingw.tar.gz
           
           wget -nv https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.0/SDL2_image-devel-2.8.0-mingw.tar.gz
           
           wget -nv https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.6.3-mingw.tar.gz
+
+          wget -nv https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-mingw.tar.gz
           
-          wget -nv https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-2.20.2-win32-x64.zip
-      - name: Unpack Libraries
+      - name: Unpack devel SDL libraries
         run:
           tar xvf SDL2-devel-2.28.5-mingw.tar.gz
           
           tar xvf SDL2_image-devel-2.8.0-mingw.tar.gz
           
           tar xvf SDL2_mixer-devel-2.6.3-mingw.tar.gz
+          
+          tar xvf SDL2_ttf-devel-2.20.2-mingw.tar.gz
           
           unzip SDL2_ttf-2.20.2-win32-x64.zip
           
@@ -37,7 +40,7 @@ jobs:
           
           cp -r SDL2_mixer-2.6.3/x86_64-w64-mingw32 .
           
-          ##cp -r SDL2_ttf-2.20.2/x86_64-w64-mingw32 .
+          cp -r SDL2_ttf-2.20.2/x86_64-w64-mingw32 .
                     
       - name: Build tools
         run:
@@ -46,9 +49,27 @@ jobs:
         working-directory: ./src
         run:
           x86_64-w64-mingw32-gcc-win32 `../x86_64-w64-mingw32/bin/sdl2-config --cflags --libs` -I ../x86_64-w64-mingw32/include -o barkout.exe -g -O2 resourcefactory.c resources.c bounds.c config.c levels.c menu.c save.c scores.c ball.c bonus.c cat.c bat.c text.c intro.c arena.c vector.c barkanoid.c -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
+      - name: Get release SDL libraries
+        run:
+          mkdir DLL && cd DLL
+          wget -nv https://github.com/libsdl-org/SDL/releases/download/release-2.28.5/SDL2-2.28.5-win32-x64.zip
+          
+          wget -nv https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.0/SDL2_image-2.8.0-win32-x64.zip
+          
+          wget -nv https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.6.3-win32-x64.zip
+          
+          wget -nv https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-2.20.2-win32-x64.zip
+
+          unzip SDL2-2.28.5-win32-x64.zip
+          
+          unzip SDL2_image-2.8.0-win32-x64.zip
+          
+          unzip SDL2_mixer-2.6.3-win32-x64.zip
+          
+          unzip SDL2_ttf-2.20.2-win32-x64.zip
       - name: Copy files
         run:
-          mkdir Barkout && cp -r src/barkout.exe Sprites/* Fonts/* Sounds/* Levels/* x86_64-w64-mingw32/bin/*.dll SDL2_ttf.dll Barkout
+          mkdir Barkout && cp -r src/barkout.exe Sprites/* Fonts/* Sounds/* Levels/* DLL/*.dll Barkout
       - name: Download NSIS
         run:
           sudo apt-get install -y nsis
