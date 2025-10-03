@@ -63,6 +63,7 @@ long GetCheckTotal(char* encLevel)
 		long l = FromBase36(c);
 		free(c);
 		tot = tot + l;
+	//	printf("Running total: %ld\n", tot);
 	}
 	return tot;
 }
@@ -73,14 +74,18 @@ int save_decodeLevel(char* encLevel, long* lev, long* liv, long* scr, long* pow)
 	//char dig = encLevel[strlen(encLevel)-1];
 	long chk = FromBase36(&(encLevel[strlen(encLevel)-1]));
 
-	char* code = calloc(strlen(encLevel), sizeof(char)); // strlen omits the \0 so we don't need to add 1
+	char* code = calloc(strlen(encLevel)+1, sizeof(char)); // strlen omits the \0 so we don't need to add 1
 	strncpy(code, encLevel, strlen(encLevel)-1);
+
+//	printf("Code: %s\n", code);
 	long tot = GetCheckTotal(code);
+
+//	printf("chk %ld\n act %ld\n", chk, (tot % 11));
 
 	free(code);
 	if(chk != (tot % 11))
 	{
-//		return -1;
+		return -1;
 	}
 
 	char* lives = calloc(2, sizeof(char));
@@ -115,7 +120,7 @@ char* EncodeLevel(char* encScore, int level, int lives, int powerup)
 	char* liv = ToBase36(lives, 1);
 	char* pow = ToBase36(powerup, 1);
 	int sz = strlen(encScore) + strlen(lev) + strlen(liv) + strlen(pow);
-	char* out = calloc(sz+1, sizeof(char));
+	char* out = calloc(sz, sizeof(char));
 	strncpy(out, lev, 1);
 	strncpy(&(out[1]), liv, 1);
 	strncpy(&(out[2]), pow, 1);
