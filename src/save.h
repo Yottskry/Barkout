@@ -10,6 +10,7 @@
 #include <math.h>
 
 #define LETTERS 37
+#define CODELENGTH 9
 #define chars "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 typedef struct { 
@@ -22,7 +23,7 @@ typedef struct {
 	int collimit;
 	int selected;
 	Letter letters[LETTERS];
-	char code[9];
+	char code[CODELENGTH];
 } Save;
 
 long FromBase36(char* str);

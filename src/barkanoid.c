@@ -755,6 +755,7 @@ int main(int argc, char** argv)
               player.score = 0;
               arena.alpha = 255;
               arena_loadBricks(&arena, arena.level);
+
             }
 						else if(app.gamestate == gsContinue)
 						{
@@ -782,6 +783,7 @@ int main(int argc, char** argv)
 										printf("Loaded score: %d\n", player.score);
 										arena.alpha = 255;
 										arena_loadBricks(&arena, arena.level);	
+										memset(save.code, 0, CODELENGTH);
 									}
 								}
 							}
