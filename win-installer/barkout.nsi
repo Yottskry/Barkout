@@ -6,7 +6,7 @@
 
 Unicode True
 
-!define MUI_ICON "barkout.ico"
+!define MUI_ICON "win-installer/barkout.ico"
 !define MUI_HEADERIMAGE
 !define MUI_WELCOMEFINISHPAGE_BITMAP "sidebanner.bmp"
 !define MUI_HEADERIMAGE_BITMAP "topbanner.bmp"
