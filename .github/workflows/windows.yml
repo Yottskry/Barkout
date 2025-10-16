@@ -40,13 +40,17 @@ jobs:
           
           cp -r SDL2_ttf-2.20.2/x86_64-w64-mingw32 .
                     
-      - name: Build tools
+      - name: Get build tools
         run:
           sudo apt-get update && sudo apt-get install -y tzdata build-essential mingw-w64
+      - name: Create resource file
+        working-directory: ./win-installer
+        run:
+          x86_64-w64-mingw32-windres -i barkout.rc -o ../src/barkoutres.o
       - name: Build game
         working-directory: ./src
         run:
-          x86_64-w64-mingw32-gcc-win32 `../x86_64-w64-mingw32/bin/sdl2-config --cflags --libs` -I ../x86_64-w64-mingw32/include -o barkout.exe -g -O2 resourcefactory.c resources.c bounds.c config.c levels.c menu.c save.c scores.c ball.c bonus.c cat.c bat.c text.c intro.c arena.c vector.c barkanoid.c -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
+          x86_64-w64-mingw32-gcc-win32 `../x86_64-w64-mingw32/bin/sdl2-config --cflags --libs` -I ../x86_64-w64-mingw32/include -o barkout.exe -g -O2 resourcefactory.c resources.c bounds.c config.c levels.c menu.c save.c scores.c ball.c bonus.c cat.c bat.c text.c intro.c arena.c vector.c barkanoid.c barkoutres.o -lm -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
       - name: Get release SDL libraries
         run:
           mkdir DLL && cd DLL
