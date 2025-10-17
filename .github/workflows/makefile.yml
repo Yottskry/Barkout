@@ -31,9 +31,9 @@ jobs:
 
     - name: Create artifacts
       run:
-        mkdir barkout && cp -R configure configure.ac AUTHORS COPYING INSTALL NEWS install-sh Fonts/ Levels/ Sounds/ src/ Sprites/ barkout
+        mkdir barkout-1.2 && cp -R configure configure.ac AUTHORS COPYING INSTALL NEWS install-sh Fonts/ Levels/ Sounds/ src/ Sprites/ barkout-1.2
         
-        tar cvf barkout-1.2.tar.gz barkout
+        tar cvf barkout-1.2.tar.gz barkout-1.2
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
