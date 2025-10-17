@@ -1,10 +1,7 @@
 name: Makefile CI
 
 on:
-  push:
-    branches: [ "trunk" ]
-  pull_request:
-    branches: [ "trunk" ]
+  [push, workflow_dispatch]
 
 jobs:
   build:
