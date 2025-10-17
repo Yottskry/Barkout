@@ -31,7 +31,7 @@ jobs:
 
     - name: Create artifacts
       run:
-        mkdir barkout-1.2 && cp -R configure configure.ac AUTHORS COPYING INSTALL NEWS install-sh compile aclocal.m4 Fonts/ Levels/ Sounds/ src/ Sprites/ barkout-1.2
+        mkdir barkout-1.2 && cp -R configure configure.ac AUTHORS COPYING INSTALL NEWS install-sh compile aclocal.m4 missing Makefile.in Makefile.am depcomp Fonts/ Levels/ Sounds/ src/ Sprites/ barkout-1.2
         
         tar cvf barkout-1.2.tar.gz barkout-1.2
 
