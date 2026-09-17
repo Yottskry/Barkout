@@ -64,3 +64,7 @@ make install
 
 It may not be mentioned anywhere, but the licence is [GPLv3](https://choosealicense.com/licenses/gpl-3.0).
 
+## Can I support you in any way?
+
+Sure! You can buy me a coffee: https://buymeacoffee.com/retrojunkies
+
